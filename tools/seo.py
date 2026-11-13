@@ -4,7 +4,7 @@ Open Graph / Twitter cards, JSON-LD structured data, sitemap.xml and robots.txt.
 
 SITE_URL must be the address the site is published at (no trailing slash). Set it
 with the SITE_URL environment variable when building, e.g.
-    SITE_URL=https://www.your-domain.in python tools/build-site.py
+    SITE_URL=https://staging.example.org python tools/build-site.py  (defaults to https://sawari.airacode.online)
 """
 import html
 import json
@@ -12,7 +12,7 @@ import os
 import re
 from datetime import date
 
-SITE_URL = os.environ.get('SITE_URL', 'https://example.com').rstrip('/')
+SITE_URL = os.environ.get('SITE_URL', 'https://sawari.airacode.online').rstrip('/')
 LANGS = ['en', 'hi', 'ur', 'te']
 DIR = {'en': 'ltr', 'hi': 'ltr', 'ur': 'rtl', 'te': 'ltr'}
 LOCALE = {'en': 'en_IN', 'hi': 'hi_IN', 'ur': 'ur_IN', 'te': 'te_IN'}
@@ -119,6 +119,8 @@ def head_block(slug, lang, extra_ld, preload=''):
     <meta property="og:description" content="{esc(desc)}" />
     <meta property="og:url" content="{url(lang, slug)}" />
     <meta property="og:image" content="{SITE_URL}/og-image.jpg" />
+    <meta property="og:image:secure_url" content="{SITE_URL}/og-image.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="{esc(OG_ALT[lang])}" />

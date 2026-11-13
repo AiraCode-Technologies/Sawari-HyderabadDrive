@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /404.html
 
-Sitemap: https://example.com/sitemap.xml
+Sitemap: https://sawari.airacode.online/sitemap.xml
