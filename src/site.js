@@ -105,3 +105,59 @@ if (pref && pref !== 'en' && root.lang === 'en') {
   const target = langLinks.find((a) => a.dataset.lang === pref);
   if (target) location.replace(target.href);
 }
+
+// ---------- share: WhatsApp, LinkedIn, X and Facebook are plain links (filled in at
+// build time); Instagram has no web share link, so its button copies a ready caption
+// (and opens the phone's share sheet where there is one); "Copy link" copies the address.
+const shareBox = document.querySelector('.share');
+if (shareBox) {
+  const templates = JSON.parse(document.getElementById('share-data')?.textContent || '{}');
+  const canonical = document.querySelector('link[rel=canonical]')?.href || '';
+  // before the site has its real address (or on a test server), share the page being viewed
+  const pageUrl = canonical && !canonical.includes('example.com') ? canonical : location.href.split('#')[0];
+  const fill = (t) => (t || '').replaceAll('{url}', pageUrl);
+  if (pageUrl !== canonical) {
+    const enc = encodeURIComponent;
+    const set = (cls, href) => { const a = shareBox.querySelector(`.share-btn.${cls}`); if (a) a.href = href; };
+    set('linkedin', 'https://www.linkedin.com/feed/?shareActive=true&text=' + enc(fill(templates.linkedin)));
+    set('whatsapp', 'https://wa.me/?text=' + enc(fill(templates.whatsapp)));
+    set('x', 'https://x.com/intent/post?text=' + enc(templates.x || '') + '&url=' + enc(pageUrl));
+    set('facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + enc(pageUrl));
+  }
+  const toast = shareBox.querySelector('.share-toast');
+  let toastTimer = 0;
+  const say = (msg) => {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+  };
+  const copy = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // older browsers, or no clipboard permission: a hidden text box
+      const ta = Object.assign(document.createElement('textarea'), { value: text });
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    }
+  };
+  shareBox.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-share]');
+    if (!b) return;
+    if (b.dataset.share === 'copy') {
+      if (await copy(pageUrl)) say(shareBox.dataset.copied);
+    } else if (b.dataset.share === 'instagram') {
+      const caption = fill(templates.instagram);
+      if (await copy(caption)) say(shareBox.dataset.ig);
+      // phones: offer the share sheet, which includes Instagram
+      if (navigator.share && matchMedia('(pointer: coarse)').matches) navigator.share({ text: caption }).catch(() => {});
+    }
+  });
+}

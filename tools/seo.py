@@ -164,7 +164,7 @@ def localize(page_html, slug, lang, T, idx):
                 continue
             tr = val[idx]
             out = out.replace(f'>{key}<', f'>{tr}<')
-            for attr in ('alt', 'aria-label', 'data-label-dark', 'data-label-light'):
+            for attr in ('alt', 'aria-label', 'title', 'data-label-dark', 'data-label-light', 'data-copied', 'data-ig'):
                 out = out.replace(f'{attr}="{esc(key)}"', f'{attr}="{esc(tr)}"')
         out = out.replace('<span data-year=""></span>', '<span data-year>2026</span>')
     out = out.replace('<html lang="en">', f'<html lang="{lang}" dir="{DIR[lang]}">')
@@ -212,3 +212,51 @@ def img_tag(name, alt, sizes='(max-width: 880px) 100vw, 50vw', eager=False, cls=
     c = f' class="{cls}"' if cls else ''
     return (f'<img{c} src="/img/{name}.webp" srcset="/img/{name}-800.webp 800w, /img/{name}.webp 1600w" sizes="{sizes}" '
             f'alt="{alt}" width="1600" height="900" {load} decoding="async" />')
+
+
+# ---------- share templates (footer "Share Sawari" block) ----------
+# {url} is replaced with the page address. X counts Indic and Urdu letters double,
+# so those posts stay short. Facebook takes no text: it shows the page's Open Graph card.
+SHARE = {
+    'en': {
+        'linkedin': "I've been trying Sawari, a free 3D driving simulator built on real Hyderabad roads: Tank Bund, the Charminar and the HITEC City flyovers, with left-hand traffic, signals and a debrief after every drive. A handy way for new drivers to practise before getting on the road.\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #Telangana",
+        'whatsapp': '🚗 Try Sawari: practise driving on real Hyderabad roads, free in your browser. Tank Bund, Charminar, HITEC City flyovers and proper Hyderabad traffic!\n{url}',
+        'x': 'Practise driving on real Hyderabad roads, free in your browser 🚗 Tank Bund, Charminar, HITEC City flyovers. #Hyderabad #DrivingPractice',
+        'instagram': 'Practising on real Hyderabad roads 🚗✨ Tank Bund at sunset, the Charminar roundabout and the HITEC City flyovers, all in a free browser driving simulator.\n\nTry Sawari: {url}\n\n#Sawari #Hyderabad #Telangana #DrivingPractice #RoadSafety #HyderabadDiaries',
+    },
+    'hi': {
+        'linkedin': 'Sawari देखिए: हैदराबाद की असली सड़कों पर बना मुफ़्त 3D ड्राइविंग सिम्युलेटर। टैंक बंड, चारमीनार और हाईटेक सिटी के फ़्लाईओवर, बाईं ओर चलने वाला ट्रैफ़िक, सिग्नल और हर ड्राइव के बाद समीक्षा। नए ड्राइवरों के लिए सड़क पर उतरने से पहले अभ्यास का आसान तरीका।\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #हैदराबाद',
+        'whatsapp': '🚗 Sawari आज़माइए: हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास, ब्राउज़र में मुफ़्त। टैंक बंड, चारमीनार, हाईटेक सिटी फ़्लाईओवर और असली हैदराबादी ट्रैफ़िक!\n{url}',
+        'x': 'हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास, ब्राउज़र में मुफ़्त 🚗 #Hyderabad',
+        'instagram': 'हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास 🚗✨ शाम को टैंक बंड, चारमीनार का गोल चक्कर और हाईटेक सिटी के फ़्लाईओवर, सब एक मुफ़्त ब्राउज़र ड्राइविंग सिम्युलेटर में।\n\nSawari आज़माइए: {url}\n\n#Sawari #Hyderabad #हैदराबाद #DrivingPractice #RoadSafety',
+    },
+    'ur': {
+        'linkedin': 'Sawari دیکھیے: حیدرآباد کی اصل سڑکوں پر بنا مفت 3D ڈرائیونگ سمیولیٹر۔ ٹینک بنڈ، چارمینار اور ہائی ٹیک سٹی کے فلائی اوور، بائیں طرف چلنے والا ٹریفک، سگنل اور ہر ڈرائیو کے بعد جائزہ۔ نئے ڈرائیوروں کے لیے سڑک پر اترنے سے پہلے مشق کا آسان طریقہ۔\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #حیدرآباد',
+        'whatsapp': '🚗 Sawari آزمائیے: حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق، براؤزر میں مفت۔ ٹینک بنڈ، چارمینار، ہائی ٹیک سٹی فلائی اوور اور اصل حیدرآبادی ٹریفک!\n{url}',
+        'x': 'حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق، براؤزر میں مفت 🚗 #Hyderabad',
+        'instagram': 'حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق 🚗✨ شام کو ٹینک بنڈ، چارمینار کا گول چکر اور ہائی ٹیک سٹی کے فلائی اوور، سب ایک مفت براؤزر ڈرائیونگ سمیولیٹر میں۔\n\nSawari آزمائیے: {url}\n\n#Sawari #Hyderabad #حیدرآباد #DrivingPractice #RoadSafety',
+    },
+    'te': {
+        'linkedin': 'Sawari చూడండి: అసలు హైదరాబాద్ రోడ్లపై నిర్మించిన ఉచిత 3D డ్రైవింగ్ సిమ్యులేటర్. ట్యాంక్ బండ్, చార్మినార్, హైటెక్ సిటీ ఫ్లైఓవర్లు, ఎడమవైపు ట్రాఫిక్, సిగ్నళ్లు, ప్రతి డ్రైవ్ తర్వాత సమీక్ష. రోడ్డు మీదకి వెళ్లే ముందు కొత్త డ్రైవర్లు సాధన చేయడానికి సులువైన మార్గం.\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #హైదరాబాద్',
+        'whatsapp': '🚗 Sawari ప్రయత్నించండి: అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన, బ్రౌజర్‌లో ఉచితం. ట్యాంక్ బండ్, చార్మినార్, హైటెక్ సిటీ ఫ్లైఓవర్లు, అచ్చం హైదరాబాద్ ట్రాఫిక్!\n{url}',
+        'x': 'అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన, బ్రౌజర్‌లో ఉచితం 🚗 #Hyderabad',
+        'instagram': 'అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన 🚗✨ సాయంత్రం ట్యాంక్ బండ్, చార్మినార్ రౌండ్‌అబౌట్, హైటెక్ సిటీ ఫ్లైఓవర్లు, అన్నీ ఉచిత బ్రౌజర్ డ్రైవింగ్ సిమ్యులేటర్‌లో.\n\nSawari ప్రయత్నించండి: {url}\n\n#Sawari #Hyderabad #హైదరాబాద్ #DrivingPractice #RoadSafety',
+    },
+}
+
+
+def share_fill(page_html, lang, slug):
+    """Fills the footer share links and caption data for one page and language."""
+    from urllib.parse import quote
+    u = url(lang, slug)
+    t = {k: v.replace('{url}', u) for k, v in SHARE[lang].items()}
+    hrefs = {
+        '__SHARE_LINKEDIN__': 'https://www.linkedin.com/feed/?shareActive=true&text=' + quote(t['linkedin']),
+        '__SHARE_WHATSAPP__': 'https://wa.me/?text=' + quote(t['whatsapp']),
+        '__SHARE_X__': 'https://x.com/intent/post?text=' + quote(t['x']) + '&url=' + quote(u),
+        '__SHARE_FACEBOOK__': 'https://www.facebook.com/sharer/sharer.php?u=' + quote(u),
+    }
+    for k, v in hrefs.items():
+        page_html = page_html.replace(k, esc(v))
+    data = json.dumps(SHARE[lang], ensure_ascii=False).replace('</', '<\\/')
+    return page_html.replace('<!--SHARE-DATA-->', f'<script type="application/json" id="share-data">{data}</script>')
