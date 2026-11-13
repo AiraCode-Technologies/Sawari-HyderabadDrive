@@ -681,6 +681,22 @@ function buildRoute(def) {
   // a junction mouth, water, a park or an existing building.
   const rand = rng(hash(def.id));
   let filler = 0;
+  // at-grade railway lines: railway land is never built on
+  const railGrid = new Grid(40);
+  for (const l of X.rails) {
+    if (l.e) continue;
+    for (let i = 1; i < l.p.length; i++) railGrid.addBox(Math.min(l.p[i - 1][0], l.p[i][0]), Math.min(l.p[i - 1][1], l.p[i][1]), Math.max(l.p[i - 1][0], l.p[i][0]), Math.max(l.p[i - 1][1], l.p[i][1]), [l.p[i - 1], l.p[i]]);
+  }
+  const railDist = (q, cap = 60) => {
+    let best = Infinity;
+    for (const [a, b] of railGrid.near(q[0], q[1], cap)) best = Math.min(best, segDist(q, a, b));
+    return best;
+  };
+  // water a little way behind a plot (a lakefront promenade, not a building plot)
+  const waterBehind = (cx, cy, nx, ny, reach) => {
+    for (let k = 8; k <= reach; k += 8) if (inWater([cx + nx * k, cy + ny * k])) return true;
+    return false;
+  };
   const junctionPts = new Grid(40);
   for (const r of roadsNear) r.keys.forEach((k, i) => { if (degree(k) > 2) junctionPts.addBox(r.pts[i][0], r.pts[i][1], r.pts[i][0], r.pts[i][1], r.pts[i]); });
   const nearJunction = (q, d) => {
@@ -735,6 +751,9 @@ function buildRoute(def) {
         if (inWater([cx, cy]) || corners.some(inWater)) continue;
         if (!corners.every(clearOfCorridors) || !clearOfCorridors([cx, cy])) continue;
         if (parksNear.some((pk) => pointInPolygon([cx, cy], pk))) continue;
+        // no plots wedged between a road and the railway, and lakefronts stay open
+        if (railDist([cx, cy]) < depth / 2 + 14) continue;
+        if (waterBehind(cx, cy, nx, ny, 70)) continue;
         const ring = polygonArea(corners) < 0 ? corners.slice().reverse() : corners;
         if (overlapsKept(ring) || ringHitsRoad(ring)) continue;
         const shopsHere = main || hash(`${r.osm}${Math.round(here)}`) < 0.25;
@@ -916,12 +935,16 @@ function buildRoute(def) {
         // bikes stand on the footpath, cars half up on it, as on Hyderabad side streets
         const q = sidePoint(r, s, -side, r.width / 2 + (bike ? 0.9 : 0.4));
         if (routeDist([q.x, q.y]) > 300 || hash(`${r.osm}pp${s}`) > 0.32 || !nearShops([q.x, q.y], 18)) continue;
+        // never on another road's carriageway (at junctions and where roads run side by side)
+        let clash = false;
+        for (const [o, oi] of roadGrid.near(q.x, q.y, 20)) if (o !== r && segDist([q.x, q.y], o.pts[oi - 1], o.pts[oi]) < o.width / 2 + 1.1) clash = true;
+        if (clash) continue;
         parked.push({ x: r1(q.x), y: r1(q.y), h: r1(q.h), dir: r1(q.dir + (hash(`${r.osm}pd${s}`) < 0.5 ? 0 : Math.PI)), t, side: -side });
       }
     }
   }
   // stalls cluster at bus stops and metro stations too
-  for (const b of [...X.busStops, ...X.stations.map((s) => ({ ...s, h: ground(s.x, s.y) }))]) {
+  for (const b of [...X.busStops, ...X.stations.filter((s) => s.k === 'metro').map((s) => ({ ...s, h: ground(s.x, s.y) }))]) {
     for (let k = 0; k < 2; k++) {
       const a = hash(`${b.x}${b.y}${k}`) * Math.PI * 2;
       const q = [b.x + Math.cos(a) * (6 + k * 3), b.y + Math.sin(a) * (6 + k * 3)];
@@ -1022,6 +1045,28 @@ function buildRoute(def) {
           if (!clearOfRoads(q, sw - 0.6) || inWater(q) || inBuildingAt(q)) continue;
           const roll = rand();
           trees.push([r1(q[0]), r1(q[1]), r1(0.7 + rand() * 0.5), roll < 0.45 ? 0 : roll < 0.75 ? 1 : roll < 0.9 ? 2 : 3]);
+        }
+      }
+    }
+  }
+
+  // ---- trees along the railway: the line runs through a green verge, not bare earth ----
+  {
+    const stationPts = X.stations.map((s) => [s.x, s.y]);
+    for (const l of X.rails) {
+      if (l.e || l.k !== 'rail') continue;
+      const len = polylineLength(l.p);
+      for (let s = 6; s < len; s += 9) {
+        const { p, dir } = pointAlong(l.p, s);
+        if (routeDist(p) > 450) continue;
+        if (stationPts.some((q) => dist(q, p) < 70)) continue; // platforms there
+        for (const side of [-1, 1]) {
+          if (rand() > 0.6) continue;
+          const off = 7 + rand() * 4;
+          const q = [p[0] + Math.cos(dir) * side * off, p[1] - Math.sin(dir) * side * off];
+          if (railDist(q) < 5.5 || !clearOfRoads(q, 2.5) || inWater(q) || inBuildingAt(q)) continue;
+          const roll = rand();
+          trees.push([r1(q[0]), r1(q[1]), r1(0.7 + rand() * 0.5), roll < 0.5 ? 0 : roll < 0.8 ? 1 : 2]);
         }
       }
     }

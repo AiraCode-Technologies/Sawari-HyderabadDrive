@@ -125,6 +125,46 @@ export function buildExtras(X) {
   const metroLines = rails.filter((r) => r.k === 'metro');
 
   // ---------- stations ----------
+  // A station on the at-grade railway: snapped to the nearest track, with a platform outside
+  // the outermost track on each side where the ground there is free of roads and water.
+  function railStation(e, p) {
+    const lines = rails.filter((l) => l.k === 'rail' && !l.e);
+    let best = null;
+    for (const l of lines)
+      for (let i = 1; i < l.p.length; i++) {
+        const d = segDist(p, l.p[i - 1], l.p[i]);
+        if (d < 80 && (!best || d < best.d)) best = { d, a: l.p[i - 1], b: l.p[i] };
+      }
+    if (!best) return null;
+    const { a, b } = best;
+    const dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2));
+    const q = [a[0] + dx * t, a[1] + dy * t];
+    const dir = bearing(a, b), fx = Math.sin(dir), fy = Math.cos(dir), rx = Math.cos(dir), ry = -Math.sin(dir);
+    // every track running alongside here: how far left and right of this one they lie
+    let lo = 0, hi = 0;
+    for (const l of lines)
+      for (let i = 0; i < l.p.length; i++) {
+        const ox = l.p[i][0] - q[0], oy = l.p[i][1] - q[1];
+        const along = ox * fx + oy * fy, lat = ox * rx + oy * ry;
+        if (Math.abs(along) < 60 && Math.abs(lat) < 14) { lo = Math.min(lo, lat); hi = Math.max(hi, lat); }
+      }
+    // the longest platform (90, 60 or 40 m) that fits on each side
+    const pl = [], pll = [];
+    for (const off of [lo - 3.9, hi + 3.9]) {
+      for (const L of [90, 60, 40]) {
+        let ok = true;
+        for (let s = -L / 2; s <= L / 2 && ok; s += 5)
+          for (const w of [-2, 0, 2]) {
+            const z = [q[0] + fx * s + rx * (off + w), q[1] + fy * s + ry * (off + w)];
+            if (!clearOfRoads(z, 0.4) || inWater(z)) { ok = false; break; }
+          }
+        if (ok) { pl.push(r1(off)); pll.push(L); break; }
+      }
+    }
+    if (!pl.length) return null;
+    return { k: 'rail', n: e.tags.name || '', x: r1(q[0]), y: r1(q[1]), h: r1(ground(q[0], q[1])), dir: r1(dir), pl, pll };
+  }
   const stations = [];
   const seenStation = [];
   for (const e of extra) {
@@ -132,6 +172,13 @@ export function buildExtras(X) {
     const p = X.proj(e.lat, e.lon);
     if (!nearRoute(p, KEEP + 150)) continue;
     if (seenStation.some((s) => dist(s, p) < 120)) continue;
+    // suburban (MMTS) stations: platforms either side of the tracks at ground level
+    const isMetro = e.tags.station === 'subway' || e.tags.subway === 'yes' || /metro/i.test(e.tags.network || '');
+    if (!isMetro) {
+      const st = railStation(e, p);
+      if (st) { stations.push(st); seenStation.push([st.x, st.y]); }
+      continue;
+    }
     // snap metro stations onto the nearest viaduct
     let best = null;
     for (const l of metroLines)

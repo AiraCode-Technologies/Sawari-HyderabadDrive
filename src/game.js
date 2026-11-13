@@ -411,6 +411,8 @@ export class Game {
   resetToRoute() {
     const pose = this.nav.resetPose();
     this.phys.place(pose.x, pose.y, pose.h, pose.heading);
+    // clear any vehicle standing where the car is put back
+    for (const v of this.traffic.vehicles) if (Math.hypot(v.x - pose.x, v.y - pose.y) < 8 + v.length / 2) v.dead = true;
     this.prevPose = null; // don't blend from where the car was before the jump
     this.rig.first = true;
     this.toast('Back on the route', 'info', 1500);

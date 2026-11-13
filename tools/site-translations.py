@@ -145,6 +145,7 @@ T = {
     'OpenStreetMap (ODbL)': None,
     'Terrain tiles (AWS)': ('ज़मीन की ऊँचाई का डेटा (AWS)', 'زمین کی بلندی کا ڈیٹا (AWS)', 'నేల ఎత్తు డేటా (AWS)'),
     'How the city is built': ('शहर कैसे बनाया गया', 'شہر کیسے بنایا گیا', 'నగరం ఎలా నిర్మించబడింది'),
+    'Version': ('संस्करण', 'ورژن', 'వెర్షన్'),
     '© <span data-year=""></span> Sawari · For practice only; it does not replace driving lessons.': (
         '© <span data-year=""></span> Sawari · केवल अभ्यास के लिए; यह ड्राइविंग सीखने की क्लास की जगह नहीं लेता।',
         '© <span data-year=""></span> Sawari · صرف مشق کے لیے؛ یہ ڈرائیونگ سیکھنے کی کلاسوں کی جگہ نہیں لیتا۔',

@@ -69,8 +69,28 @@ export function buildTransit(world, group, quality, T, index) {
     parts.push({ geo: new THREE.BoxGeometry(q.metro ? 7 : 5, 1.4, 2.4), color: '#bdb8ae', matrix: m4(q.x, q.h - 2.5, -q.y, 0, -q.dir, 0) }); // across the track
   }
 
+  // railway (MMTS) stations: long low platforms beside the tracks, a shelter, name boards
+  for (const s of world.stations || []) {
+    if (s.k !== 'rail') continue;
+    const fx = Math.sin(s.dir), fy = Math.cos(s.dir), rx = Math.cos(s.dir), ry = -Math.sin(s.dir);
+    const at = (along, lat, h, geo, color) => parts.push({ geo, color, matrix: m4(s.x + fx * along + rx * lat, h, -(s.y + fy * along + ry * lat), 0, -s.dir, 0) });
+    s.pl.forEach((off, n) => {
+      const L = s.pll ? s.pll[n] : 90;
+      const out = Math.sign(off); // the side away from the tracks
+      at(0, off, s.h + 0.45, new THREE.BoxGeometry(4, 0.9, L), '#c9c2b4');
+      at(0, off - out * 1.85, s.h + 0.91, new THREE.BoxGeometry(0.3, 0.03, L), '#e8c21a'); // yellow edge line
+      at(0, off + out * 0.4, s.h + 3.7, new THREE.BoxGeometry(4.6, 0.25, Math.min(36, L - 4)), '#7b8a93'); // shelter roof
+      for (let along = -16; along <= 16; along += 8) {
+        at(along, off + out * 1.6, s.h + 2.3, new THREE.BoxGeometry(0.22, 2.8, 0.22), '#55606a');
+        index.ring(s.x + fx * along + rx * (off + out * 1.6), s.y + fy * along + ry * (off + out * 1.6), 0.3, s.h + 3.7, 'post');
+      }
+      for (const along of [-L / 3, L / 3]) for (const w of [-0.9, 0.9]) at(along + w, off, s.h + 1.9, new THREE.BoxGeometry(0.12, 2, 0.12), '#3a3f44'); // name board legs
+    });
+  }
+
   // metro stations: a concourse over the road with a curved roof and name boards
   for (const s of world.stations || []) {
+    if (s.k === 'rail') continue;
     const fx = Math.sin(s.dir), fy = Math.cos(s.dir), rx = Math.cos(s.dir), ry = -Math.sin(s.dir);
     const g = T.at(s.x, s.y);
     const rot = -s.dir;
@@ -99,9 +119,40 @@ export function buildTransit(world, group, quality, T, index) {
     m.receiveShadow = true;
     group.add(m);
   }
-  // station name boards on both long sides
+  // railway station name boards: yellow with black lettering, at both ends of each platform
   for (const s of world.stations || []) {
-    if (!s.n) continue;
+    if (s.k !== 'rail' || !s.n) continue;
+    const cv = document.createElement('canvas');
+    cv.width = 512;
+    cv.height = 128;
+    const g2 = cv.getContext('2d');
+    g2.fillStyle = '#f2c414';
+    g2.fillRect(0, 0, 512, 128);
+    g2.strokeStyle = '#111';
+    g2.lineWidth = 6;
+    g2.strokeRect(4, 4, 504, 120);
+    g2.fillStyle = '#111';
+    g2.font = 'bold 50px sans-serif';
+    g2.textAlign = 'center';
+    g2.textBaseline = 'middle';
+    g2.fillText(s.n.toUpperCase(), 256, 66);
+    const t = new THREE.CanvasTexture(cv);
+    t.colorSpace = THREE.SRGBColorSpace;
+    const mat = new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide });
+    const fx = Math.sin(s.dir), fy = Math.cos(s.dir), rx = Math.cos(s.dir), ry = -Math.sin(s.dir);
+    s.pl.forEach((off, n) => {
+      const L = s.pll ? s.pll[n] : 90;
+      for (const along of [-L / 3, L / 3]) {
+        const plane = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.8), mat);
+        plane.position.set(s.x + fx * along + rx * off, s.h + 3.2, -(s.y + fy * along + ry * off));
+        plane.rotation.y = -s.dir + Math.PI / 2; // faces across the tracks, readable from the train and the road
+        group.add(plane);
+      }
+    });
+  }
+  // metro station name boards on both long sides
+  for (const s of world.stations || []) {
+    if (s.k === 'rail' || !s.n) continue;
     const cv = document.createElement('canvas');
     cv.width = 512;
     cv.height = 64;
