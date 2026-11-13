@@ -5,7 +5,9 @@ const CYCLE = 40;
 // Two phases per junction: traffic running roughly north-south, then east-west.
 // Each junction gets its own offset so the city does not change in lockstep.
 export function signalState(sig, bearing, t) {
-  const offset = hash01(Math.round(sig.x / 70) * 7919 + Math.round(sig.y / 70)) * CYCLE;
+  // every signal of a junction shares its cycle (sig.g: the junction centre)
+  const gx = sig.g ? sig.g[0] : sig.x, gy = sig.g ? sig.g[1] : sig.y;
+  const offset = hash01(Math.round(gx / 70) * 7919 + Math.round(gy / 70)) * CYCLE;
   const phase = (t + offset) % CYCLE;
   const b = ((bearing % Math.PI) + Math.PI) % Math.PI; // fold opposite directions together
   const group = Math.round(b / (Math.PI / 2)) % 2; // 0 = N-S, 1 = E-W

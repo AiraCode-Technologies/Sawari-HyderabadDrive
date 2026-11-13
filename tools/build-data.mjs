@@ -205,7 +205,7 @@ function buildRoute(def) {
     }
     roads.push({
       osm: e.id, name: t.name || t.ref || '', ...info, keys, pts,
-      bridge: !!t.bridge && t.bridge !== 'no', tunnel: !!t.tunnel && t.tunnel !== 'no',
+      bridge: !!t.bridge && t.bridge !== 'no', tunnel: !!t.tunnel && t.tunnel !== 'no', round: t.junction === 'roundabout',
       // 0 asphalt/concrete, 1 paving stones or setts, 2 unpaved
       surf: /unpaved|gravel|dirt|ground|sand|earth|mud|compacted|fine_gravel/.test(t.surface || '') ? 2 : /paving_stones|sett|cobblestone|bricks/.test(t.surface || '') ? 1 : 0,
       layer: parseInt(t.layer, 10) || 0,
@@ -1041,8 +1041,80 @@ function buildRoute(def) {
       if (i < r.pts.length - 1) dirs.push(r1(bearing(r.pts[i], r.pts[i + 1])));
     }
     if (!dirs.length) continue;
-    const ri = nodeRoads.get(k)[0][0];
-    signals.push({ x: r1(p[0]), y: r1(p[1]), h: r1(roads[ri].h[nodeRoads.get(k)[0][1]]), w: r1(roads[ri].width), dirs });
+    signals.push(signalAt(k, p));
+  }
+
+  // A signal at junction node k: the direction of every arm, each arm's width, and pole
+  // positions on the left kerb of each approach, checked to be clear of every carriageway.
+  function signalAt(k, p) {
+    const dirs = [], ws = [];
+    for (const [ri, i] of nodeRoads.get(k) || []) {
+      const r = roads[ri];
+      if (i > 0) { dirs.push(r1(bearing(r.pts[i - 1], r.pts[i]))); ws.push(r1(r.width)); }
+      if (i < r.pts.length - 1) { dirs.push(r1(bearing(r.pts[i], r.pts[i + 1]))); ws.push(r1(r.width)); }
+    }
+    const [ri0, i0] = nodeRoads.get(k)[0];
+    const h = roads[ri0].h[i0];
+    const poles = [];
+    const seen = [];
+    dirs.forEach((dir, n) => {
+      if (seen.some((o) => Math.abs(Math.atan2(Math.sin(o - dir), Math.cos(o - dir))) < 0.35)) return;
+      seen.push(dir);
+      const fx = Math.sin(dir), fy = Math.cos(dir), lx = -Math.cos(dir), ly = Math.sin(dir);
+      // as close to the junction as the kerb allows (the crossing road may take the first spots)
+      search: for (const back of [4, 7, 10, 13]) {
+        for (const out of [0.9, 1.5, 2.2, 3]) {
+          const q = [p[0] - fx * back + lx * (ws[n] / 2 + out), p[1] - fy * back + ly * (ws[n] / 2 + out)];
+          if (clearOfRoads(q, 0.3) && !inBuildingAt(q) && !inWater(q)) { poles.push([r1(q[0]), r1(q[1]), dir]); break search; }
+        }
+      }
+    });
+    return { x: r1(p[0]), y: r1(p[1]), h: r1(h), w: Math.max(...ws), dirs, ws, poles };
+  }
+
+  // ---- more signals at busy junctions on the route ----
+  // OSM maps only some of the city's signals. Where main roads cross on or right beside the
+  // route with nothing mapped nearby, add them: every carriageway node of the junction gets
+  // one, the biggest junctions first, and never within 150 m of another signalled junction.
+  const osmSignals = signals.length;
+  {
+    const cands = [];
+    for (const [k, inc] of nodeRoads) {
+      const rs = inc.map(([ri]) => roads[ri]);
+      if (rs.some((r) => r.bridge || r.tunnel || r.round)) continue;
+      if (inc.some(([ri, i]) => roads[ri].lh[i] > 1)) continue; // not up on a flyover
+      let arms = 0, armsMain = 0;
+      for (const [ri, i] of inc) {
+        const r = roads[ri], n = i === 0 || i === r.keys.length - 1 ? 1 : 2;
+        arms += n;
+        if (r.rank >= 3 && !r.link) armsMain += n;
+      }
+      if (arms < 3 || armsMain < 3) continue; // a real crossing of main roads, not a side street
+      if (Math.max(...rs.map((r) => r.rank)) < 4) continue; // at least one secondary road or bigger
+      if (new Set(rs.map((r) => r.name || r.osm)).size < 2) continue; // two different roads meet
+      const [ri, i] = inc[0];
+      const p = roads[ri].pts[i];
+      if (routeDist(p) > 40) continue;
+      cands.push({ k, p, score: rs.reduce((a, r) => a + r.rank, 0) });
+    }
+    // group the nodes of each junction (dual carriageways cross at up to four nodes)
+    const groups = [];
+    for (const c of cands.sort((a, b) => b.score - a.score)) {
+      const g = groups.find((g) => g.nodes.some((n) => Math.hypot(n.p[0] - c.p[0], n.p[1] - c.p[1]) < 35));
+      if (g) { g.nodes.push(c); g.score = Math.max(g.score, c.score); } else groups.push({ nodes: [c], score: c.score });
+    }
+    const taken = signals.map((s) => [s.x, s.y]);
+    for (const g of groups.sort((a, b) => b.score - a.score)) {
+      const cx = g.nodes.reduce((a, n) => a + n.p[0], 0) / g.nodes.length, cy = g.nodes.reduce((a, n) => a + n.p[1], 0) / g.nodes.length;
+      if (taken.some(([x, y]) => Math.hypot(x - cx, y - cy) < 150)) continue;
+      taken.push([cx, cy]);
+      for (const n of g.nodes) signals.push(signalAt(n.k, n.p));
+    }
+  }
+  // the signals of one junction run on one cycle (keyed to the junction's centre)
+  for (const s of signals) {
+    const near = signals.filter((o) => Math.hypot(o.x - s.x, o.y - s.y) < 40);
+    s.g = [r1(near.reduce((a, o) => a + o.x, 0) / near.length), r1(near.reduce((a, o) => a + o.y, 0) / near.length)];
   }
 
   // ---- landmark: Durgam Cheruvu cable bridge pylons, Tank Bund statues ----
@@ -1147,7 +1219,7 @@ function buildRoute(def) {
   writeFileSync(join(outDir, `${def.id}.json`), json);
   console.log(
     `${def.id}: route ${(total / 1000).toFixed(2)} km, ${instructions.length} instructions, ${outRoads.length} roads, ` +
-      `${buildings.length} buildings (${filler} filler), ${trees.length} trees, ${lights.length} lights, ${signals.length} signals, ` +
+      `${buildings.length} buildings (${filler} filler), ${trees.length} trees, ${lights.length} lights, ${signals.length} signals (${signals.length - osmSignals} added), ` +
       `${landmarks.length} landmarks, ${(json.length / 1e6).toFixed(2)} MB`,
   );
   const routeRise = drive.map((d) => d[2]);

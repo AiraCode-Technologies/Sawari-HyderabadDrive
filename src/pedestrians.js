@@ -35,6 +35,7 @@ export class Pedestrians {
     this.T = terrain;
     this.mix = MIX[world.style] || MIX.central;
     this.people = [];
+    this.nextId = 1;
     // footpath-bearing roads at ground level
     this.paths = world.roads
       .filter((r) => (RANK[r.k] || 0) >= 2 && r.p.every((q) => q[2] - terrain.at(q[0], q[1]) < 0.8))
@@ -43,7 +44,7 @@ export class Pedestrians {
         for (let i = 1; i < r.p.length; i++) cum.push(cum[i - 1] + Math.hypot(r.p[i][0] - r.p[i - 1][0], r.p[i][1] - r.p[i - 1][1]));
         const xs = r.p.map((q) => q[0]), ys = r.p.map((q) => q[1]);
         const sw = (RANK[r.k] || 2) >= 3 ? 2.4 : 1.4;
-        return { r, cum, len: cum[cum.length - 1], off: r.w / 2 + sw * 0.55, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys), busy: (RANK[r.k] || 2) >= 3 ? 2 : 1 };
+        return { r, cum, len: cum[cum.length - 1], off: r.w / 2 + sw * 0.55, sw, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys), busy: (RANK[r.k] || 2) >= 3 ? 2 : 1 };
       })
       .filter((p) => p.len > 15);
     this.near = [];
@@ -142,8 +143,8 @@ export class Pedestrians {
         const outfit = this.pickOutfit();
         const s0 = g.s + (this.rand() - 0.5) * 14;
         const pos = this.at(g.p, s0, g.side);
-        if (Math.hypot(pos.x - px, pos.y - py) > (initial ? 10 : 50)) {
-          this.people.push({ p: g.p, s: s0, side: g.side, dir: this.rand() < 0.5 ? 1 : -1, speed: 0.45 + this.rand() * 0.3, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, wait: this.rand() * 4, lateral: (this.rand() - 0.5) * 1.2, anchor: g.s });
+        if (Math.hypot(pos.x - px, pos.y - py) > (initial ? 10 : 50) && !this.people.some((m) => Math.abs(m.x - pos.x) < 0.9 && Math.abs(m.y - pos.y) < 0.9)) {
+          this.people.push({ id: this.nextId++, dodge: 0, p: g.p, s: s0, side: g.side, dir: this.rand() < 0.5 ? 1 : -1, speed: 0.45 + this.rand() * 0.3, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, wait: this.rand() * 4, lateral: (this.rand() - 0.5) * 1.2, anchor: g.s });
           return;
         }
       }
@@ -155,10 +156,11 @@ export class Pedestrians {
       const s = this.rand() * p.len;
       const side = this.rand() < 0.5 ? -1 : 1;
       const pos = this.at(p, s, side);
+      if (this.people.some((m) => Math.abs(m.x - pos.x) < 0.9 && Math.abs(m.y - pos.y) < 0.9)) continue;
       const d = Math.hypot(pos.x - px, pos.y - py);
       if (d < (initial ? 12 : 70) || d > 160) continue;
       const outfit = this.pickOutfit();
-      this.people.push({ p, s, side, dir: this.rand() < 0.5 ? 1 : -1, speed: (outfit === 'school' ? 1.25 : 1.05) + this.rand() * 0.4, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, heading: 0, wait: 0, lateral: (this.rand() - 0.5) * 0.6 });
+      this.people.push({ id: this.nextId++, dodge: 0, p, s, side, dir: this.rand() < 0.5 ? 1 : -1, speed: (outfit === 'school' ? 1.25 : 1.05) + this.rand() * 0.4, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, heading: 0, wait: 0, lateral: (this.rand() - 0.5) * 0.6 });
       return;
     }
   }
@@ -174,10 +176,10 @@ export class Pedestrians {
     const dir = Math.atan2(b[0] - a[0], b[1] - a[1]);
     const off = (p.off + lateral) * side;
     const x = a[0] + (b[0] - a[0]) * t + Math.cos(dir) * off, y = a[1] + (b[1] - a[1]) * t - Math.sin(dir) * off;
-    return { x, y, h: a[2] + (b[2] - a[2]) * t + 0.04, dir };
+    return { x, y, h: a[2] + (b[2] - a[2]) * t + 0.04, dir, nx: Math.cos(dir) * side, ny: -Math.sin(dir) * side };
   }
 
-  update(dt, player, t) {
+  update(dt, player, t, vehicles = []) {
     if (!this.target) return [];
     const events = [];
     this.refreshNear(player.x, player.y, t);
@@ -186,10 +188,30 @@ export class Pedestrians {
     this.people = this.people.filter((m) => Math.hypot(m.x - player.x, m.y - player.y) < 220);
 
     const pf = player.fwd;
-    for (const m of this.people) {
-      if (m.wait > 0) m.wait -= dt;
-      else {
-        m.s += m.dir * m.speed * dt;
+    // the player's car, as other vehicles see it
+    const me = { x: player.x, y: player.y, h: player.h, visHeading: player.heading, length: 4.3, width: 1.8, v: player.v, yawOff: 0 };
+    const cars = vehicles.concat(me);
+    const P = this.people;
+    for (const m of P) {
+      m.hold = Math.max(0, (m.hold || 0) - dt);
+      m.knocked = Math.max(0, (m.knocked || 0) - dt);
+      const avoid = m.wait > 0 ? { speedF: 0 } : this.avoid(m, P, cars, dt);
+      m.still = avoid.speedF < 0.15;
+      if (m.wait > 0) {
+        m.wait -= dt;
+        for (const n of P) {
+          if (n === m) continue;
+          const dx = m.x - n.x, dy = m.y - n.y;
+          if (dx > 0.6 || dx < -0.6 || dy > 0.6 || dy < -0.6) continue;
+          const d = Math.hypot(dx, dy) || 0.01;
+          if (d > 0.55) continue;
+          // shuffle apart: sideways across the footpath and a little along it
+          m.dodge += Math.sign(dx * (m.nx ?? 0) + dy * (m.ny ?? 0) || (m.id % 2 ? 1 : -1)) * 0.6 * dt;
+          const pd = m.heading ?? 0;
+          m.s += Math.sign((dx * Math.sin(pd) + dy * Math.cos(pd)) * m.dir || 1) * m.dir * 0.4 * dt;
+        }
+      } else if (m.hold <= 0) {
+        m.s += m.dir * m.speed * avoid.speedF * dt;
         if (m.anchor !== undefined) {
           // people at a place of worship mill about the entrance and stop to talk
           if (Math.abs(m.s - m.anchor) > 9) m.dir = Math.sign(m.anchor - m.s);
@@ -199,9 +221,17 @@ export class Pedestrians {
           m.dir = -m.dir; // reached the end of this footpath: turn back
           m.s = Math.max(0, Math.min(m.p.len, m.s));
         }
-        m.phase += dt * m.speed * 5.2;
+        m.phase += dt * m.speed * avoid.speedF * 5.2;
       }
-      const pos = this.at(m.p, m.s, m.side, m.lateral);
+      // knocked by a vehicle: stumble back towards the buildings
+      if (m.shove) { m.dodge += m.shove; m.shove = 0; }
+      // stay on the footpath, however much they step aside
+      const sw = m.p.sw || 1.4;
+      const lat = Math.max(-0.55 * sw + 0.25, Math.min(0.45 * sw - 0.18, m.lateral + m.dodge));
+      m.dodge = lat - m.lateral;
+      const pos = this.at(m.p, m.s, m.side, lat);
+      m.nx = pos.nx;
+      m.ny = pos.ny;
       // ease the walking direction round corners instead of snapping
       const want = pos.dir + (m.dir < 0 ? Math.PI : 0);
       m.heading = m.heading === undefined || m.fresh === undefined ? want : m.heading + Math.atan2(Math.sin(want - m.heading), Math.cos(want - m.heading)) * Math.min(1, dt * 6);
@@ -217,14 +247,78 @@ export class Pedestrians {
       for (const o of [1.3, 0, -1.3]) {
         const cx = player.x + pf.x * o, cy = player.y + pf.y * o;
         if (Math.hypot(m.x - cx, m.y - cy) < 1.15 && Math.abs(m.h - player.h) < 1.5 && Math.abs(player.v) > 0.8) {
-          events.push({ type: 'collision', what: 'pedestrian', speed: Math.abs(player.v) * 3 });
+          if (!(m.hitT > t)) events.push({ type: 'collision', what: 'pedestrian', speed: Math.abs(player.v) * 3 });
+          m.hitT = t + 1;
           m.wait = 4;
-          m.lateral += 1.2; // step away towards the buildings
+          m.dodge += 0.08; // step away towards the buildings
         }
       }
     }
     this.draw();
     return events;
+  }
+
+  // How a person walking along the footpath gets round others: step aside (keeping left) for
+  // people coming the other way, slow behind slower walkers, wait for a vehicle about to pass,
+  // and go round (or turn back from) a vehicle standing across the footpath.
+  avoid(m, P, cars, dt) {
+    const hd = m.heading ?? 0, hx = Math.sin(hd), hy = Math.cos(hd), rx = Math.cos(hd), ry = -Math.sin(hd);
+    let speedF = 1, step = 0; // step: +1 to my right, -1 to my left
+    for (const n of P) {
+      if (n === m) continue;
+      const dx = n.x - m.x, dy = n.y - m.y;
+      if (dx > 2.5 || dx < -2.5 || dy > 2.5 || dy < -2.5) continue;
+      const along = dx * hx + dy * hy, lat = dx * rx + dy * ry;
+      if (Math.hypot(dx, dy) < 0.5) step = lat >= 0 ? -1 : 1; // too close: move apart
+      if (along <= 0 || along > 1.9 || Math.abs(lat) > 0.62) continue;
+      const opposite = !(n.wait > 0) && Math.cos((n.heading ?? 0) - hd) < -0.3;
+      const standing = n.wait > 0 || n.hold > 0 || n.still;
+      if (opposite || standing) {
+        // keep left; if they are already on my left, pass on the right
+        step = lat < -0.08 ? 1 : -1;
+        if (standing && along < 0.9) speedF = Math.min(speedF, 0.35);
+      } else if (along < 1.4) {
+        speedF = Math.min(speedF, Math.max(0, (along - 0.6) / 0.8)); // fall in behind
+      }
+    }
+    // vehicles (and the player's car)
+    const nextX = m.x + hx * m.speed * 0.9, nextY = m.y + hy * m.speed * 0.9;
+    let blocked = false;
+    for (const c of cars) {
+      const dx = c.x - m.x, dy = c.y - m.y;
+      if (dx > 14 || dx < -14 || dy > 14 || dy < -14 || Math.abs((c.h ?? m.h) - m.h) > 1.5) continue;
+      const ch = c.visHeading + (c.yawOff || 0), fx = Math.sin(ch), fy = Math.cos(ch);
+      const inside = (x, y, ahead, pad) => {
+        const qx = x - (c.x + fx * ahead), qy = y - (c.y + fy * ahead);
+        return Math.abs(qx * fx + qy * fy) < c.length / 2 + pad && Math.abs(-qx * fy + qy * fx) < c.width / 2 + pad;
+      };
+      const now = inside(m.x, m.y, 0, 0.45);
+      if (Math.abs(c.v) > 0.5) {
+        // moving: don't step into where it is about to be; if already there, hurry out
+        const sweep = Math.sign(c.v) * Math.min(8, Math.abs(c.v) * 1.6);
+        const soon = inside(nextX, nextY, 0, 0.5) || inside(nextX, nextY, sweep * 0.5, 0.5) || inside(nextX, nextY, sweep, 0.5);
+        const hereSoon = inside(m.x, m.y, sweep * 0.5, 0.4) || inside(m.x, m.y, sweep, 0.4);
+        if (soon && !now && !hereSoon) m.hold = 0.4;
+        if (now) { speedF = Math.max(speedF, 1.3); m.dodge += 0.9 * dt; }
+      } else if (!now && inside(m.x + hx * 0.55, m.y + hy * 0.55, 0, 0.3)) {
+        // standing across the footpath: stop short, squeeze round on the building side if
+        // there is room, otherwise turn back after a few seconds
+        blocked = true;
+        m.dodge += 0.9 * dt;
+        speedF = 0;
+      } else if (!now && inside(nextX, nextY, 0, 0.35)) {
+        m.dodge += 0.9 * dt; // start edging round it
+        speedF = Math.min(speedF, 0.6);
+      }
+    }
+    if (step) {
+      // turn "my left / right" into a sideways move across the footpath
+      const toward = Math.sign(rx * step * (m.nx ?? 0) + ry * step * (m.ny ?? 0)) || -1;
+      m.dodge += toward * 1.1 * dt;
+    } else if (!blocked) m.dodge -= Math.sign(m.dodge) * Math.min(Math.abs(m.dodge), 0.35 * dt);
+    m.blockedT = blocked || speedF < 0.1 ? (m.blockedT || 0) + dt : 0;
+    if (m.blockedT > 4) { m.dir = -m.dir; m.blockedT = 0; } // not getting past: walk the other way
+    return { speedF };
   }
 
   draw() {
@@ -242,7 +336,7 @@ export class Pedestrians {
     for (const p of this.people) {
       const L = p.look, s = L.scale;
       base.compose(v.set(p.x, p.h, -p.y), q.setFromEuler(e.set(0, -p.heading, 0)), new THREE.Vector3(s, s, s));
-      const swing = p.wait > 0 ? 0 : Math.sin(p.phase) * 0.5;
+      const swing = p.wait > 0 || p.hold > 0 || p.still ? 0 : Math.sin(p.phase) * 0.5;
       const part = (mesh, x, y, z, rx, color, sx = 1, sy = 1, sz = 1) => {
         local.compose(v.set(x, y, z), q.setFromEuler(e.set(rx, 0, 0)), new THREE.Vector3(sx, sy, sz));
         set(mesh, n, m.multiplyMatrices(base, local), color);

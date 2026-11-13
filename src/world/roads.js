@@ -294,7 +294,9 @@ export function buildRoads(world, group, quality, T, index, junctions) {
     for (const dir of uniqueDirs(s.dirs)) {
       const fx = Math.sin(dir), fy = Math.cos(dir), rx = Math.cos(dir), ry = -Math.sin(dir);
       const h = s.h + ROAD_TOP + 0.05;
-      for (let k = -s.w / 2 + 0.5; k < s.w / 2 - 0.4; k += 1.1) {
+      const i = s.ws ? s.dirs.indexOf(dir) : -1;
+      const w = i >= 0 ? s.ws[i] : s.w;
+      for (let k = -w / 2 + 0.5; k < w / 2 - 0.4; k += 1.1) {
         const x0 = s.x - fx * 7 + rx * k, y0 = s.y - fy * 7 + ry * k;
         marks.quad(
           P(x0, y0, h), P(x0 + rx * 0.55, y0 + ry * 0.55, h),
@@ -302,7 +304,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       }
       // stop line across the approaching (left-hand) lanes
       const sx = s.x - fx * 8.6, sy = s.y - fy * 8.6;
-      const l0 = -s.w / 2 + 0.3, l1 = -0.15;
+      const l0 = -w / 2 + 0.3, l1 = -0.15;
       marks.quad(
         P(sx + rx * l0, sy + ry * l0, h), P(sx + rx * l1, sy + ry * l1, h),
         P(sx + rx * l1 - fx * 0.4, sy + ry * l1 - fy * 0.4, h), P(sx + rx * l0 - fx * 0.4, sy + ry * l0 - fy * 0.4, h), cWhite, null, UP);

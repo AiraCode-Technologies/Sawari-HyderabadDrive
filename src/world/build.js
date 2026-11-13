@@ -173,10 +173,9 @@ function buildSignals(signals, group) {
   const lampGeo = new THREE.CircleGeometry(0.13, 12);
   const dark = new THREE.MeshLambertMaterial({ color: '#2b2f33' });
   for (const s of signals) {
-    for (const dir of uniqueDirs(s.dirs)) {
-      // pole on the left kerb of traffic travelling along `dir`, just before the junction
-      const fx = Math.sin(dir), fy = Math.cos(dir), lx = -Math.cos(dir), ly = Math.sin(dir);
-      const x = s.x - fx * 4 + lx * (s.w / 2 + 0.9), y = s.y - fy * 4 + ly * (s.w / 2 + 0.9);
+    // pole on the left kerb of traffic travelling along `dir`, just before the junction
+    const poles = s.poles || uniqueDirs(s.dirs).map((dir) => [s.x - Math.sin(dir) * 4 - Math.cos(dir) * (s.w / 2 + 0.9), s.y - Math.cos(dir) * 4 + Math.sin(dir) * (s.w / 2 + 0.9), dir]);
+    for (const [x, y, dir] of poles) {
       const g = new THREE.Group();
       g.position.set(x, s.h, -y);
       g.rotation.y = -dir + Math.PI; // head faces oncoming drivers

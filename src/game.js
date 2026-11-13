@@ -256,13 +256,19 @@ export class Game {
       if (this.acc > STEP) this.acc = STEP; // never fall behind after a long frame
       if (driving) {
         this.time += dt;
-        events = events.concat(this.traffic.update(dt, this.phys, this.clock));
-        events = events.concat(this.people.update(dt, this.phys, this.clock));
+        // vehicles see the people, and the people see the vehicles
+        events = events.concat(this.traffic.update(dt, this.phys, this.clock, this.people.people));
+        events = events.concat(this.people.update(dt, this.phys, this.clock, this.traffic.vehicles));
         this.nav.update(this.phys.x, this.phys.y, this.phys.h, dt);
         this.rules.update(dt, this.clock, this.phys, this.indicators, events,
           (f) => { this.toast(f.what); this.audio.bump(2); },
           (w) => this.toast(w, 'warn'));
-        for (const e of events) if (e.type === 'collision' || e.type === 'bump') this.audio.bump(e.type === 'bump' ? e.speed * 0.4 : e.speed);
+        for (const e of events) {
+          if (e.type === 'collision' || e.type === 'bump') this.audio.bump(e.type === 'bump' ? e.speed * 0.4 : e.speed);
+          // other drivers: a bang from a crash nearby, a honk when you are in their way
+          else if (e.type === 'npc-crash' && e.d < 70) this.audio.bump(e.speed * 0.5 * (1 - e.d / 70));
+          else if (e.type === 'honk' && e.d < 60) this.audio.distantHonk(Math.min(1, e.d / 60) * 0.6);
+        }
         this.voice();
         // Hyderabad traffic is never quiet: an occasional honk somewhere nearby
         this.honkTimer -= dt;
@@ -282,8 +288,8 @@ export class Game {
         );
         if (this.nav.arrived) this.finish();
       } else {
-        this.traffic.update(dt, this.phys, this.clock);
-        this.people.update(dt, this.phys, this.clock);
+        this.traffic.update(dt, this.phys, this.clock, this.people.people);
+        this.people.update(dt, this.phys, this.clock, this.traffic.vehicles);
       }
     }
 
