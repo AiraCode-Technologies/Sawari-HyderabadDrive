@@ -166,3 +166,15 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 
 .home-link { margin-left: auto; color: var(--muted); font-size: 14px; text-decoration: none; }
 .home-link:hover { color: var(--ink); }
+
+/* phones and tablets: use a desktop or laptop */
+.desktop-only .menu-inner { max-width: 560px; }
+.gate { margin-top: 36px; padding: 32px 26px; border-radius: 18px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); text-align: center; }
+.gate-icon { width: 76px; height: 76px; color: var(--accent); margin: 0 auto 14px; display: block; }
+.gate h2 { margin: 0 0 12px; font-size: 24px; }
+.gate p { margin: 0 0 12px; color: var(--muted); line-height: 1.6; }
+.gate .gate-how { margin-top: 18px; color: var(--ink); font-weight: 600; }
+.gate-link { padding: 10px 14px; border-radius: 10px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); font-size: 14px; word-break: break-all; color: var(--ink); }
+.gate-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
+.gate-actions .primary, .gate-actions .secondary { width: 100%; text-align: center; text-decoration: none; display: block; }
+.gate-msg { min-height: 22px; margin-top: 14px; font-size: 14px; color: var(--good); }
