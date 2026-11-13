@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sawari">
+  <!-- Sawari mark: a royal Hyderabadi archway in gold, with the road running through it -->
+  <defs>
+    <linearGradient id="sw-gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7d58a"/>
+      <stop offset="1" stop-color="#d4952a"/>
+    </linearGradient>
+    <linearGradient id="sw-road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9b552"/>
+      <stop offset="1" stop-color="#b97a16"/>
+    </linearGradient>
+  </defs>
+  <rect x=".75" y=".75" width="62.5" height="62.5" rx="14.5" fill="#14202b" stroke="#f2c46b" stroke-opacity=".35" stroke-width="1.5"/>
+  <path d="M14.5 55V31.5C14.5 22 22.5 15.5 32 10c9.5 5.5 17.5 12 17.5 21.5V55" fill="none" stroke="url(#sw-gold)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="6.6" r="2" fill="#f7d58a"/>
+  <path d="M21.5 55 30.6 25h2.8L42.5 55z" fill="url(#sw-road)"/>
+  <g fill="#14202b">
+    <rect x="31.45" y="28" width="1.1" height="3" rx=".55"/>
+    <rect x="31.25" y="35" width="1.5" height="4.2" rx=".75"/>
+    <rect x="31" y="44" width="2" height="6" rx="1"/>
+  </g>
+</svg>

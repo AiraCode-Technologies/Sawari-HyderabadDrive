@@ -1,0 +1,8 @@
+node_modules/
+dist/
+# raw Overpass downloads (re-create with `npm run fetch-osm`)
+tools/raw/
+
+# Python bytecode from the build scripts
+__pycache__/
+*.pyc

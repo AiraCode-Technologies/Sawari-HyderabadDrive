@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://example.com/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/" />
+  </url>
+  <url>
+    <loc>https://example.com/hi/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/" />
+  </url>
+  <url>
+    <loc>https://example.com/ur/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/" />
+  </url>
+  <url>
+    <loc>https://example.com/te/</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/" />
+  </url>
+  <url>
+    <loc>https://example.com/routes.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/routes.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/routes.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/routes.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/routes.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/routes.html" />
+  </url>
+  <url>
+    <loc>https://example.com/hi/routes.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/routes.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/routes.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/routes.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/routes.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/routes.html" />
+  </url>
+  <url>
+    <loc>https://example.com/ur/routes.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/routes.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/routes.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/routes.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/routes.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/routes.html" />
+  </url>
+  <url>
+    <loc>https://example.com/te/routes.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/routes.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/routes.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/routes.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/routes.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/routes.html" />
+  </url>
+  <url>
+    <loc>https://example.com/features.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/features.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/features.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/features.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/features.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/features.html" />
+  </url>
+  <url>
+    <loc>https://example.com/hi/features.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/features.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/features.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/features.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/features.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/features.html" />
+  </url>
+  <url>
+    <loc>https://example.com/ur/features.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/features.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/features.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/features.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/features.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/features.html" />
+  </url>
+  <url>
+    <loc>https://example.com/te/features.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/features.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/features.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/features.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/features.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/features.html" />
+  </url>
+  <url>
+    <loc>https://example.com/about.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/about.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/about.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/about.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/about.html" />
+  </url>
+  <url>
+    <loc>https://example.com/hi/about.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/about.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/about.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/about.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/about.html" />
+  </url>
+  <url>
+    <loc>https://example.com/ur/about.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/about.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/about.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/about.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/about.html" />
+  </url>
+  <url>
+    <loc>https://example.com/te/about.html</loc>
+    <lastmod>2026-11-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://example.com/about.html" />
+    <xhtml:link rel="alternate" hreflang="hi" href="https://example.com/hi/about.html" />
+    <xhtml:link rel="alternate" hreflang="ur" href="https://example.com/ur/about.html" />
+    <xhtml:link rel="alternate" hreflang="te" href="https://example.com/te/about.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://example.com/about.html" />
+  </url>
+</urlset>
