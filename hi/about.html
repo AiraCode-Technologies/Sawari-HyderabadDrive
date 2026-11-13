@@ -156,6 +156,16 @@
       try { document.documentElement.dataset.theme = localStorage.getItem('hyd-site-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
     </script>
     <link rel="stylesheet" href="/src/site.css" />
+    <script>
+      // Vercel Web Analytics: cookie-free page-view counts, live site only
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+      if (!/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname)) {
+        const s = document.createElement('script');
+        s.defer = true;
+        s.src = '/_vercel/insights/script.js';
+        document.head.appendChild(s);
+      }
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">मुख्य सामग्री पर जाएँ</a>
