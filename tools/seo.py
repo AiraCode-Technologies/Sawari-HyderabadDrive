@@ -222,25 +222,25 @@ def img_tag(name, alt, sizes='(max-width: 880px) 100vw, 50vw', eager=False, cls=
 SHARE = {
     'en': {
         'linkedin': "I've been trying Sawari, a free 3D driving simulator built on real Hyderabad roads: Tank Bund, the Charminar and the HITEC City flyovers, with left-hand traffic, signals and a debrief after every drive. A handy way for new drivers to practise before getting on the road.\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #Telangana",
-        'whatsapp': '🚗 Try Sawari: practise driving on real Hyderabad roads, free in your browser. Tank Bund, Charminar, HITEC City flyovers and proper Hyderabad traffic!\n{url}',
+        'whatsapp': 'Try Sawari: practise driving on real Hyderabad roads, free in your browser. Tank Bund, Charminar, HITEC City flyovers and proper Hyderabad traffic!\n{url}',
         'x': 'Practise driving on real Hyderabad roads, free in your browser 🚗 Tank Bund, Charminar, HITEC City flyovers. #Hyderabad #DrivingPractice',
         'instagram': 'Practising on real Hyderabad roads 🚗✨ Tank Bund at sunset, the Charminar roundabout and the HITEC City flyovers, all in a free browser driving simulator.\n\nTry Sawari: {url}\n\n#Sawari #Hyderabad #Telangana #DrivingPractice #RoadSafety #HyderabadDiaries',
     },
     'hi': {
         'linkedin': 'Sawari देखिए: हैदराबाद की असली सड़कों पर बना मुफ़्त 3D ड्राइविंग सिम्युलेटर। टैंक बंड, चारमीनार और हाईटेक सिटी के फ़्लाईओवर, बाईं ओर चलने वाला ट्रैफ़िक, सिग्नल और हर ड्राइव के बाद समीक्षा। नए ड्राइवरों के लिए सड़क पर उतरने से पहले अभ्यास का आसान तरीका।\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #हैदराबाद',
-        'whatsapp': '🚗 Sawari आज़माइए: हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास, ब्राउज़र में मुफ़्त। टैंक बंड, चारमीनार, हाईटेक सिटी फ़्लाईओवर और असली हैदराबादी ट्रैफ़िक!\n{url}',
+        'whatsapp': 'Sawari आज़माइए: हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास, ब्राउज़र में मुफ़्त। टैंक बंड, चारमीनार, हाईटेक सिटी फ़्लाईओवर और असली हैदराबादी ट्रैफ़िक!\n{url}',
         'x': 'हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास, ब्राउज़र में मुफ़्त 🚗 #Hyderabad',
         'instagram': 'हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास 🚗✨ शाम को टैंक बंड, चारमीनार का गोल चक्कर और हाईटेक सिटी के फ़्लाईओवर, सब एक मुफ़्त ब्राउज़र ड्राइविंग सिम्युलेटर में।\n\nSawari आज़माइए: {url}\n\n#Sawari #Hyderabad #हैदराबाद #DrivingPractice #RoadSafety',
     },
     'ur': {
         'linkedin': 'Sawari دیکھیے: حیدرآباد کی اصل سڑکوں پر بنا مفت 3D ڈرائیونگ سمیولیٹر۔ ٹینک بنڈ، چارمینار اور ہائی ٹیک سٹی کے فلائی اوور، بائیں طرف چلنے والا ٹریفک، سگنل اور ہر ڈرائیو کے بعد جائزہ۔ نئے ڈرائیوروں کے لیے سڑک پر اترنے سے پہلے مشق کا آسان طریقہ۔\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #حیدرآباد',
-        'whatsapp': '🚗 Sawari آزمائیے: حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق، براؤزر میں مفت۔ ٹینک بنڈ، چارمینار، ہائی ٹیک سٹی فلائی اوور اور اصل حیدرآبادی ٹریفک!\n{url}',
+        'whatsapp': 'Sawari آزمائیے: حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق، براؤزر میں مفت۔ ٹینک بنڈ، چارمینار، ہائی ٹیک سٹی فلائی اوور اور اصل حیدرآبادی ٹریفک!\n{url}',
         'x': 'حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق، براؤزر میں مفت 🚗 #Hyderabad',
         'instagram': 'حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق 🚗✨ شام کو ٹینک بنڈ، چارمینار کا گول چکر اور ہائی ٹیک سٹی کے فلائی اوور، سب ایک مفت براؤزر ڈرائیونگ سمیولیٹر میں۔\n\nSawari آزمائیے: {url}\n\n#Sawari #Hyderabad #حیدرآباد #DrivingPractice #RoadSafety',
     },
     'te': {
         'linkedin': 'Sawari చూడండి: అసలు హైదరాబాద్ రోడ్లపై నిర్మించిన ఉచిత 3D డ్రైవింగ్ సిమ్యులేటర్. ట్యాంక్ బండ్, చార్మినార్, హైటెక్ సిటీ ఫ్లైఓవర్లు, ఎడమవైపు ట్రాఫిక్, సిగ్నళ్లు, ప్రతి డ్రైవ్ తర్వాత సమీక్ష. రోడ్డు మీదకి వెళ్లే ముందు కొత్త డ్రైవర్లు సాధన చేయడానికి సులువైన మార్గం.\n\n{url}\n\n#Hyderabad #DrivingPractice #RoadSafety #హైదరాబాద్',
-        'whatsapp': '🚗 Sawari ప్రయత్నించండి: అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన, బ్రౌజర్‌లో ఉచితం. ట్యాంక్ బండ్, చార్మినార్, హైటెక్ సిటీ ఫ్లైఓవర్లు, అచ్చం హైదరాబాద్ ట్రాఫిక్!\n{url}',
+        'whatsapp': 'Sawari ప్రయత్నించండి: అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన, బ్రౌజర్‌లో ఉచితం. ట్యాంక్ బండ్, చార్మినార్, హైటెక్ సిటీ ఫ్లైఓవర్లు, అచ్చం హైదరాబాద్ ట్రాఫిక్!\n{url}',
         'x': 'అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన, బ్రౌజర్‌లో ఉచితం 🚗 #Hyderabad',
         'instagram': 'అసలు హైదరాబాద్ రోడ్లపై డ్రైవింగ్ సాధన 🚗✨ సాయంత్రం ట్యాంక్ బండ్, చార్మినార్ రౌండ్‌అబౌట్, హైటెక్ సిటీ ఫ్లైఓవర్లు, అన్నీ ఉచిత బ్రౌజర్ డ్రైవింగ్ సిమ్యులేటర్‌లో.\n\nSawari ప్రయత్నించండి: {url}\n\n#Sawari #Hyderabad #హైదరాబాద్ #DrivingPractice #RoadSafety',
     },
