@@ -248,7 +248,8 @@ export class Game {
       let steps = 0;
       while (this.acc >= STEP && steps++ < 12) {
         // remember the pose before each step so drawing can blend between steps
-        this.prevPose = { x: this.phys.x, y: this.phys.y, h: this.phys.h, heading: this.phys.heading };
+        const ph = this.phys, pb = ph.body;
+        this.prevPose = { x: ph.x, y: ph.y, h: ph.h, heading: ph.heading, pitch: ph.pitch + pb.pitch, roll: -ph.roll + pb.roll, heave: pb.heave };
         events = events.concat(this.phys.step(STEP, ctl));
         this.acc -= STEP;
       }
@@ -382,14 +383,16 @@ export class Game {
     const p = this.phys, c = this.car;
     const b = p.body;
     // draw the car between the last two physics steps: smooth at any frame rate
-    const pp = this.prevPose || p, k = Math.min(1, (this.acc || 0) / STEP);
+    const k = Math.min(1, (this.acc || 0) / STEP);
+    // ground slope plus the sprung body's own pitch, roll and bounce
+    const pitch = p.pitch + b.pitch, roll = -p.roll + b.roll;
+    const pp = this.prevPose || { x: p.x, y: p.y, h: p.h, heading: p.heading, pitch, roll, heave: b.heave };
     const ix = pp.x + (p.x - pp.x) * k, iy = pp.y + (p.y - pp.y) * k, ih = pp.h + (p.h - pp.h) * k;
     const iheading = pp.heading + angleDiff(pp.heading, p.heading) * k;
-    c.root.position.set(ix, ih + b.heave, -iy);
+    c.root.position.set(ix, ih + pp.heave + (b.heave - pp.heave) * k, -iy);
     c.root.rotation.y = -iheading;
-    // ground slope plus the sprung body's own pitch, roll and bounce
-    c.body.rotation.x = p.pitch + b.pitch;
-    c.body.rotation.z = -p.roll + b.roll;
+    c.body.rotation.x = pp.pitch + (pitch - pp.pitch) * k;
+    c.body.rotation.z = pp.roll + (roll - pp.roll) * k;
     c.wheels.forEach((w, i) => {
       if (w.front) w.steer.rotation.y = -p.steer;
       w.spin.rotation.x = -p.wheelSpin;
@@ -402,6 +405,7 @@ export class Game {
   resetToRoute() {
     const pose = this.nav.resetPose();
     this.phys.place(pose.x, pose.y, pose.h, pose.heading);
+    this.prevPose = null; // don't blend from where the car was before the jump
     this.rig.first = true;
     this.toast('Back on the route', 'info', 1500);
   }

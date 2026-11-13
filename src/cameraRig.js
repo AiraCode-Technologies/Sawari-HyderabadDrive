@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { CAR } from './car/carModel.js';
 
+const _q = new THREE.Quaternion(), _lookQ = new THREE.Quaternion(), _euler = new THREE.Euler();
+
 // Chase view behind the car, or the driver's eye in the right-hand seat.
 export class CameraRig {
   constructor(camera) {
@@ -20,12 +22,16 @@ export class CameraRig {
   update(dt, carObj, phys, look) {
     const cam = this.camera;
     if (this.mode === 'cockpit') {
-      if (cam.fov !== 72) { cam.fov = 72; cam.near = 0.05; cam.updateProjectionMatrix(); }
-      carObj.body.updateMatrixWorld(true);
+      // near plane just inside the closest cabin part (the visor, ~0.38 m away); a smaller
+      // value starves the depth buffer and makes distant road markings flicker
+      if (cam.fov !== 72) { cam.fov = 72; cam.near = 0.15; cam.updateProjectionMatrix(); }
+      // update the car root first: the eye must use this frame's car pose, the same one
+      // the cabin is drawn with, or the dashboard judders against the camera
+      carObj.body.updateWorldMatrix(true, false);
       cam.position.copy(CAR.eye).applyMatrix4(carObj.body.matrixWorld);
-      const q = new THREE.Quaternion().setFromRotationMatrix(carObj.body.matrixWorld);
-      const lookQ = new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.04 + look.pitch, look.yaw, 0, "YXZ"));
-      cam.quaternion.copy(q).multiply(lookQ);
+      _q.setFromRotationMatrix(carObj.body.matrixWorld);
+      _lookQ.setFromEuler(_euler.set(-0.04 + look.pitch, look.yaw, 0, 'YXZ'));
+      cam.quaternion.copy(_q).multiply(_lookQ);
       return;
     }
     if (cam.fov !== 60) { cam.fov = 60; cam.near = 0.3; cam.updateProjectionMatrix(); }
