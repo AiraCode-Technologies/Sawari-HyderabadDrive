@@ -353,6 +353,62 @@ export function buildRoads(world, group, quality, T, index, junctions) {
     }
   }
 
+  // ---------- roundabouts: a raised, planted island inside the circulating carriageway ----------
+  {
+    const ring = world.roads.filter((r) => r.rb && r.p.length >= 2);
+    const groups = [];
+    for (const r of ring) {
+      const g = groups.find((gr) => gr.pts.some((q) => r.p.some((p) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 3)));
+      if (g) { g.pts.push(...r.p); g.w = Math.max(g.w, r.w); } else groups.push({ pts: r.p.slice(), w: r.w });
+    }
+    // merge groups that touch (a roundabout split into several ways)
+    for (let i = 0; i < groups.length; i++)
+      for (let j = groups.length - 1; j > i; j--)
+        if (groups[j].pts.some((p) => groups[i].pts.some((q) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 3))) {
+          groups[i].pts.push(...groups[j].pts);
+          groups[i].w = Math.max(groups[i].w, groups[j].w);
+          groups.splice(j, 1);
+        }
+    const cGrass = c3('#6f8f45'), cIslandKerb = c3('#d9d3c6');
+    for (const g of groups) {
+      const n = g.pts.length;
+      if (n < 6) continue;
+      // circle through the ring's points (least-squares fit), not just their average
+      let mx = 0, my = 0;
+      for (const p of g.pts) { mx += p[0]; my += p[1]; }
+      mx /= n; my /= n;
+      let suu = 0, svv = 0, suv = 0, suuu = 0, svvv = 0, suvv = 0, svuu = 0;
+      for (const p of g.pts) {
+        const u = p[0] - mx, v = p[1] - my;
+        suu += u * u; svv += v * v; suv += u * v; suuu += u * u * u; svvv += v * v * v; suvv += u * v * v; svuu += v * u * u;
+      }
+      const det = suu * svv - suv * suv;
+      if (Math.abs(det) < 1e-6) continue;
+      const b1 = (suuu + suvv) / 2, b2 = (svvv + svuu) / 2;
+      const cx = mx + (b1 * svv - b2 * suv) / det, cy = my + (b2 * suu - b1 * suv) / det;
+      // a closed ring all the way round its centre
+      const angles = g.pts.map((p) => Math.atan2(p[1] - cy, p[0] - cx)).sort((a, b) => a - b);
+      let gapMax = 0;
+      for (let k = 0; k < angles.length; k++) gapMax = Math.max(gapMax, (angles[(k + 1) % angles.length] - angles[k] + 2 * Math.PI) % (2 * Math.PI));
+      if (gapMax > 1.3) continue;
+      // the island stops short of the nearest point of the circulating carriageway
+      const ri = Math.min(...g.pts.map((p) => Math.hypot(p[0] - cx, p[1] - cy))) - g.w / 2 - 0.6;
+      if (ri < 1.5) continue;
+      const h = g.pts.reduce((a, p) => a + p[2], 0) / n + ROAD_TOP;
+      // a road running through the middle at the same level: not an island at all
+      const through = index.carriagewayAt(cx, cy, h, 0.5, -1.5, 1.5);
+      if (through && !world.roads[through.ri].rb) continue;
+      const seg = 24;
+      for (let k = 0; k < seg; k++) {
+        const a0 = (k / seg) * Math.PI * 2, a1 = ((k + 1) / seg) * Math.PI * 2;
+        const x0 = cx + Math.cos(a0) * ri, y0 = cy + Math.sin(a0) * ri, x1 = cx + Math.cos(a1) * ri, y1 = cy + Math.sin(a1) * ri;
+        median.quad(P(cx, cy, h + KERB + 0.05), P(cx, cy, h + KERB + 0.05), P(x1, y1, h + KERB), P(x0, y0, h + KERB), cGrass, null, UP);
+        kerb.quad(P(x0, y0, h - 0.02), P(x1, y1, h - 0.02), P(x1, y1, h + KERB), P(x0, y0, h + KERB), cIslandKerb, null, [Math.cos((a0 + a1) / 2), 0, -Math.sin((a0 + a1) / 2)]);
+      }
+      index.ring(cx, cy, ri, h + KERB, 'post', 16);
+    }
+  }
+
   const tex = { asph: asphaltTexture(aniso), pave: paverTexture(aniso) };
   const lam = (o, map) => {
     const m = new THREE.MeshLambertMaterial({ vertexColors: true, map: map || null, polygonOffset: !!o, polygonOffsetFactor: o, polygonOffsetUnits: o });

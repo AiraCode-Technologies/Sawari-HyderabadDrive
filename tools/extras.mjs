@@ -124,6 +124,62 @@ export function buildExtras(X) {
   }
   const metroLines = rails.filter((r) => r.k === 'metro');
 
+  // Hyderabad's metro runs above the median of the road it follows. OSM traces the
+  // viaduct a few metres off it, which put the line over traffic lanes: where an elevated
+  // line runs along a divided road, slide it sideways onto the middle of the median
+  // (at most 8 m, smoothed along the line so the viaduct stays a clean curve).
+  for (const l of metroLines) {
+    if (!l.e) continue;
+    // points every 10 m, so each stretch can move on its own
+    const dense = [l.p[0]];
+    for (let i = 1; i < l.p.length; i++) {
+      const a = l.p[i - 1], b = l.p[i], n = Math.floor(dist(a, b) / 10);
+      for (let k = 1; k <= n; k++) {
+        const f = k / (n + 1);
+        dense.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]);
+      }
+      dense.push(b);
+    }
+    l.p = dense;
+    const shift = l.p.map((p, i) => {
+      const a = l.p[Math.max(0, i - 1)], b = l.p[Math.min(l.p.length - 1, i + 1)];
+      const dir = bearing(a, b), rx = Math.cos(dir), ry = -Math.sin(dir);
+      // the carriageways alongside, as signed offsets to the right of the line
+      const sides = [];
+      for (const [r, j] of roadGrid.near(p[0], p[1], 30)) {
+        if (!r.oneway || r.rank < 3 || r.link) continue;
+        const ra = r.pts[j - 1], rb = r.pts[j];
+        if (Math.abs(Math.sin(angleDiff(dir, bearing(ra, rb)))) > 0.35) continue; // not running alongside
+        const d = segDist(p, ra, rb);
+        if (d > 28) continue;
+        const dx = rb[0] - ra[0], dy = rb[1] - ra[1], l2 = dx * dx + dy * dy || 1;
+        const t = Math.max(0, Math.min(1, ((p[0] - ra[0]) * dx + (p[1] - ra[1]) * dy) / l2));
+        const q = [ra[0] + dx * t, ra[1] + dy * t];
+        sides.push({ off: (q[0] - p[0]) * rx + (q[1] - p[1]) * ry, w: r.width, r });
+      }
+      // the nearest carriageway on each side of the line: the median lies between them
+      const L = sides.filter((s) => s.off < 0).sort((x, y) => y.off - x.off)[0];
+      const R = sides.filter((s) => s.off >= 0).sort((x, y) => x.off - y.off)[0];
+      if (L && R && L.r !== R.r) {
+        const inner = R.off - R.w / 2 - (L.off + L.w / 2); // width of the median
+        if (inner > 0.5 && inner < 20) return (L.off + L.w / 2 + R.off - R.w / 2) / 2;
+      }
+      // the line sits over one carriageway with its partner beyond: move to that side's edge gap
+      return null;
+    });
+    // smooth (and fill short gaps) so the viaduct bends gently
+    const sm = shift.map((_, i) => {
+      let s = 0, n = 0;
+      for (let k = Math.max(0, i - 4); k <= Math.min(shift.length - 1, i + 4); k++) if (shift[k] !== null) { s += shift[k]; n++; }
+      return n >= 2 ? Math.max(-8, Math.min(8, s / n)) : 0;
+    });
+    l.p = l.p.map((p, i) => {
+      const a = l.p[Math.max(0, i - 1)], b = l.p[Math.min(l.p.length - 1, i + 1)];
+      const dir = bearing(a, b);
+      return [r1(p[0] + Math.cos(dir) * sm[i]), r1(p[1] - Math.sin(dir) * sm[i]), r1(p[2])];
+    });
+  }
+
   // ---------- stations ----------
   // A station on the at-grade railway: snapped to the nearest track, with a platform outside
   // the outermost track on each side where the ground there is free of roads and water.
@@ -209,10 +265,13 @@ export function buildExtras(X) {
     if (!nr || nr.r.lh[nr.i] > 1) continue;
     // which side of the road the stop is on: +1 = right of the way's direction
     const a = nr.r.pts[nr.i - 1], b = nr.r.pts[nr.i];
-    const side = Math.sign((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) < 0 ? 1 : -1;
+    let side = Math.sign((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) < 0 ? 1 : -1;
+    // on a one-way carriageway the stop is on its left kerb (India keeps left), never in the median
+    if (isBus && nr.r.oneway) side = nr.r.reverse ? 1 : -1;
     const off = nr.r.width / 2 + (isBus ? 2.2 : 14);
     const q = [nr.q[0] + Math.cos(nr.dir) * side * off, nr.q[1] - Math.sin(nr.dir) * side * off];
     if (!isBus && !clearOfRoads(q, 6)) continue;
+    if (isBus && !clearOfRoads(q, 0.3)) continue; // the shelter stands off every carriageway
     const item = { x: r1(q[0]), y: r1(q[1]), h: r1(ground(q[0], q[1])), dir: r1(nr.dir + (side > 0 ? Math.PI / 2 : -Math.PI / 2)), n: t.name || '' };
     (isBus ? busStops : fuel).push(item);
   }
@@ -249,6 +308,7 @@ export function buildExtras(X) {
     for (const r of roads) {
       r.median = r.pts.map(() => 0);
       r.minGap = Infinity;
+      r.gaps = [];
       if (!r.oneway || (r.rank < 4 && !r.bridge) || r.link) continue;
       for (let i = 0; i < r.pts.length; i++) {
         const a = r.pts[Math.max(0, i - 1)], b = r.pts[Math.min(r.pts.length - 1, i + 1)];
@@ -275,10 +335,19 @@ export function buildExtras(X) {
         if (gap < 16 && gap > -6) {
           r.median[i] = gap > 0.6 ? r1(gap / 2) : 0.12;
           r.minGap = Math.min(r.minGap, gap);
+          r.gaps.push(gap);
         }
       }
     }
-    if (narrow) for (const r of roads) if (r.minGap < 0) r.width = Math.max(3.3, r.width + r.minGap - 0.2);
+    // narrow a carriageway only when its halves overlap along a real part of the road (the
+    // 15th-percentile gap), not because of one crowded spot: that used to squeeze a whole
+    // 2.4 km three-lane corridor to 4.9 m
+    if (narrow)
+      for (const r of roads) {
+        if (!r.gaps.length) continue;
+        const g = r.gaps.slice().sort((a, b) => a - b)[Math.floor(r.gaps.length * 0.15)];
+        if (g < 0) r.width = Math.max(3.3, r.width + g - 0.2);
+      }
   };
   measure(true);
   measure(false);
@@ -298,6 +367,7 @@ export function buildExtras(X) {
   const uturns = [];
   for (const r of roads) {
     if (!r.median || !r.median.some((m) => m > 0.3)) continue;
+    if (r.bridge || r.lh.some((v) => v > 0.6)) continue; // no turning round on a bridge or flyover
     const s = [0];
     for (let i = 1; i < r.pts.length; i++) s.push(s[i - 1] + dist(r.pts[i - 1], r.pts[i]));
     let start = null;

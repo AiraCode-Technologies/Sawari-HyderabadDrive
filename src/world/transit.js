@@ -137,12 +137,18 @@ export function buildTransit(world, group, quality, T, index) {
     // columns under the concourse only where no carriageway runs: the nearest clear spot
     // to each side of the centre line (the median, the footpaths)
     for (const along of [-45, -15, 15, 45])
-      for (const side of [-1, 1]) {
+      for (const side of [0, -1, 1]) {
         let lat = null;
-        for (let k = 7; k <= 11 && lat === null; k += 0.5)
-          for (const cand of [side * k, side * (14 - k)]) {
+        if (side === 0) {
+          // under the tracks, in the median the viaduct follows
+          for (const cand of [0, 0.8, -0.8, 1.6, -1.6]) {
             const x = s.x + fx * along + rx * cand, y = s.y + fy * along + ry * cand;
-            if (!index.carriagewayAt(x, y, T.at(x, y), 1.2, -2, 4)) { lat = cand; break; }
+            if (!index.carriagewayAt(x, y, T.at(x, y), 0.9, -2, 4)) { lat = cand; break; }
+          }
+        } else
+          for (let k = 11; k >= 5 && lat === null; k -= 0.5) {
+            const cand = side * k, x = s.x + fx * along + rx * cand, y = s.y + fy * along + ry * cand;
+            if (!index.carriagewayAt(x, y, T.at(x, y), 1.2, -2, 4)) lat = cand;
           }
         if (lat === null) continue;
         const x = s.x + fx * along + rx * lat, y = s.y + fy * along + ry * lat, gg = T.at(x, y);

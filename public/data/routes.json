@@ -7,7 +7,7 @@
       "area": "Hussain Sagar",
       "blurb": "The classic drive along the east bank of Hussain Sagar, past the lake and its row of statues.",
       "difficulty": "Easy",
-      "length": 1669.5,
+      "length": 1669.7,
       "turns": 0
     },
     {
@@ -25,7 +25,7 @@
       "area": "Old City",
       "blurb": "Up Charminar Road, round the Charminar itself, then north along the bustling Pathergatti Road.",
       "difficulty": "Hard",
-      "length": 2095,
+      "length": 2092.2,
       "turns": 9
     },
     {
@@ -43,7 +43,7 @@
       "area": "Banjara Hills",
       "blurb": "Uphill from Masab Tank along Road No. 1, one of the city’s busiest arterials.",
       "difficulty": "Medium",
-      "length": 2642,
+      "length": 2642.6,
       "turns": 0
     }
   ]

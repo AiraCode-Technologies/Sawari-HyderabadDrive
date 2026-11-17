@@ -302,6 +302,83 @@ function buildRoute(def) {
     r.h = base.map((v, i) => v + r.lh[i]);
   }
 
+  // ---- give divided roads room for their lanes ----
+  // OSM often draws the two carriageways of a divided road closer together than their
+  // lanes need (on the Durgam Cheruvu corridor as little as 6.8 m apart for 3 + 3 lanes).
+  // Instead of squeezing every lane of the road, nudge the two lines apart where they
+  // crowd (up to 3 m each). Shared points move together so side roads stay attached, and
+  // the stretch where the two halves meet (a shared node) is left alone.
+  {
+    const travel = (r, i) => bearing(r.pts[Math.max(0, i - 1)], r.pts[Math.min(r.pts.length - 1, i + 1)]) + (r.reverse ? Math.PI : 0);
+    const oneGrid = new Grid(30);
+    roads.forEach((r) => {
+      if (!r.oneway || r.link) return;
+      for (let i = 1; i < r.pts.length; i++) {
+        const a = r.pts[i - 1], b = r.pts[i];
+        oneGrid.addBox(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1]), [r, i]);
+      }
+    });
+    // elevated metro lines (they stand on piers in the median, which then needs real width)
+    const metroGrid = new Grid(40);
+    {
+      const ef = join(rawDir, `${def.id}.extra.json`);
+      const els = existsSync(ef) ? JSON.parse(readFileSync(ef, 'utf8')).elements : [];
+      for (const e of els) {
+        if (e.type !== 'way' || !e.geometry || !/^(subway|light_rail|monorail)$/.test(e.tags?.railway || '')) continue;
+        const g = e.geometry.map((q) => proj(q.lat, q.lon));
+        for (let i = 1; i < g.length; i++) metroGrid.addBox(Math.min(g[i - 1][0], g[i][0]), Math.min(g[i - 1][1], g[i][1]), Math.max(g[i - 1][0], g[i][0]), Math.max(g[i - 1][1], g[i][1]), [g[i - 1], g[i]]);
+      }
+    }
+    const metroNear = (q) => {
+      for (const [a, b] of metroGrid.near(q[0], q[1], 22)) if (segDist(q, a, b) < 20) return true;
+      return false;
+    };
+    const push = new Map();
+    for (const r of roads) {
+      if (!r.oneway || r.link) continue;
+      const cum = [0];
+      for (let i = 1; i < r.pts.length; i++) cum.push(cum[i - 1] + dist(r.pts[i - 1], r.pts[i]));
+      r.pts.forEach((p, i) => {
+        const dir = travel(r, i);
+        let best = null;
+        for (const [o, j] of oneGrid.near(p[0], p[1], 25)) {
+          if (o === r || Math.abs(o.h[j] - r.h[i]) > 1.5) continue;
+          const oa = o.pts[j - 1], ob = o.pts[j];
+          if (Math.abs(angleDiff(dir, bearing(oa, ob) + (o.reverse ? Math.PI : 0))) < 2.5) continue;
+          const dd = segDist(p, oa, ob);
+          if (!best || dd < best.dd) {
+            const dx = ob[0] - oa[0], dy = ob[1] - oa[1], l2 = dx * dx + dy * dy || 1;
+            const t = Math.max(0, Math.min(1, ((p[0] - oa[0]) * dx + (p[1] - oa[1]) * dy) / l2));
+            best = { dd, o, q: [oa[0] + dx * t, oa[1] + dy * t] };
+          }
+        }
+        if (!best || best.dd < 1.5) return; // converging into one road here
+        // a real median between them: a kerbed strip, or room for metro piers where the metro runs above
+        const mid = [(p[0] + best.q[0]) / 2, (p[1] + best.q[1]) / 2];
+        const need = (r.width + best.o.width) / 2 + (metroNear(mid) ? 2.8 : 1.2) - best.dd;
+        if (need <= 0.05) return;
+        // leave the stretch near where the two halves join alone
+        const shared = new Set(best.o.keys);
+        if (r.keys.some((k, j) => shared.has(k) && Math.abs(cum[j] - cum[i]) < 30)) return;
+        const m = Math.min(3, need / 2);
+        const ux = (p[0] - best.q[0]) / best.dd, uy = (p[1] - best.q[1]) / best.dd;
+        const k = r.keys[i];
+        const v = push.get(k) || [0, 0, 0];
+        v[0] += ux * m; v[1] += uy * m; v[2]++;
+        push.set(k, v);
+      });
+    }
+    let moved = 0;
+    for (const [k, v] of push) {
+      const dx = v[0] / v[2], dy = v[1] / v[2];
+      for (const [ri, i] of nodeRoads.get(k) || []) {
+        roads[ri].pts[i] = [roads[ri].pts[i][0] + dx, roads[ri].pts[i][1] + dy];
+      }
+      moved++;
+    }
+    if (moved) console.log(`   ${moved} points of divided roads moved apart to fit their lanes`);
+  }
+
   // ---- even out road heights ----
   // The terrain is sampled under each carriageway on its own, so on a hillside the two
   // halves of a divided road came out at different heights, and side roads dropped
@@ -581,6 +658,64 @@ function buildRoute(def) {
   const parksNear = parks.filter((p) => routeDist(centroid(p)) < KEEP);
   const inWater = (p) => waterNear.some((w) => pointInPolygon(p, w.outer) && !w.holes.some((h) => pointInPolygon(p, h)));
 
+  // ---- long bridges and elevated corridors keep clear of what they cross ----
+  // A deck spanning straight between its two ends cut into the hills of Jubilee Hills on
+  // the 2.4 km Durgam Cheruvu bridge and Road No. 45 corridor, and passed barely a metre
+  // above the lake. A real deck keeps about 6.5 m over the ground or the water surface
+  // (easing in over 150 m from each end) and changes grade gently (at most 4 %).
+  {
+    const waterLevel = (p) => {
+      for (const w of waterNear) {
+        if (!pointInPolygon(p, w.outer) || w.holes.some((h) => pointInPolygon(p, h))) continue;
+        w.level ??= (() => {
+          const shore = w.outer.filter((_, i) => i % 3 === 0).map((q) => ground(q[0], q[1])).sort((a, b) => a - b);
+          return shore[Math.floor(shore.length * 0.3)] - 0.4;
+        })();
+        return w.level;
+      }
+      return null;
+    };
+    for (const r of roads) {
+      if (!r.bridge) continue;
+      const cum = [0];
+      for (let i = 1; i < r.pts.length; i++) cum.push(cum[i - 1] + dist(r.pts[i - 1], r.pts[i]));
+      const len = cum.at(-1);
+      if (len < 300) continue;
+      const h = r.h.map((v, i) => {
+        const p = r.pts[i];
+        const wl = waterLevel(p);
+        const floor = Math.max(ground(p[0], p[1]), wl ?? -Infinity);
+        const taper = Math.min(1, Math.min(cum[i], len - cum[i]) / 150);
+        return Math.max(v, floor + 6.5 * taper);
+      });
+      // raise neighbours so the grade never exceeds 4 % (only ever raises)
+      for (let i = 1; i < h.length; i++) h[i] = Math.max(h[i], h[i - 1] - 0.04 * (cum[i] - cum[i - 1]));
+      for (let i = h.length - 2; i >= 0; i--) h[i] = Math.max(h[i], h[i + 1] - 0.04 * (cum[i + 1] - cum[i]));
+      // roads joining the deck part-way (slip ramps) rise to meet it, blending back over 80 m
+      r.pts.forEach((_, i) => {
+        const dh = h[i] - r.h[i];
+        if (dh < 0.05) return;
+        for (const [oi, j] of nodeRoads.get(r.keys[i]) || []) {
+          const o = roads[oi];
+          if (o === r) continue;
+          for (const step of [1, -1]) {
+            let sd = 0;
+            for (let k = j + step; k >= 0 && k < o.pts.length; k += step) {
+              sd += dist(o.pts[k - step], o.pts[k]);
+              if (sd > 80) break;
+              o.h[k] += dh * (1 - sd / 80);
+              o.lh[k] = o.h[k] - ground(o.pts[k][0], o.pts[k][1]);
+            }
+          }
+          o.h[j] = h[i]; // exactly level where they meet
+          o.lh[j] = o.h[j] - ground(o.pts[j][0], o.pts[j][1]);
+        }
+      });
+      r.h = h;
+      r.lh = h.map((v, i) => v - ground(r.pts[i][0], r.pts[i][1]));
+    }
+  }
+
   // ---- road spatial index (for placement checks) ----
   const roadsNear = roads.filter((r) => r.pts.some((p) => routeDist(p) < KEEP + 100));
   const roadGrid = new Grid(40);
@@ -659,6 +794,10 @@ function buildRoute(def) {
     def, extra, geo, proj, ground, roads: roadsNear, roadGrid, routeDist, KEEP, inWater, clearOfRoads, degree,
     H: { hash, rng, dist, polylineLength, polygonArea, centroid, pointInPolygon, segDist, bearing, angleDiff, pointAlong, Grid, r1 },
   });
+  // road heights may also have changed since routing (long decks raised clear of the ground)
+  edges.forEach((e, k) => { routeH[k + 1] = roads[e.ri].h[e.ib]; routeL[k + 1] = roads[e.ri].lh[e.ib]; });
+  routeH[0] = roads[edges[0].ri].h[edges[0].ia];
+  routeL[0] = roads[edges[0].ri].lh[edges[0].ia];
   drive = computeDrive(); // widths may have changed
 
   // ---- buildings ----
@@ -1044,6 +1183,8 @@ function buildRoute(def) {
       if (!clearOfCorridors(q) || inWater(q)) continue;
       let blocked = false;
       for (const b of kept.near(q[0], q[1], 6)) if (pointInPolygon(q, b.p)) blocked = true;
+      // not up against (or under) a flyover deck
+      for (const [o, oi] of roadGrid.near(q[0], q[1], 20)) if (Math.max(o.lh[oi - 1], o.lh[oi]) > 1 && segDist(q, o.pts[oi - 1], o.pts[oi]) < o.width / 2 + 6) blocked = true;
       if (blocked) continue;
       // `dir` is where the board faces: back towards traffic on its side (India keeps left)
       hoardings.push({ x: r1(q[0]), y: r1(q[1]), h: r1(ground(q[0], q[1])), dir: r1(dir + (side > 0 ? 0 : Math.PI)), t: Math.floor(hash(`${r.osm}at${s}`) * 8) });
@@ -1260,7 +1401,22 @@ function buildRoute(def) {
       const span = best.b - best.a;
       for (const f of span > 120 ? [0.3, 0.7] : [0.5]) {
         const { p, dir, i: pi } = pointAlong(best.r.pts, best.a + span * f);
-        landmarks.push({ type: 'pylon', x: r1(p[0]), y: r1(p[1]), dir: r1(dir), w: r1(best.r.width), h: r1(best.r.h[Math.min(pi, best.r.h.length - 1)]) });
+        // the other deck alongside: the pylon portal straddles both, centred on the median
+        let pair = null;
+        for (const o of cable) {
+          if (o === best.r) continue;
+          for (let k = 1; k < o.pts.length; k++) {
+            const dd = segDist(p, o.pts[k - 1], o.pts[k]);
+            if (dd < 30 && (!pair || dd < pair.dd)) {
+              const a = o.pts[k - 1], b = o.pts[k], dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy || 1;
+              const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2));
+              pair = { dd, q: [a[0] + dx * t, a[1] + dy * t], w: o.width };
+            }
+          }
+        }
+        const c = pair ? [(p[0] + pair.q[0]) / 2, (p[1] + pair.q[1]) / 2] : p;
+        const w = pair ? pair.dd + (best.r.width + pair.w) / 2 : best.r.width;
+        landmarks.push({ type: 'pylon', x: r1(c[0]), y: r1(c[1]), dir: r1(dir), w: r1(w), h: r1(best.r.h[Math.min(pi, best.r.h.length - 1)]) });
       }
     }
   }
@@ -1287,6 +1443,7 @@ function buildRoute(def) {
       b: r.bridge && r.lift > 1 ? 1 : 0,
     };
     if (r.surf) o.f = r.surf;
+    if (r.round) o.rb = 1;
     if (r.median && r.median.some((m) => m > 0)) o.m = rev(r, r.median);
     return o;
   });
