@@ -46,6 +46,7 @@ export class RoadIndex {
       }
     };
     this.ring = ring;
+    this.addWall = addWall; // famous buildings add their footprints as walls
 
     this.buildingPolys = new Grid(30);
     for (const b of world.buildings) {

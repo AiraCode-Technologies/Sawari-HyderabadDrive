@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { buildLandmarks } from './landmarks.js';
+import { buildFamous } from './famous.js';
 import { rasterize } from './terrain.js';
 import { buildBuildings } from './buildings.js';
 import { buildProps } from './props.js';
@@ -39,17 +40,25 @@ export function buildWorld(world, quality, terrain, index) {
         height[j * nx + i] = Math.min(height[j * nx + i], w.l - 2.2);
         cls[j * nx + i] = GROUND_KEYS.indexOf('bed');
       });
-    // tuck the ground just under every ground-level road and its footpaths
+    // Tuck the ground just under every ground-level road and its footpaths. Every road in
+    // reach counts (not just the one nearest in height: beside a flyover that was the deck,
+    // and the street below got no tuck), and the ground stays flat a little way out before
+    // rising, so a 10 m mesh triangle reaching across a road never pokes through it.
     for (let j = 0; j < ny; j++)
       for (let i = 0; i < nx; i++) {
         const k = j * nx + i, x = x0 + i * d, y = y0 + j * d;
-        const s = index.surface(x, y, height[k], 9, 12);
-        if (!s) continue;
-        const lift = s.h - T.at(x, y);
-        if (lift > 0.8) continue;
-        const edge = s.seg.w / 2 + 3.5;
-        const target = s.h - 0.25 + Math.max(0, s.d - edge) * 0.5;
-        if (height[k] > target) height[k] = target;
+        const g0 = T.at(x, y);
+        for (const s of index.grid.query(x, y, 18)) {
+          const ex = s.bx - s.ax, ey = s.by - s.ay, l2 = ex * ex + ey * ey || 1e-9;
+          const t = Math.max(0, Math.min(1, ((x - s.ax) * ex + (y - s.ay) * ey) / l2));
+          const dist = Math.hypot(x - s.ax - ex * t, y - s.ay - ey * t);
+          const reach = s.w / 2 + 16;
+          if (dist > reach) continue;
+          const sh = s.ah + (s.bh - s.ah) * t;
+          if (sh - g0 > 0.8) continue; // a deck overhead: the ground carries on beneath it
+          const target = sh - 0.3 + Math.max(0, dist - (s.w / 2 + 6)) * 0.35;
+          if (height[k] > target) height[k] = target;
+        }
       }
     // the outermost ring of the mesh slopes down to meet the horizon apron
     let lowest = Infinity;
@@ -98,6 +107,7 @@ export function buildWorld(world, quality, terrain, index) {
         ground.receiveShadow = true;
         ground.matrixAutoUpdate = false;
         ground.userData.tiled = true;
+        ground.userData.ground = true; // (for checks: where the ground shows through a road)
         group.add(ground);
       }
     // a wide apron to the horizon beyond the mapped area
@@ -153,6 +163,7 @@ export function buildWorld(world, quality, terrain, index) {
   buildStreetLife(world, group, quality, T, index);
   const signalHeads = buildSignals(world.signals, group);
   buildLandmarks(world.landmarks, group, quality, T, world.water);
+  buildFamous(world.landmarks, group, quality, T, index); // malls, monuments, temples: real names and architecture
 
   // fewer draw calls: the many small static pieces (hoardings, sign boards, posts,
   // landmarks, signal poles) that share a material are merged, tile by tile

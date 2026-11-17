@@ -89,7 +89,8 @@ export function buildRoads(world, group, quality, T, index, junctions) {
         asphalt.tri2(A, B, C, D, secCol[k - 1], secCol[k], uv);
       }
       const liftA = a[2] - gAt(a[0], a[1]), liftC = c[2] - gAt(c[0], c[1]);
-      const elevated = Math.max(liftA, liftC) > 0.8;
+      // a structure (deck or ramp) per the data; older data: guess from the height above ground
+      const elevated = r.u ? !!(r.u[i - 1] || r.u[i]) : Math.max(liftA, liftC) > 0.8;
       if (!elevated) {
         // a flush paved strip under everything (shows at junctions and on minor roads)
         // under the carriageway itself, then the verges in short pieces that stop wherever
@@ -256,7 +257,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
         const inA = [q0.x + r0x * hw, q0.y + r0y * hw], inB = [q1.x + r1x * hw, q1.y + r1y * hw];
         const outA = [q0.x + r0x * (hw + m0), q0.y + r0y * (hw + m0)], outB = [q1.x + r1x * (hw + m1), q1.y + r1y * (hw + m1)];
         const stripe = Math.floor(s / 2) % 2 === 0 ? cKerbY : cKerbB;
-        const elevatedHere = q0.h - gAt(q0.x, q0.y) > 0.8;
+        const elevatedHere = r.u ? !!r.u[Math.min(q0.i, r.u.length - 1)] : q0.h - gAt(q0.x, q0.y) > 0.8;
         if (m0 > 0.3) {
           median.quad(P(inA[0], inA[1], q0.h + top - 0.02), P(inB[0], inB[1], q1.h + top - 0.02), P(inB[0], inB[1], q1.h + mt), P(inA[0], inA[1], q0.h + mt), stripe, null, [-r0x, 0, r0y]);
           // kerb cap, then a planted strip (or concrete on flyovers and narrow medians)

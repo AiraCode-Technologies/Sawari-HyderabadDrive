@@ -26,6 +26,7 @@ CATEGORIES = {
     'Learning to drive': ('learning-to-drive', 'Licences, the RTA test, road signs and how to build up from your first drive.'),
     'Road skills': ('road-skills', 'The habits that keep you safe in Hyderabad traffic, one skill at a time.'),
     'Behind the build': ('behind-the-build', 'How Sawari turns open map data into a city you can drive.'),
+    'Release notes': ('release-notes', 'What changed in each version of Sawari: new places, fixes and improvements, newest first.'),
 }
 IMAGES = {'hero', 'night', 'cockpit', 'junction', 'tank-bund', 'necklace-road', 'charminar', 'hitec-city', 'banjara-hills'}
 META_RE = re.compile(r'^\s*<!--meta\s*(\{.*?\})\s*-->', re.S)

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { ROUTES } from './routes.config.mjs';
 import { loadDem, terrainGrid } from './terrain.mjs';
 import { buildExtras, BUILDING_CLASS } from './extras.mjs';
+import { FAMOUS } from './landmarks.config.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const rawDir = join(here, 'raw');
@@ -185,6 +186,9 @@ function buildRoute(def) {
     const t = e.tags;
     if (t.highway === 'service' && /parking_aisle|driveway|drive-through/.test(t.service || '')) continue;
     if (t.area === 'yes' || t.access === 'private' || t.access === 'no') continue;
+    // underpasses and tunnels are covered and out of sight: drawing them at street level
+    // laid them on top of the roads they pass under (passages through buildings stay)
+    if (t.tunnel && t.tunnel !== 'no' && t.tunnel !== 'building_passage') continue;
     const info = roadInfo(t);
     // add a point at least every 10 m so the road can follow the terrain; the
     // added points get private keys so they never become junctions
@@ -205,7 +209,9 @@ function buildRoute(def) {
     }
     roads.push({
       osm: e.id, name: t.name || t.ref || '', ...info, keys, pts,
-      bridge: !!t.bridge && t.bridge !== 'no', tunnel: !!t.tunnel && t.tunnel !== 'no', round: t.junction === 'roundabout',
+      // a way on layer 1 or above is a deck over whatever it crosses, bridge tag or not
+      // (parts of the Telugu Talli Flyover are tagged only layer=1)
+      bridge: (!!t.bridge && t.bridge !== 'no') || (parseInt(t.layer, 10) || 0) >= 1, tunnel: !!t.tunnel && t.tunnel !== 'no', round: t.junction === 'roundabout',
       // 0 asphalt/concrete, 1 paving stones or setts, 2 unpaved
       surf: /unpaved|gravel|dirt|ground|sand|earth|mud|compacted|fine_gravel/.test(t.surface || '') ? 2 : /paving_stones|sett|cobblestone|bricks/.test(t.surface || '') ? 1 : 0,
       layer: parseInt(t.layer, 10) || 0,
@@ -422,14 +428,71 @@ function buildRoute(def) {
       });
     });
     // shared points: one height for every road through them
+    // shared points: one height for every road through them, set by the biggest road
+    // there (a steep side street must not put a kink in the main road)
     const settleNodes = () => {
       for (const [, inc] of nodeRoads) {
         if (inc.length < 2) continue;
-        const v = inc.reduce((acc, [ri, i]) => acc + want[ri][i], 0) / inc.length;
-        for (const [ri, i] of inc) want[ri][i] = v;
+        // roads on the ground decide (a deck or ramp sharing the point keeps its own height)
+        const ground = inc.filter(([ri, i]) => flat(roads[ri], i));
+        const pool = ground.length ? ground : inc;
+        const top = Math.max(...pool.map(([ri]) => roads[ri].rank));
+        const main = pool.filter(([ri]) => roads[ri].rank === top);
+        const v = main.reduce((acc, [ri, i]) => acc + want[ri][i], 0) / main.length;
+        for (const [ri, i] of inc) if (pool.includes(inc.find((q) => q[0] === ri && q[1] === i)) || Math.abs(want[ri][i] - v) < 1.5) want[ri][i] = v;
       }
     };
     settleNodes();
+    // (1b) smooth every ground-level road along its length: a real road is graded into
+    // even slopes, not draped over every bump of the 10 m terrain model, so it rides
+    // smoothly (distance-weighted average over about 30 m each way, a few passes)
+    for (let pass = 0; pass < 5; pass++) {
+      roads.forEach((r, ri) => {
+        const n = r.pts.length;
+        if (n < 3) return;
+        const h = want[ri], out = h.slice();
+        const seg = [];
+        for (let i = 1; i < n; i++) seg.push(dist(r.pts[i - 1], r.pts[i]));
+        for (let i = 1; i < n - 1; i++) {
+          if (!flat(r, i)) continue;
+          let sum = h[i], wsum = 1, d = 0;
+          for (let k = i - 1; k >= 0; k--) {
+            d += seg[k];
+            if (d > 30 || !flat(r, k)) break;
+            const wt = 1 - d / 31;
+            sum += h[k] * wt; wsum += wt;
+          }
+          d = 0;
+          for (let k = i + 1; k < n; k++) {
+            d += seg[k - 1];
+            if (d > 30 || !flat(r, k)) break;
+            const wt = 1 - d / 31;
+            sum += h[k] * wt; wsum += wt;
+          }
+          out[i] = sum / wsum;
+        }
+        want[ri] = out;
+      });
+      settleNodes();
+    }
+    // (1c) junction heights now fixed, the stretches between them ease into them, so a
+    // road never steps up or down where it meets another
+    const pinned = new Set();
+    for (const [, inc] of nodeRoads) if (inc.length > 1) for (const [ri, i] of inc) pinned.add(`${ri}:${i}`);
+    for (let pass = 0; pass < 8; pass++) {
+      roads.forEach((r, ri) => {
+        const n = r.pts.length;
+        if (n < 3) return;
+        const h = want[ri], out = h.slice();
+        for (let i = 1; i < n - 1; i++) {
+          if (!flat(r, i) || pinned.has(`${ri}:${i}`)) continue;
+          const a = dist(r.pts[i - 1], r.pts[i]), b = dist(r.pts[i], r.pts[i + 1]);
+          // the straight line between the neighbours, weighted by distance
+          out[i] = 0.5 * h[i] + 0.5 * (h[i - 1] * b + h[i + 1] * a) / ((a + b) || 1);
+        }
+        want[ri] = out;
+      });
+    }
     // (2) side roads ease out of junctions with bigger roads
     for (const [, inc] of nodeRoads) {
       if (inc.length < 2) continue;
@@ -887,6 +950,206 @@ function buildRoute(def) {
     for (let i = buildings.length - 1; i >= 0; i--) if (!ok.has(buildings[i])) buildings.splice(i, 1);
   }
 
+  // ---- famous places: real names, real footprints, architecture modelled on the building ----
+  // The catalogue is tools/landmarks.config.mjs; footprints come from
+  // tools/raw/<id>.landmarks.json (fetch-landmarks.mjs) or, by id, from the main extract.
+  {
+    // every route's download (they are all one city); distance to this route decides
+    const lmEls = [];
+    const seenEl = new Set();
+    for (const rt of ROUTES) {
+      const f = join(rawDir, `${rt.id}.landmarks.json`);
+      if (!existsSync(f)) continue;
+      for (const e of JSON.parse(readFileSync(f, 'utf8')).elements) {
+        const k = `${e.type}${e.id}`;
+        if (!seenEl.has(k)) { seenEl.add(k); lmEls.push(e); }
+      }
+    }
+    const rawById = new Map(raw.filter((e) => e.type === 'way').map((e) => [e.id, e]));
+    const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const hull = (pts) => {
+      const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      const lo = [], up = [];
+      for (const q of p) { while (lo.length >= 2 && cross(lo.at(-2), lo.at(-1), q) <= 0) lo.pop(); lo.push(q); }
+      for (const q of p.reverse()) { while (up.length >= 2 && cross(up.at(-2), up.at(-1), q) <= 0) up.pop(); up.push(q); }
+      return lo.slice(0, -1).concat(up.slice(0, -1));
+    };
+    const ringOf = (e) => {
+      if (e.type === 'way' && e.geometry) {
+        let r = geo(e.geometry.filter(Boolean));
+        if (r.length > 3 && dist(r[0], r.at(-1)) < 0.01) r = r.slice(0, -1);
+        return r.length >= 3 ? r : null;
+      }
+      if (e.type === 'relation' && e.members) {
+        const pts = [];
+        for (const m of e.members) if (m.role !== 'inner' && m.geometry) pts.push(...geo(m.geometry.filter(Boolean)));
+        if (pts.length >= 3) return hull(pts);
+      }
+      // only its extent is known: the bounding box
+      if (e.bounds) {
+        const a = proj(e.bounds.minlat, e.bounds.minlon), b = proj(e.bounds.maxlat, e.bounds.maxlon);
+        if (b[0] - a[0] > 4 && b[1] - a[1] > 4) return [[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]];
+      }
+      return null;
+    };
+    const posOf = (e) => (e.type === 'node' ? proj(e.lat, e.lon) : null);
+    // smallest rectangle around a footprint (rotating the hull's edges)
+    const minRect = (pts) => {
+      const h = hull(pts);
+      let best = null;
+      for (let i = 0; i < h.length; i++) {
+        const a = h[i], b = h[(i + 1) % h.length], L = dist(a, b) || 1;
+        const ux = (b[0] - a[0]) / L, uy = (b[1] - a[1]) / L;
+        let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+        for (const q of h) {
+          const u = q[0] * ux + q[1] * uy, v = -q[0] * uy + q[1] * ux;
+          u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v);
+        }
+        const area = (u1 - u0) * (v1 - v0);
+        if (!best || area < best.area) {
+          const cu = (u0 + u1) / 2, cv = (v0 + v1) / 2;
+          best = { area, c: [cu * ux - cv * uy, cu * uy + cv * ux], U: [ux, uy], V: [-uy, ux], su: u1 - u0, sv: v1 - v0 };
+        }
+      }
+      return best;
+    };
+    const nearestDrive = (c) => {
+      let best = null;
+      for (const q of drive) { const dd = dist(q, c); if (!best || dd < best.d) best = { d: dd, q }; }
+      return best;
+    };
+    const rectRing = (c, n, w, d) => {
+      const t = [-n[1], n[0]];
+      return [[1, 1], [1, -1], [-1, -1], [-1, 1]].map(([a, b]) => [c[0] + t[0] * a * w / 2 + n[0] * b * d / 2, c[1] + t[1] * a * w / 2 + n[1] * b * d / 2]);
+    };
+    const rectClear = (ring) => {
+      for (let i = 0; i < 4; i++) {
+        const a = ring[i], b = ring[(i + 1) % 4];
+        for (let k = 0; k <= 6; k++) if (!clearOfRoads([a[0] + (b[0] - a[0]) * k / 6, a[1] + (b[1] - a[1]) * k / 6], 1.5)) return false;
+      }
+      return true;
+    };
+    let placed = 0;
+    for (const f of FAMOUS) {
+      if (!f.routes.includes(def.id)) continue;
+      const nameOf = (e) => e.tags?.['name:en'] || e.tags?.name || '';
+      let cands = lmEls.filter((e) => f.match.test(nameOf(e)) && !e.tags?.highway && !e.tags?.railway && !e.tags?.public_transport && !e.tags?.shop?.match?.(/ticket/));
+      if (f.osmId && rawById.has(f.osmId)) cands = [rawById.get(f.osmId)];
+      if (!cands.length) continue;
+      // prefer a real footprint (a building, then any area), then a point
+      const scored = cands.map((e) => {
+        let ring = ringOf(e);
+        const pos = ring ? centroid(ring) : posOf(e);
+        // a point only: the biggest real building footprint around it is the place itself
+        if (!ring && pos && !f.park) {
+          let bestB = null;
+          for (const w of raw) {
+            if (w.type !== 'way' || !w.tags?.building || !w.geometry || w.geometry.length < 4) continue;
+            const g = w.geometry[0];
+            const q0 = proj(g.lat, g.lon);
+            if (Math.abs(q0[0] - pos[0]) > 120 || Math.abs(q0[1] - pos[1]) > 120) continue;
+            const r = geo(w.geometry);
+            const cc = centroid(r);
+            if (!pointInPolygon(pos, r) && dist(cc, pos) > 35) continue;
+            const ar = Math.abs(polygonArea(r));
+            if (ar > 600 && (!bestB || ar > bestB.ar)) bestB = { r, ar };
+          }
+          if (bestB) ring = bestB.r;
+        }
+        const area = ring ? Math.abs(polygonArea(ring)) : 0;
+        const bld = e.tags?.building && e.tags.building !== 'no';
+        const score = (f.park ? (e.tags?.leisure || e.tags?.tourism ? 3 : 0) : (bld ? 3 : 0)) + (ring ? 2 : 0) + Math.min(1, area / 5000);
+        return { e, ring, pos, score };
+      }).filter((c) => c.pos).sort((a, b) => b.score - a.score || routeDist(a.pos, 3000) - routeDist(b.pos, 3000));
+      const best = scored[0];
+      if (process.env.DEBUG_FAMOUS) console.log('famous?', def.id, f.id, scored.slice(0, 3).map((c) => `${c.e.type}${c.e.id}:${(c.e.tags?.name || '').slice(0, 30)} score ${c.score.toFixed(1)} dist ${Math.round(routeDist(c.pos, 3000))}`).join(' | '));
+      if (!best || routeDist(best.pos, 1300) > 1100) continue;
+      if (f.style === 'buddha') {
+        landmarks.push({ type: 'buddha', x: r1(best.pos[0]), y: r1(best.pos[1]) });
+        placed++;
+        continue;
+      }
+      // a site outline (a campus or plot, not a building): use the biggest building on it
+      if (best.ring && !f.park && !(best.e.tags?.building && best.e.tags.building !== 'no') && Math.abs(polygonArea(best.ring)) > 6000) {
+        let big = null;
+        for (const w of raw) {
+          if (w.type !== 'way' || !w.tags?.building || !w.geometry || w.geometry.length < 4) continue;
+          const g0 = proj(w.geometry[0].lat, w.geometry[0].lon);
+          if (Math.abs(g0[0] - best.pos[0]) > 300 || Math.abs(g0[1] - best.pos[1]) > 300) continue;
+          const r = geo(w.geometry);
+          if (!pointInPolygon(centroid(r), best.ring)) continue;
+          const ar = Math.abs(polygonArea(r));
+          if (ar > 500 && (!big || ar > big.ar)) big = { r, ar };
+        }
+        if (big) { best.ring = big.r; best.pos = centroid(big.r); }
+      }
+      const near = nearestDrive(best.pos);
+      if (f.style === 'gateway') {
+        // the park's entrance arch, on its boundary nearest the route, facing the road
+        if (!best.ring) continue;
+        let q = null;
+        for (let i = 0; i < best.ring.length; i++) {
+          const a = best.ring[i], b = best.ring[(i + 1) % best.ring.length];
+          for (let k = 0; k <= 8; k++) {
+            const p = [a[0] + (b[0] - a[0]) * k / 8, a[1] + (b[1] - a[1]) * k / 8];
+            const dd = nearestDrive(p).d;
+            if (!q || dd < q.d) q = { d: dd, p };
+          }
+        }
+        if (!q || q.d > 400) continue;
+        const to = nearestDrive(q.p).q;
+        let n = [to[0] - q.p[0], to[1] - q.p[1]];
+        const L = Math.hypot(n[0], n[1]) || 1;
+        n = [n[0] / L, n[1] / L];
+        let c = q.p, ok = false;
+        for (let k = 0; k < 12 && !ok; k++) {
+          ok = rectClear(rectRing(c, n, 11, 3)) && !inWater(c);
+          if (!ok) c = [c[0] - n[0] * 2, c[1] - n[1] * 2]; // step into the park
+        }
+        if (!ok) continue;
+        landmarks.push({ type: 'famous', style: 'gateway', id: f.id, n: f.name, te: f.te, x: r1(c[0]), y: r1(c[1]), w: 11, d: 3, a: r1(Math.atan2(n[0], n[1])), h: 7 });
+        placed++;
+        continue;
+      }
+      let c, nrm, w, d;
+      if (best.ring) {
+        const R = minRect(best.ring);
+        c = R.c;
+        const t = [near.q[0] - c[0], near.q[1] - c[1]];
+        // the front faces the route: the rectangle axis pointing most nearly at it
+        const du = t[0] * R.U[0] + t[1] * R.U[1], dv = t[0] * R.V[0] + t[1] * R.V[1];
+        if (Math.abs(du) > Math.abs(dv)) { nrm = du > 0 ? R.U : [-R.U[0], -R.U[1]]; d = R.su; w = R.sv; }
+        else { nrm = dv > 0 ? R.V : [-R.V[0], -R.V[1]]; d = R.sv; w = R.su; }
+      } else {
+        c = best.pos;
+        const t = [near.q[0] - c[0], near.q[1] - c[1]], L = Math.hypot(t[0], t[1]) || 1;
+        nrm = [t[0] / L, t[1] / L];
+        [w, d] = f.size || [40, 30];
+        // a point only: make sure the assumed plot stays off every road
+        let ok = false;
+        for (let k = 0; k < 15 && !ok; k++) {
+          ok = rectClear(rectRing(c, nrm, w, d));
+          if (!ok) c = [c[0] - nrm[0] * 3, c[1] - nrm[1] * 3];
+        }
+        if (!ok) continue;
+      }
+      if (w < 6 || d < 6) continue;
+      const ring = rectRing(c, nrm, w, d);
+      // the generic buildings on this plot make way for the real one
+      const grown = rectRing(c, nrm, w + 3, d + 3);
+      for (let i = buildings.length - 1; i >= 0; i--) {
+        const bc = centroid(buildings[i].p);
+        if (pointInPolygon(bc, grown)) { buildings[i].dead = true; buildings.splice(i, 1); }
+      }
+      keep({ p: ring, famous: true });
+      const lv = parseFloat(best.e.tags?.['building:levels']);
+      const h = f.h || (lv > 0 ? lv * 3.6 : 30);
+      landmarks.push({ type: 'famous', style: f.style, id: f.id, n: f.name, te: f.te, x: r1(c[0]), y: r1(c[1]), w: r1(w), d: r1(d), a: r1(Math.atan2(nrm[0], nrm[1])), h: r1(h), ...(f.palette ? { pal: f.palette } : {}) });
+      placed++;
+    }
+    if (placed) console.log(`   ${placed} famous places: ${landmarks.filter((l) => l.type === 'famous' || l.type === 'buddha').map((l) => l.id || l.type).join(', ')}`);
+  }
+
   // ---- continuous street frontage where OSM has no buildings mapped ----
   // Hyderabad streets are lined wall to wall with buildings; OSM coverage has
   // gaps, so narrow plots are filled in along both sides of every road near the
@@ -995,6 +1258,8 @@ function buildRoute(def) {
     if (ll.lat === undefined) continue;
     const pt = proj(ll.lat, ll.lon);
     if (routeDist(pt) > 450) continue;
+    // a famous place stands here (Mecca Masjid, Peddamma Temple...): it has its own model
+    if (landmarks.some((l) => l.type === 'famous' && dist([l.x, l.y], pt) < Math.max(l.w || 0, l.d || 0) / 2 + 25)) continue;
     const name = (t.name || '').trim();
     const kind = t.religion === 'muslim' || /masjid|mosque|dargah/i.test(name) ? 'mosque' : t.religion === 'christian' || /church|chapel/i.test(name) ? 'church' : 'temple';
     let target = null, bd = 25;
@@ -1436,7 +1701,17 @@ function buildRoute(def) {
 
   // ---- output ----
   const rev = (r, arr) => (r.reverse ? arr.slice().reverse() : arr);
-  const outRoads = roadsNear.map((r) => {
+  // The open approach ramps of an underpass dip below the street; drawn at street level
+  // they lay across the road above them. Leave out any that do (unless the route uses it).
+  const onOther = (r, p, h) => {
+    for (const [o, j] of roadGrid.near(p[0], p[1], 15)) {
+      if (o === r || /underpass/i.test(o.name)) continue;
+      if (segDist(p, o.pts[j - 1], o.pts[j]) < o.width / 2 && Math.abs((o.h[j - 1] + o.h[j]) / 2 - h) < 1) return true;
+    }
+    return false;
+  };
+  const hiddenRamps = new Set(roadsNear.filter((r) => /underpass/i.test(r.name) && !routeRoadSet.has(r) && r.pts.some((p, i) => i > 0 && i < r.pts.length - 1 && onOther(r, p, r.h[i]))));
+  const outRoads = roadsNear.filter((r) => !hiddenRamps.has(r)).map((r) => {
     const o = {
       n: r.name, k: r.cls, w: r1(r.width), l: r.lanes, o: r.oneway ? 1 : 0, s: r.speed,
       p: rev(r, r.pts).map((q, i) => [r1(q[0]), r1(q[1]), r1(rev(r, r.h)[i])]),
@@ -1444,6 +1719,9 @@ function buildRoute(def) {
     };
     if (r.surf) o.f = r.surf;
     if (r.round) o.rb = 1;
+    // which points are a structure (deck or ramp) rather than a road on the ground: the
+    // game used to guess from the height above the terrain, which levelling can change
+    if (r.lh.some((v) => v > 0.8)) o.u = rev(r, r.lh).map((v) => (v > 0.8 ? 1 : 0));
     if (r.median && r.median.some((m) => m > 0)) o.m = rev(r, r.median);
     return o;
   });

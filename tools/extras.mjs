@@ -122,6 +122,45 @@ export function buildExtras(X) {
     });
     rails.push({ k: metro ? 'metro' : 'rail', e: lift > 0 ? 1 : 0, n: e.tags.name || '', p: pts.map((p, i) => [r1(p[0]), r1(p[1]), r1(sm[i] + lift)]) });
   }
+  // One viaduct per corridor. OSM draws each track of the metro as its own way (and some
+  // stretches twice); building a twin-track viaduct on every one doubled the decks and
+  // the rows of piers. Longest lines first; any stretch of another elevated metro way
+  // within 9 m of a line already kept is the same viaduct and is dropped.
+  {
+    const densify = (pts) => {
+      const out = [pts[0]];
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], b = pts[i], n = Math.floor(dist(a, b) / 10);
+        for (let k = 1; k <= n; k++) {
+          const f = k / (n + 1);
+          out.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]);
+        }
+        out.push(b);
+      }
+      return out;
+    };
+    const elevated = rails.filter((r) => r.k === 'metro' && r.e).map((r) => ({ ...r, p: densify(r.p) }));
+    elevated.sort((x, y) => polylineLength(y.p) - polylineLength(x.p));
+    const keptGrid = new Grid(30);
+    const covered = (q) => {
+      for (const [a, b] of keptGrid.near(q[0], q[1], 10)) if (segDist(q, a, b) < 9) return true;
+      return false;
+    };
+    const keep = [];
+    for (const l of elevated) {
+      const runs = [];
+      let run = [];
+      const flush = () => { if (run.length >= 2 && polylineLength(run) >= 40) runs.push(run); run = []; };
+      for (const q of l.p) { if (covered(q)) flush(); else run.push(q); }
+      flush();
+      for (const r of runs) {
+        keep.push({ ...l, p: r });
+        for (let i = 1; i < r.length; i++) keptGrid.addBox(Math.min(r[i - 1][0], r[i][0]), Math.min(r[i - 1][1], r[i][1]), Math.max(r[i - 1][0], r[i][0]), Math.max(r[i - 1][1], r[i][1]), [r[i - 1], r[i]]);
+      }
+    }
+    for (let i = rails.length - 1; i >= 0; i--) if (rails[i].k === 'metro' && rails[i].e) rails.splice(i, 1);
+    rails.push(...keep);
+  }
   const metroLines = rails.filter((r) => r.k === 'metro');
 
   // Hyderabad's metro runs above the median of the road it follows. OSM traces the
