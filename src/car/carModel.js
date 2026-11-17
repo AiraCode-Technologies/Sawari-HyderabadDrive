@@ -282,15 +282,15 @@ export function createCarModel(color = '#c8202a') {
     housing.scale.set(1, 1, 1);
     for (const k of [0, 1]) add(new THREE.SphereGeometry(0.036, 14, 10), headMat, s * (0.46 + k * 0.13), 0.72, -2.2 + k * 0.02);
     add(new THREE.BoxGeometry(0.38, 0.016, 0.02), drlMat, s * 0.56, 0.665, -2.205, 0, s * 0.16);
-    add(new THREE.BoxGeometry(0.08, 0.035, 0.03), ind, s * 0.76, 0.71, -2.12, 0, s * 0.35);
+    add(new THREE.BoxGeometry(0.15, 0.07, 0.04), ind, s * 0.76, 0.7, -2.125, 0, s * 0.35);
     // fog lamp
     add(new THREE.CylinderGeometry(0.04, 0.04, 0.02, 16), headMat, s * 0.62, 0.38, -2.235, Math.PI / 2);
     // side repeater on the front wing
-    add(new THREE.BoxGeometry(0.012, 0.03, 0.08), ind, s * (W / 2 + 0.008), 0.78, -1.5);
+    add(new THREE.BoxGeometry(0.016, 0.055, 0.15), ind, s * (W / 2 + 0.01), 0.78, -1.5);
     // rear cluster wrapping round, reversing lamp, indicator
     add(new THREE.BoxGeometry(0.42, 0.13, 0.08), tailMat, s * 0.6, 0.83, 2.155, 0, -s * 0.25);
     add(new THREE.BoxGeometry(0.12, 0.05, 0.03), revMat, s * 0.62, 0.74, 2.2);
-    add(new THREE.BoxGeometry(0.1, 0.04, 0.03), ind, s * 0.78, 0.88, 2.13, 0, -s * 0.4);
+    add(new THREE.BoxGeometry(0.2, 0.085, 0.04), ind, s * 0.74, 0.94, 2.17, 0, -s * 0.3);
   }
   add(new THREE.BoxGeometry(0.75, 0.025, 0.02), tailMat, 0, 0.86, 2.215); // light bar
   add(new THREE.BoxGeometry(0.3, 0.025, 0.03), tailMat, 0, 1.36, 0.97); // high-level brake light

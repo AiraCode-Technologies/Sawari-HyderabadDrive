@@ -30,6 +30,7 @@ export const PEDESTRIAN_LEVELS = { off: 0, low: 25, medium: 45, high: 65, dense:
 export class Pedestrians {
   constructor(world, scene, density, terrain, index) {
     this.index = index;
+    this.world = world;
     this.target = PEDESTRIAN_LEVELS[density] ?? 45;
     this.rand = mulberry(0x51ed + world.id.length);
     this.T = terrain;
@@ -114,6 +115,41 @@ export class Pedestrians {
     this.near = this.paths.filter((p) => p.maxX > px - R && p.minX < px + R && p.maxY > py - R && p.minY < py + R);
   }
 
+  // Stretches of a footpath nobody walks: where it runs over another road's carriageway
+  // (parallel roads, slip roads) for 12 m or more, or under a deck too low to walk under.
+  // Short crossings of side-road mouths stay walkable. Worked out once per footpath side.
+  noWalk(p, side) {
+    p.no ||= {};
+    if (p.no[side]) return p.no[side];
+    const out = [];
+    const idx = this.index;
+    if (idx) {
+      const ri = this.world.roads.indexOf(p.r);
+      let runStart = null, overhead = false;
+      const close = (end) => {
+        if (runStart !== null && (end - runStart >= 12 || overhead)) out.push([runStart - 1.5, end + 1.5]);
+        runStart = null;
+        overhead = false;
+      };
+      for (let s = 0; s <= p.len; s += 2) {
+        const q = this.at(p, s, side);
+        const on = idx.carriagewayAt(q.x, q.y, q.h, 0.2, -1.2, 1.2, ri);
+        const low = idx.carriagewayAt(q.x, q.y, q.h, 0.6, 1.2, 4.5, -1);
+        if (on || low) {
+          if (runStart === null) runStart = s;
+          if (low) overhead = true;
+        } else close(s);
+      }
+      close(p.len);
+    }
+    return (p.no[side] = out);
+  }
+
+  blocked(p, side, s) {
+    for (const [a, b] of this.noWalk(p, side)) if (s >= a && s <= b) return true;
+    return false;
+  }
+
   // a footpath spot right outside a place of worship near the player
   gatheringSpot(px, py) {
     const sites = this.sites.filter((w) => Math.hypot(w.x - px, w.y - py) < 160);
@@ -142,6 +178,7 @@ export class Pedestrians {
       if (g) {
         const outfit = this.pickOutfit();
         const s0 = g.s + (this.rand() - 0.5) * 14;
+        if (this.blocked(g.p, g.side, s0)) return;
         const pos = this.at(g.p, s0, g.side);
         if (Math.hypot(pos.x - px, pos.y - py) > (initial ? 10 : 50) && !this.people.some((m) => Math.abs(m.x - pos.x) < 0.9 && Math.abs(m.y - pos.y) < 0.9)) {
           this.people.push({ id: this.nextId++, dodge: 0, p: g.p, s: s0, side: g.side, dir: this.rand() < 0.5 ? 1 : -1, speed: 0.45 + this.rand() * 0.3, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, wait: this.rand() * 4, lateral: (this.rand() - 0.5) * 1.2, anchor: g.s });
@@ -155,6 +192,7 @@ export class Pedestrians {
       if (p.busy < 2 && this.rand() < 0.5) continue; // busier footpaths on main roads
       const s = this.rand() * p.len;
       const side = this.rand() < 0.5 ? -1 : 1;
+      if (this.blocked(p, side, s)) continue;
       const pos = this.at(p, s, side);
       if (this.people.some((m) => Math.abs(m.x - pos.x) < 0.9 && Math.abs(m.y - pos.y) < 0.9)) continue;
       const d = Math.hypot(pos.x - px, pos.y - py);
@@ -211,7 +249,9 @@ export class Pedestrians {
           m.s += Math.sign((dx * Math.sin(pd) + dy * Math.cos(pd)) * m.dir || 1) * m.dir * 0.4 * dt;
         }
       } else if (m.hold <= 0) {
-        m.s += m.dir * m.speed * avoid.speedF * dt;
+        const step = m.dir * m.speed * avoid.speedF * dt;
+        if (this.blocked(m.p, m.side, m.s + step + m.dir * 0.6)) m.dir = -m.dir; // the footpath ends here
+        else m.s += step;
         if (m.anchor !== undefined) {
           // people at a place of worship mill about the entrance and stop to talk
           if (Math.abs(m.s - m.anchor) > 9) m.dir = Math.sign(m.anchor - m.s);

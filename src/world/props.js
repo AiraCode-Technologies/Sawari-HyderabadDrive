@@ -62,7 +62,6 @@ export function buildProps(world, group, quality, T, index) {
   // ---------- street lights: single-arm on footpaths, double-arm on medians ----------
   const lights = world.lights.filter((l) => !onCarriageway(l[0], l[1])).map((l) => ({ x: l[0], y: l[1], a: l[2], t: l[3] ?? 0, g: standAt(l[0], l[1]) }));
   const single = lights.filter((l) => l.t === 0), double = lights.filter((l) => l.t === 1);
-  const pole = new THREE.MeshLambertMaterial({ color: '#8b9197' });
   const lamp = new THREE.MeshLambertMaterial({ color: '#e8e8e2', emissive: '#55524a' });
   // lamp heads in world space, for the night-time glow (see lighting.js)
   group.userData.lampMat = lamp;
@@ -77,15 +76,44 @@ export function buildProps(world, group, quality, T, index) {
     d.rotation.set(0, -l.a, 0);
     d.scale.setScalar(1);
   };
-  // single: tapered pole, upswept arm reaching over the road (local -Z)
-  instanced(new THREE.CylinderGeometry(0.07, 0.13, 8.5, 8).translate(0, 4.25, 0), pole, single, placeLight);
-  instanced(new THREE.BoxGeometry(0.08, 0.08, 1.9).rotateX(-0.25).translate(0, 8.65, -0.9), pole, single, placeLight);
-  instanced(new THREE.BoxGeometry(0.32, 0.1, 0.75).translate(0, 8.85, -2.05), lamp, single, placeLight, false);
-  // double: taller pole with an arm to each carriageway (local +X and -X)
-  instanced(new THREE.CylinderGeometry(0.09, 0.16, 10, 8).translate(0, 5, 0), pole, double, placeLight);
-  instanced(new THREE.BoxGeometry(3.6, 0.09, 0.09).translate(0, 9.9, 0), pole, double, placeLight);
-  instanced(new THREE.BoxGeometry(0.75, 0.1, 0.32).translate(1.9, 9.82, 0), lamp, double, placeLight, false);
-  instanced(new THREE.BoxGeometry(0.75, 0.1, 0.32).translate(-1.9, 9.82, 0), lamp, double, placeLight, false);
+  // A galvanised municipal street light: concrete plinth and base flange, tapered
+  // eight-sided pole with a cable door, a swan-neck arm and a flat LED lantern whose
+  // lens (the part that lights up at night) faces the road. The whole body is one
+  // vertex-coloured geometry, so each kind costs one instanced draw plus the lenses.
+  const cGalv = '#9aa0a5', cGalvDark = '#7d8388', cHousing = '#3f454b', cPlinth = '#b9b2a6';
+  const swan = (to, rise, r = 0.045) => {
+    // from the pole top, up and over to `to` (local x, y, z): a smooth gooseneck
+    const a = new THREE.Vector3(0, to.y - rise, 0);
+    const mid = new THREE.Vector3(to.x * 0.25, to.y + 0.45, to.z * 0.25);
+    return new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(a, mid, to), 14, r, 6, false);
+  };
+  const lantern = (parts, x, y, z, ry) => {
+    // housing tilted up a touch at the road end, with a cooling fin on top
+    parts.push({ geo: new THREE.BoxGeometry(0.34, 0.11, 0.78), color: cHousing, matrix: m4(x, y + 0.06, z, 0.08, ry, 0) });
+    parts.push({ geo: new THREE.BoxGeometry(0.06, 0.05, 0.5), color: cHousing, matrix: m4(x, y + 0.14, z, 0.08, ry, 0) });
+  };
+  const body = (h, r0, r1) => [
+    { geo: new THREE.BoxGeometry(0.46, 0.5, 0.46), color: cPlinth, matrix: m4(0, 0.2, 0) }, // concrete plinth
+    { geo: new THREE.CylinderGeometry(0.21, 0.23, 0.06, 8), color: cGalvDark, matrix: m4(0, 0.48, 0) }, // base flange
+    { geo: new THREE.CylinderGeometry(r1, r0, h - 0.5, 8), color: cGalv, matrix: m4(0, 0.5 + (h - 0.5) / 2, 0) }, // tapered pole
+    { geo: new THREE.BoxGeometry(0.1, 0.32, 0.05), color: cGalvDark, matrix: m4(0, 1.3, r0 * 0.9) }, // cable door
+    { geo: new THREE.CylinderGeometry(r1 * 1.25, r1 * 1.25, 0.12, 8), color: cGalvDark, matrix: m4(0, h, 0) }, // top cap
+  ];
+  // single: pole on the footpath, one arm reaching out over the road (local -Z)
+  const singleParts = body(8.2, 0.12, 0.065);
+  singleParts.push({ geo: swan(new THREE.Vector3(0, 8.86, -1.72), 0.62), color: cGalv });
+  lantern(singleParts, 0, 8.78, -2.05, 0);
+  instanced(mergeColored(singleParts), new THREE.MeshLambertMaterial({ vertexColors: true }), single, placeLight);
+  instanced(new THREE.BoxGeometry(0.26, 0.03, 0.6).rotateX(0.08).translate(0, 8.8, -2.05), lamp, single, placeLight, false);
+  // double: taller median pole with a swan-neck arm to each carriageway (local +X and -X)
+  const doubleParts = body(9.3, 0.15, 0.08);
+  for (const s of [1, -1]) {
+    doubleParts.push({ geo: swan(new THREE.Vector3(s * 1.6, 9.92, 0), 0.62, 0.05), color: cGalv });
+    lantern(doubleParts, s * 1.95, 9.84, 0, s * Math.PI / 2);
+  }
+  instanced(mergeColored(doubleParts), new THREE.MeshLambertMaterial({ vertexColors: true }), double, placeLight);
+  for (const s of [1, -1])
+    instanced(new THREE.BoxGeometry(0.6, 0.03, 0.26).rotateZ(-s * 0.08).translate(s * 1.95, 9.86, 0), lamp, double, placeLight, false);
   for (const l of lights) index.ring(l.x, l.y, 0.2, l.g + 8, 'post');
 
   // ---------- advertising hoardings on steel posts ----------

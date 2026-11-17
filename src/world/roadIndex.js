@@ -107,6 +107,19 @@ export class RoadIndex {
     return best;
   }
 
+  // A carriageway within `pad` of (x, y) whose surface is between dhMin and dhMax
+  // above height h (any road but `ri`), or null.
+  carriagewayAt(x, y, h, pad = 0.3, dhMin = -1.5, dhMax = 1.5, ri = -1) {
+    for (const s of this.grid.query(x, y, pad)) {
+      if (s.ri === ri) continue;
+      const q = segDist(x, y, s.ax, s.ay, s.bx, s.by);
+      if (q.d > s.w / 2 + pad) continue;
+      const dh = s.ah + (s.bh - s.ah) * q.t - h;
+      if (dh >= dhMin && dh <= dhMax) return s;
+    }
+    return null;
+  }
+
   // True when (x, y) lies on the carriageway of a road other than `ri` at a
   // similar height: footpaths and kerbs stop there (junctions, side roads).
   onOtherCarriageway(x, y, h, ri, pad = 0.3) {

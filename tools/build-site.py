@@ -16,6 +16,9 @@ from seo import img_tag  # noqa: E402
 T = runpy.run_path(str(ROOT / 'tools/site-translations.py'))['T']
 routes = json.loads((ROOT / 'public/data/routes.json').read_text(encoding='utf-8'))['routes']
 total_km = sum(r['length'] for r in routes) / 1000
+import blog  # noqa: E402
+posts, posts_by_slug = blog.load(ROOT, {r['id'] for r in routes})
+guides = blog.route_guides(posts)
 
 ICON = {
     'road': '<path d="M8 3 4 21M16 3l4 18M12 5v2M12 11v2M12 17v2"/>',
@@ -35,7 +38,13 @@ def icon(name):
     return f'<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{ICON[name]}</svg></div>'
 
 LOGO = '<img src="/logo.svg" alt="" width="36" height="36" />'
-PAGES = [('./', 'Home'), ('routes.html', 'Routes'), ('features.html', 'Features'), ('about.html', 'About &amp; FAQ')]
+PAGES = [('./', 'Home'), ('routes.html', 'Routes'), ('features.html', 'Features'), ('/blog/', 'Blog'), ('about.html', 'About &amp; FAQ')]
+def link(href, base):
+    """Header and footer links are relative on the language pages (so /hi/ stays in Hindi);
+    the English-only blog pages pass base='/' to point back at the English site root."""
+    if href.startswith('/') or not base:
+        return href
+    return base if href == './' else base + href
 DIFF_NOTE = {'Easy': 'No turns to make: settle into a lane and get a feel for the car and the traffic.', 'Medium': 'A handful of turns, flyovers and busy junctions.', 'Hard': 'Tight Old City streets, a roundabout and nine turns in two kilometres.'}
 WATCH = {
     'tank-bund': ['Two-wheelers filtering past on both sides', 'Speed breakers near the statues', 'Strollers crossing to the lake promenade in the evening'],
@@ -73,12 +82,12 @@ def head(slug):
   <body>
 """
 
-def header(current):
-    links = '\n'.join(f'          <a href="{href}"{" aria-current=\"page\"" if href == current else ""}>{label}</a>' for href, label in PAGES)
+def header(current, base=''):
+    links = '\n'.join(f'          <a href="{link(href, base)}"{" aria-current=\"page\"" if href == current else ""}>{label}</a>' for href, label in PAGES)
     return f"""    <a class="skip" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="wrap">
-        <a class="logo" href="./" aria-label="Sawari home"><span class="logo-mark">{LOGO}</span><span class="logo-text"><span class="logo-name">Sawari</span><span class="logo-tag">Drive Hyderabad</span></span></a>
+        <a class="logo" href="{link('./', base)}" aria-label="Sawari home"><span class="logo-mark">{LOGO}</span><span class="logo-text"><span class="logo-name">Sawari</span><span class="logo-tag">Drive Hyderabad</span></span></a>
         <nav class="nav" id="site-nav" aria-label="Main">
 {links}
         </nav>
@@ -91,14 +100,14 @@ def header(current):
     <main id="main">
 """
 
-def footer():
+def footer(base=''):
     route_links = '\n'.join(f'              <li><a href="/play.html?route={r["id"]}">{r["name"]}</a></li>' for r in routes)
     return f"""    </main>
     <footer class="site-footer">
       <div class="wrap">
         <div class="footer-grid">
           <div class="about">
-            <a class="logo" href="./" aria-label="Sawari home"><span class="logo-mark">{LOGO}</span><span class="logo-text"><span class="logo-name">Sawari</span><span class="logo-tag">Drive Hyderabad</span></span></a>
+            <a class="logo" href="{link('./', base)}" aria-label="Sawari home"><span class="logo-mark">{LOGO}</span><span class="logo-text"><span class="logo-name">Sawari</span><span class="logo-tag">Drive Hyderabad</span></span></a>
             <p>A browser driving simulator on real Hyderabad roads: left-hand traffic, signals, turn-by-turn guidance and a debrief at the end of every drive.</p>
             <div class="share" data-copied="Link copied" data-ig="Caption copied: paste it into your Instagram post or story">
               <h4>Share Sawari</h4>
@@ -111,10 +120,11 @@ def footer():
           <div>
             <h4>Site</h4>
             <ul>
-              <li><a href="./">Home</a></li>
-              <li><a href="routes.html">Routes</a></li>
-              <li><a href="features.html">Features</a></li>
-              <li><a href="about.html">About &amp; FAQ</a></li>
+              <li><a href="{link('./', base)}">Home</a></li>
+              <li><a href="{link('routes.html', base)}">Routes</a></li>
+              <li><a href="{link('features.html', base)}">Features</a></li>
+              <li><a href="/blog/">Blog</a></li>
+              <li><a href="{link('about.html', base)}">About &amp; FAQ</a></li>
             </ul>
           </div>
           <div>
@@ -128,7 +138,7 @@ def footer():
             <ul>
               <li><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap (ODbL)</a></li>
               <li><a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">Terrain tiles (AWS)</a></li>
-              <li><a href="about.html#data">How the city is built</a></li>
+              <li><a href="{link('about.html', base)}#data">How the city is built</a></li>
             </ul>
           </div>
         </div>
@@ -279,6 +289,7 @@ home = head('index') + header('./') + f"""      <section class="hero">
         </div>
       </section>
 
+<!--BLOG-HOME-->
 {cta('Ready for your first lap of Tank Bund?', 'No download and no sign-up. Pick a route and start driving in your browser.')}""" + footer()
 write('index.html', home)
 
@@ -299,7 +310,7 @@ for r in routes:
                 <div class="fact"><div class="k">Level</div><div class="v">{r['difficulty']}</div></div>
               </div>
               <ul class="watch">{watch}</ul>
-              <a class="btn primary small" href="/play.html?route={r['id']}">Drive this route</a>
+              <div class="btn-row"><a class="btn primary small" href="/play.html?route={r['id']}">Drive this route</a><!--GUIDE:{r['id']}--></div>
             </div>
           </article>""")
 levels = ''.join(f'<div class="card"><span class="chip {k.lower()}">{k}</span><h3>{ {"Easy": "Getting comfortable", "Medium": "Junctions and flyovers", "Hard": "Old City streets"}[k] }</h3><p>{v}</p><p style="margin-top:10px">Routes: {", ".join(x["name"] for x in routes if x["difficulty"] == k)}.</p></div>' for k, v in DIFF_NOTE.items())
@@ -554,7 +565,11 @@ for slug, page in OUT.items():
         # the first screenshot is the largest thing on screen: load it straight away
         page = page.replace('loading="lazy"', 'fetchpriority="high"', 1)
     for i, lang in enumerate(seo.LANGS):
-        out = seo.share_fill(seo.localize(page, slug, lang, T, i - 1), lang, slug)
+        # the blog is in English: its links appear on the English pages only
+        en = lang == 'en'
+        out = page.replace('<!--BLOG-HOME-->', blog.home_section(posts, posts_by_slug) if en else '')
+        out = re.sub(r'<!--GUIDE:([\w-]+)-->', lambda m: f'<a class="btn ghost small" href="/blog/{guides[m.group(1)]["slug"]}.html">Read the route guide</a>' if en and m.group(1) in guides else '', out)
+        out = seo.share_fill(seo.localize(out, slug, lang, T, i - 1), lang, slug)
         out = out.replace('<!--SEO-->', seo.head_block(slug, lang, extra_ld(slug, lang), PRELOAD if slug == 'index' else ''))
         if lang != 'en':
             left = seo.untranslated(out, T)
@@ -564,7 +579,24 @@ for slug, page in OUT.items():
         dest.write_text(out, encoding='utf-8')
     print(f'wrote {slug}: {page.count("<section")} sections + header + footer, in', ', '.join(seo.LANGS))
 
-(ROOT / 'public/sitemap.xml').write_text(seo.sitemap(), encoding='utf-8')
+# ======================= BLOG (English only) =======================
+def blog_out(html):
+    html = html.replace('<html lang="en">', '<html lang="en" dir="ltr" data-en-only>').replace('<!--LANG-MENU-->', seo.lang_menu('index', 'en'))
+    return html
+
+blog_dir = ROOT / 'blog'
+shutil.rmtree(blog_dir, ignore_errors=True)  # posts removed from content/blog disappear too
+blog_dir.mkdir()
+for p in posts:
+    page = blog.post_page(p, posts_by_slug, posts, head, header, footer, cta)
+    (blog_dir / f'{p["slug"]}.html').write_text(seo.share_fill(blog_out(page), 'en', 'index', blog.post_url(p['slug'])), encoding='utf-8')
+index = blog.index_page(posts, head, header, footer, cta, page_hero)
+(blog_dir / 'index.html').write_text(seo.share_fill(blog_out(index), 'en', 'index', seo.SITE_URL + '/blog/'), encoding='utf-8')
+(ROOT / 'public/blog').mkdir(exist_ok=True)
+(ROOT / 'public/blog/feed.xml').write_text(blog.rss(posts), encoding='utf-8')
+print(f'wrote blog: index + {len(posts)} posts ({sum(p["words"] for p in posts):,} words) + feed.xml')
+
+(ROOT / 'public/sitemap.xml').write_text(seo.sitemap(blog.sitemap_rows(posts)), encoding='utf-8')
 (ROOT / 'public/robots.txt').write_text(seo.robots(), encoding='utf-8')
 (ROOT / 'public/site.webmanifest').write_text(seo.manifest(), encoding='utf-8')
 # the old client-side dictionaries are no longer needed: every language is a real page now

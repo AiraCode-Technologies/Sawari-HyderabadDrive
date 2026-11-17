@@ -8,6 +8,9 @@ export function buildTransit(world, group, quality, T, index) {
   const piers = [];
   const cConc = c3('#cdc8be'), cConcDark = c3('#a39e95'), cRail = c3('#3b3d40'), cBallast = c3('#7c7264');
 
+  // where every pier and station column ended up (for checks: none may stand on a road)
+  group.userData.piers = piers;
+  group.userData.columns = [];
   for (const line of world.rails || []) {
     const pts = line.p;
     if (pts.length < 2) continue;
@@ -31,14 +34,29 @@ export function buildTransit(world, group, quality, T, index) {
         for (const o of metro ? [-2.55, -0.95, 0.95, 2.55] : [-0.75, 0.75])
           track.quad(L(a, o - 0.04, a[2] + 0.22), L(a, o + 0.04, a[2] + 0.22), L(b, o + 0.04, b[2] + 0.22), L(b, o - 0.04, b[2] + 0.22), cRail, null, UP);
       }
+      // piers every ~28 m, but never on a carriageway: each one moves along the line or
+      // sideways under the deck to the nearest spot clear of every road, or is left out
       const len = polyLen(pts);
+      const onRoad = (x, y, g) => !!index.carriagewayAt(x, y, g, 1.5, -2, 3);
+      let lastS = -1e9;
       for (let s = 14; s < len - 6; s += 28) {
-        const q = sampleAlong(pts, s);
-        const g = T.at(q.x, q.y);
-        if (q.h - g > 4) {
-          piers.push({ ...q, g, metro });
-          index.ring(q.x, q.y, 1.1, q.h - 2, 'post');
+        let spot = null;
+        for (const ds of [0, 2, -2, 4, -4, 6, -6, 8, -8, 10, -10]) {
+          const s2 = s + ds;
+          if (s2 < 6 || s2 > len - 6 || s2 - lastS < 16) continue;
+          const q = sampleAlong(pts, s2);
+          const fx = Math.sin(q.dir), fy = Math.cos(q.dir);
+          for (const lat of [0, 1.5, -1.5, 3, -3]) {
+            const x = q.x + fy * lat, y = q.y - fx * lat;
+            const g = T.at(x, y);
+            if (q.h - g > 4 && !onRoad(x, y, g)) { spot = { ...q, x, y, g, s: s2 }; break; }
+          }
+          if (spot) break;
         }
+        if (!spot) continue;
+        lastS = spot.s;
+        piers.push({ ...spot, metro });
+        index.ring(spot.x, spot.y, 1.1, spot.h - 2, 'post');
       }
     } else {
       // at-grade railway: ballast bed and rails on the ground
@@ -96,7 +114,19 @@ export function buildTransit(world, group, quality, T, index) {
     const rot = -s.dir;
     const at = (along, lat, h, geo, color, extra = 0) =>
       parts.push({ geo, color, matrix: m4(s.x + fx * along + rx * lat, h, -(s.y + fy * along + ry * lat), 0, rot + extra, 0) });
-    at(0, 0, s.h - 6.5, new THREE.BoxGeometry(24, 5, 120), '#ece9e2');
+    // the concourse clears the highest road beneath it by 5.6 m (buses and lorries pass under)
+    let roadTop = g;
+    for (let along = -60; along <= 60; along += 6)
+      for (let lat = -12; lat <= 12; lat += 3) {
+        const x = s.x + fx * along + rx * lat, y = s.y + fy * along + ry * lat;
+        const r = index.carriagewayAt(x, y, T.at(x, y), 0, -2, 4);
+        if (r) roadTop = Math.max(roadTop, r.ah, r.bh);
+      }
+    const under = Math.max(s.h - 9, roadTop + 5.6), concTop = s.h - 4;
+    s.boardY = (Math.min(under, concTop - 1.2) + concTop) / 2; // name boards on the concourse side
+    s.boardH = Math.min(2, Math.max(1.2, concTop - under) * 0.85);
+    const concH = Math.max(1.2, concTop - under);
+    at(0, 0, concTop - concH / 2, new THREE.BoxGeometry(24, concH, 120), '#ece9e2');
     at(0, 0, s.h - 4.2, new THREE.BoxGeometry(24.2, 0.6, 120.2), '#1d6fb8');
     at(0, 0, s.h + 0.2, new THREE.BoxGeometry(22, 0.4, 116), '#d9d5cc');
     for (const lat of [-10.5, 10.5]) at(0, lat, s.h + 2.6, new THREE.BoxGeometry(0.4, 4.6, 116), '#bfc6cc');
@@ -104,12 +134,23 @@ export function buildTransit(world, group, quality, T, index) {
     roof.rotateX(-Math.PI / 2); // upper half, axis along the platform
     roof.scale(1, 0.32, 1);
     at(0, 0, s.h + 4.8, roof, '#f2f2ef');
+    // columns under the concourse only where no carriageway runs: the nearest clear spot
+    // to each side of the centre line (the median, the footpaths)
     for (const along of [-45, -15, 15, 45])
-      for (const lat of [-7, 7]) {
-        const hgt = s.h - 9 - g + 0.5;
+      for (const side of [-1, 1]) {
+        let lat = null;
+        for (let k = 7; k <= 11 && lat === null; k += 0.5)
+          for (const cand of [side * k, side * (14 - k)]) {
+            const x = s.x + fx * along + rx * cand, y = s.y + fy * along + ry * cand;
+            if (!index.carriagewayAt(x, y, T.at(x, y), 1.2, -2, 4)) { lat = cand; break; }
+          }
+        if (lat === null) continue;
+        const x = s.x + fx * along + rx * lat, y = s.y + fy * along + ry * lat, gg = T.at(x, y);
+        const hgt = under - gg + 0.5;
         if (hgt > 1) {
-          at(along, lat, g - 0.5 + hgt / 2, new THREE.BoxGeometry(1.4, hgt, 1.4), '#cfcac0');
-          index.ring(s.x + fx * along + rx * lat, s.y + fy * along + ry * lat, 0.9, s.h - 9, 'post');
+          at(along, lat, gg - 0.5 + hgt / 2, new THREE.BoxGeometry(1.4, hgt, 1.4), '#cfcac0');
+          index.ring(x, y, 0.9, under, 'post');
+          group.userData.columns.push([x, y, gg]);
         }
       }
   }
@@ -170,7 +211,8 @@ export function buildTransit(world, group, quality, T, index) {
     for (const side of [1, -1]) {
       const plane = new THREE.Mesh(new THREE.PlaneGeometry(16, 2), mat);
       const rx = Math.cos(s.dir), ry = -Math.sin(s.dir);
-      plane.position.set(s.x + rx * 12.25 * side, s.h - 6.2, -(s.y + ry * 12.25 * side));
+      plane.position.set(s.x + rx * 12.25 * side, s.boardY ?? s.h - 6.2, -(s.y + ry * 12.25 * side));
+      plane.scale.set((s.boardH ?? 2) / 2, (s.boardH ?? 2) / 2, 1);
       plane.rotation.y = -s.dir + (side > 0 ? Math.PI / 2 : -Math.PI / 2);
       group.add(plane);
     }

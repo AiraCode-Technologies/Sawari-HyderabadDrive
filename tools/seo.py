@@ -179,7 +179,8 @@ def untranslated(page_html, T):
     return [k for k, v in T.items() if v and len(k) > 2 and f'>{k}<' in page_html]
 
 
-def sitemap():
+def sitemap(extra=()):
+    """extra: (absolute url, lastmod, changefreq, priority) rows for English-only pages (the blog)."""
     today = date.today().isoformat()
     rows = []
     for slug in SLUGS:
@@ -187,6 +188,8 @@ def sitemap():
         alts += f'\n    <xhtml:link rel="alternate" hreflang="x-default" href="{url("en", slug)}" />'
         for lang in LANGS:
             rows.append(f'  <url>\n    <loc>{url(lang, slug)}</loc>\n    <lastmod>{today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>{"1.0" if slug == "index" else "0.8"}</priority>{alts}\n  </url>')
+    for loc, lastmod, freq, prio in extra:
+        rows.append(f'  <url>\n    <loc>{loc}</loc>\n    <lastmod>{lastmod}</lastmod>\n    <changefreq>{freq}</changefreq>\n    <priority>{prio}</priority>\n  </url>')
     return ('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
             + '\n'.join(rows) + '\n</urlset>\n')
 
@@ -247,10 +250,11 @@ SHARE = {
 }
 
 
-def share_fill(page_html, lang, slug):
-    """Fills the footer share links and caption data for one page and language."""
+def share_fill(page_html, lang, slug, page_url=None):
+    """Fills the footer share links and caption data for one page and language
+    (page_url overrides the address, for pages outside SLUGS such as blog posts)."""
     from urllib.parse import quote
-    u = url(lang, slug)
+    u = page_url or url(lang, slug)
     t = {k: v.replace('{url}', u) for k, v in SHARE[lang].items()}
     hrefs = {
         '__SHARE_LINKEDIN__': 'https://www.linkedin.com/feed/?shareActive=true&text=' + quote(t['linkedin']),

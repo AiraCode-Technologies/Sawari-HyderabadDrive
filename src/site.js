@@ -100,8 +100,10 @@ if (langBtn && langMenu) {
 // A returning visitor who picked another language lands on an English page (for
 // example by typing the address): take them to their language. Search engines
 // keep no storage, so they always see the page they asked for.
+// The blog is English only (data-en-only): its language menu links to the other
+// languages' home pages, so a reader must not be sent away from the article.
 const pref = stored(LKEY);
-if (pref && pref !== 'en' && root.lang === 'en') {
+if (pref && pref !== 'en' && root.lang === 'en' && !root.hasAttribute('data-en-only')) {
   const target = langLinks.find((a) => a.dataset.lang === pref);
   if (target) location.replace(target.href);
 }
@@ -161,3 +163,7 @@ if (shareBox) {
     }
   });
 }
+
+// ---------- blog: the table of contents starts folded on narrow screens ----------
+const toc = document.querySelector('.toc details');
+if (toc && matchMedia('(max-width: 960px)').matches) toc.open = false;

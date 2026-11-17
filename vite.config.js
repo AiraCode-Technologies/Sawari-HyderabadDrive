@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
@@ -18,11 +18,14 @@ const VERSION = `${pkg.version}${commit ? ` · ${commit.slice(0, 7)}` : ''}`;
 const version = { name: 'sawari-version', transformIndexHtml: (html) => html.replaceAll('%SAWARI_VERSION%', VERSION) };
 
 // Multi-page site: the website pages in English (root) and in Hindi, Urdu and
-// Telugu (/hi/, /ur/, /te/), a 404 page, plus the game itself (play.html).
+// Telugu (/hi/, /ur/, /te/), the blog (/blog/), a 404 page, plus the game itself (play.html).
 const pages = ['index', 'routes', 'features', 'about'];
 const input = { play: resolve(__dirname, 'play.html'), notFound: resolve(__dirname, '404.html') };
 for (const lang of ['', 'hi', 'ur', 'te'])
   for (const p of pages) input[`${lang || 'en'}-${p}`] = resolve(__dirname, lang, `${p}.html`);
+// The blog (English only), written to blog/ by tools/build-site.py from content/blog/.
+for (const f of readdirSync(resolve(__dirname, 'blog')).filter((f) => f.endsWith('.html')))
+  input[`blog-${f.replace(/\.html$/, '')}`] = resolve(__dirname, 'blog', f);
 
 export default defineConfig({
   plugins: [version],

@@ -329,6 +329,7 @@ export class Game {
     this.lastBlink = blinkOn;
     this.car.lights.indMat.left.emissive.set(blink.left ? '#ff9a00' : '#000000');
     this.car.lights.indMat.right.emissive.set(blink.right ? '#ff9a00' : '#000000');
+    this.car.lights.indMat.left.emissiveIntensity = this.car.lights.indMat.right.emissiveIntensity = 2.4;
     this.car.lights.tailMat.emissive.set(this.phys.braking ? '#ff1a1a' : this.lighting.headlights ? '#b00808' : '#5a0303');
     this.car.lights.tailMat.emissiveIntensity = this.phys.braking ? 2.2 : 1;
     this.lighting.update();

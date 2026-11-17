@@ -302,6 +302,80 @@ function buildRoute(def) {
     r.h = base.map((v, i) => v + r.lh[i]);
   }
 
+  // ---- even out road heights ----
+  // The terrain is sampled under each carriageway on its own, so on a hillside the two
+  // halves of a divided road came out at different heights, and side roads dropped
+  // straight off the main road. Real roads are graded: the two carriageways of a divided
+  // road meet at a common height, and a side road eases out of a junction with a bigger
+  // road at no more than about 6 %. Shared junction points stay identical on every road.
+  {
+    const flat = (r, i) => !r.bridge && r.lh[i] <= 0.6;
+    const want = roads.map((r) => r.h.slice());
+    // (1) paired carriageways: a one-way road with another one-way road alongside running
+    // the opposite way, beyond the edge of its own carriageway (a median between them)
+    const oneGrid = new Grid(30);
+    roads.forEach((r, ri) => {
+      if (!r.oneway) return;
+      for (let i = 1; i < r.pts.length; i++) {
+        const a = r.pts[i - 1], b = r.pts[i];
+        oneGrid.addBox(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[0], b[0]), Math.max(a[1], b[1]), [ri, i]);
+      }
+    });
+    roads.forEach((r, ri) => {
+      if (!r.oneway) return;
+      r.pts.forEach((p, i) => {
+        if (!flat(r, i)) return;
+        const dir = bearing(r.pts[Math.max(0, i - 1)], r.pts[Math.min(r.pts.length - 1, i + 1)]);
+        let best = null;
+        for (const [oj, k] of oneGrid.near(p[0], p[1], 30)) {
+          if (oj === ri) continue;
+          const o = roads[oj];
+          if (!flat(o, k - 1) || !flat(o, k)) continue;
+          const a = o.pts[k - 1], b = o.pts[k];
+          const dd = segDist(p, a, b);
+          const W = (r.width + o.width) / 2;
+          if (dd < W - 0.5 || dd > W + 14) continue;
+          if (Math.abs(angleDiff(dir, bearing(a, b))) < 2.6) continue;
+          if (best && dd >= best.dd) continue;
+          const dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy || 1;
+          const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2));
+          best = { dd, h: o.h[k - 1] + (o.h[k] - o.h[k - 1]) * t };
+        }
+        if (best) want[ri][i] = (r.h[i] + best.h) / 2;
+      });
+    });
+    // shared points: one height for every road through them
+    const settleNodes = () => {
+      for (const [, inc] of nodeRoads) {
+        if (inc.length < 2) continue;
+        const v = inc.reduce((acc, [ri, i]) => acc + want[ri][i], 0) / inc.length;
+        for (const [ri, i] of inc) want[ri][i] = v;
+      }
+    };
+    settleNodes();
+    // (2) side roads ease out of junctions with bigger roads
+    for (const [, inc] of nodeRoads) {
+      if (inc.length < 2) continue;
+      const main = Math.max(...inc.map(([ri]) => roads[ri].rank));
+      for (const [ri, i0] of inc) {
+        const r = roads[ri];
+        if (r.rank >= main || r.bridge) continue;
+        const h0 = want[ri][i0];
+        for (const step of [1, -1]) {
+          let s = 0;
+          for (let i = i0 + step; i >= 0 && i < r.pts.length && s < 45; i += step) {
+            s += dist(r.pts[i - step], r.pts[i]);
+            if (!flat(r, i)) break;
+            const allow = 0.06 * s + Math.max(0, s - 20) * 0.12;
+            want[ri][i] = Math.max(h0 - allow, Math.min(h0 + allow, want[ri][i]));
+          }
+        }
+      }
+    }
+    settleNodes();
+    roads.forEach((r, ri) => { r.h = want[ri]; });
+  }
+
   // ---- routing graph (directed) ----
   const adj = new Map();
   const addEdge = (a, b, ri, ia, ib, len) => {

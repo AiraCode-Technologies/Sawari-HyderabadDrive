@@ -92,14 +92,38 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       const elevated = Math.max(liftA, liftC) > 0.8;
       if (!elevated) {
         // a flush paved strip under everything (shows at junctions and on minor roads)
+        // under the carriageway itself, then the verges in short pieces that stop wherever
+        // another road's carriageway lies (side roads and junction mouths keep their asphalt)
         const w2 = rank >= 2 ? hw + sw : hw + 0.4;
-        const uvS = [[0, cum[i - 1] / 2], [w2 / 2, cum[i - 1] / 2], [w2 / 2, cum[i] / 2], [0, cum[i] / 2]];
+        const sideCol = rank >= 3 ? cSide : cShoulder;
         side.quad(
-          P(a[0] + oa.nx * w2, a[1] + oa.ny * w2, a[2] + 0.03), P(a[0] - oa.nx * w2, a[1] - oa.ny * w2, a[2] + 0.03),
-          P(c[0] - oc.nx * w2, c[1] - oc.ny * w2, c[2] + 0.03), P(c[0] + oc.nx * w2, c[1] + oc.ny * w2, c[2] + 0.03), rank >= 3 ? cSide : cShoulder, uvS, UP);
-        for (const s of [1, -1]) {
-          const ax = a[0] + oa.nx * w2 * s, ay = a[1] + oa.ny * w2 * s, bx = c[0] + oc.nx * w2 * s, by = c[1] + oc.ny * w2 * s;
-          side.quad(P(ax, ay, a[2] + 0.03), P(bx, by, c[2] + 0.03), P(bx, by, c[2] - 1.8), P(ax, ay, a[2] - 1.8), cSkirt, null, [oa.nx * s, 0, -oa.ny * s]);
+          P(a[0] + oa.nx * hw, a[1] + oa.ny * hw, a[2] + 0.03), P(a[0] - oa.nx * hw, a[1] - oa.ny * hw, a[2] + 0.03),
+          P(c[0] - oc.nx * hw, c[1] - oc.ny * hw, c[2] + 0.03), P(c[0] + oc.nx * hw, c[1] + oc.ny * hw, c[2] + 0.03), sideCol,
+          [[0, cum[i - 1] / 2], [hw / 2, cum[i - 1] / 2], [hw / 2, cum[i] / 2], [0, cum[i] / 2]], UP);
+        {
+          const segLen = cum[i] - cum[i - 1];
+          const n = Math.max(1, Math.ceil(segLen / 2.5));
+          for (const s of [1, -1]) {
+            const at = (t, l) => {
+              const nx = oa.nx + (oc.nx - oa.nx) * t, ny = oa.ny + (oc.ny - oa.ny) * t;
+              return [a[0] + (c[0] - a[0]) * t + nx * l * s, a[1] + (c[1] - a[1]) * t + ny * l * s, a[2] + (c[2] - a[2]) * t];
+            };
+            for (let k = 1; k <= n; k++) {
+              const t0 = (k - 1) / n, t1 = k / n;
+              let clear = true;
+              for (const t of [t0, (t0 + t1) / 2, t1])
+                for (const l of [hw + 0.3, (hw + w2) / 2, w2]) {
+                  const q = at(t, l);
+                  if (index.onOtherCarriageway(q[0], q[1], q[2], ri, 0.1)) clear = false;
+                }
+              if (!clear) continue;
+              const i0 = at(t0, hw), i1 = at(t1, hw), o0 = at(t0, w2), o1 = at(t1, w2);
+              const v0 = (cum[i - 1] + segLen * t0) / 2, v1 = (cum[i - 1] + segLen * t1) / 2;
+              side.quad(P(i0[0], i0[1], i0[2] + 0.03), P(i1[0], i1[1], i1[2] + 0.03), P(o1[0], o1[1], o1[2] + 0.03), P(o0[0], o0[1], o0[2] + 0.03), sideCol,
+                [[hw / 2, v0], [hw / 2, v1], [w2 / 2, v1], [w2 / 2, v0]], UP);
+              side.quad(P(o0[0], o0[1], o0[2] + 0.03), P(o1[0], o1[1], o1[2] + 0.03), P(o1[0], o1[1], o1[2] - 1.8), P(o0[0], o0[1], o0[2] - 1.8), cSkirt, null, [oa.nx * s, 0, -oa.ny * s]);
+            }
+          }
         }
         // raised footpath with a kerb, in short pieces that stop wherever another
         // carriageway crosses (side roads, junction mouths) or a median runs
