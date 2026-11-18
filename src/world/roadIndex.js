@@ -20,6 +20,9 @@ export class RoadIndex {
       for (let i = 1; i < r.p.length; i++) {
         const a = r.p[i - 1], b = r.p[i];
         const seg = { ri, i, ax: a[0], ay: a[1], ah: a[2], bx: b[0], by: b[1], bh: b[2], w: r.w, len: Math.hypot(b[0] - a[0], b[1] - a[1]) };
+        // a deck or ramp (not a road on the ground): from the data's flags; older data guesses
+        // from the height above the terrain, which levelled and smoothed roads can exceed
+        seg.st = world.sf ? !!(r.u && (r.u[i - 1] || r.u[i])) : Math.max(a[2], b[2]) - terrain.at((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) > 0.8;
         if (seg.len < 0.05) continue;
         seg.dir = Math.atan2(b[0] - a[0], b[1] - a[1]);
         this.segs.push(seg);
@@ -138,7 +141,7 @@ export class RoadIndex {
   standAt(x, y) {
     const g = this.terrain.at(x, y);
     const s = this.surface(x, y, g, 3, 6);
-    if (!s || s.h - g > 0.8) return g;
+    if (!s || s.seg.st) return g;
     const over = s.d - s.seg.w / 2;
     if (over <= 0) return s.h + ROAD_TOP;
     return s.h + ROAD_TOP + (s.road.kerb && over < footpathWidth(s.road) + 0.1 ? KERB : -0.03);
@@ -152,7 +155,7 @@ export class RoadIndex {
       const q = segDist(x, y, s.ax, s.ay, s.bx, s.by);
       const sh = s.ah + (s.bh - s.ah) * q.t;
       const gh = this.terrain.at(q.cx, q.cy);
-      if (Math.abs(sh - h) > 1.5 || sh - gh < 1.2) continue;
+      if (!s.st || Math.abs(sh - h) > 1.5 || sh - gh < 1.2) continue; // decks and ramps only
       if (q.d < bd) { bd = q.d; best = { seg: s, q, h: sh }; }
     }
     return best;

@@ -3,7 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#14202b" />
+    <meta name="theme-color" content="#0b1117" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)" />
+    <script>
+      // the website's light/dark choice carries over to the start page (saved, else the system's)
+      try { document.documentElement.dataset.theme = localStorage.getItem('hyd-site-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
+    </script>
     <title>Drive · Sawari</title>
     <link rel="icon" href="logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/src/style.css" />

@@ -336,7 +336,12 @@ export class Game {
     this.car.lights.revMat.emissive.set(this.phys.gear === 'R' ? '#ffffff' : '#000000');
     this.car.interior.gauges.draw({ kmh, rpm: this.phys.rpm, gear: this.phys.displayGear(), blinkLeft: blink.left, blinkRight: blink.right }, now || 0);
     if (this.rig.mode === 'cockpit') this.car.interior.display.draw(this.screenState(), now || 0);
-    this.audio.update(this.phys.rpm, this.state === 'driving' ? input.throttle : 0, Math.abs(this.phys.v), this.phys.slip);
+    const ph = this.phys, driving = this.state === 'driving';
+    this.audio.update({
+      rpm: ph.rpm, throttle: driving ? (ph.gear === 'R' ? input.brake : input.throttle) : 0, speed: Math.abs(ph.v), slip: ph.slip,
+      brake: driving ? ph.brakeAmt || 0 : 0, latAcc: ph.latAcc || 0, shifting: ph.shiftTimer > 0.12, handbrake: driving && !!ph.handbrakeOn,
+      inside: this.rig.mode === 'cockpit', reverse: ph.gear === 'R',
+    });
     this.hud.update({
       kmh, limit: this.phys.surface?.road.s ?? this.rules.limit ?? 30, gear: this.phys.gear === 'R' ? 'R' : 'D', time: this.time,
       remaining: this.nav.remaining, progress: this.nav.progress, progressPct: (this.nav.progress / this.nav.length) * 100,

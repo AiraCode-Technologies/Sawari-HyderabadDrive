@@ -79,7 +79,7 @@ export function buildStreetLife(world, group, quality, T, index) {
   const onCarriageway = (x, y, margin) => {
     const g = T.at(x, y);
     const s = index.surface(x, y, g, margin, 6);
-    return !!s && s.d < s.seg.w / 2 + margin && s.h - g < 0.8;
+    return !!s && s.d < s.seg.w / 2 + margin && !s.seg.st;
   };
   const parked = world.parked || [];
   if (parked.length) {

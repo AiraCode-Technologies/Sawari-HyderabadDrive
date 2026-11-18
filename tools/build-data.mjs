@@ -211,7 +211,7 @@ function buildRoute(def) {
       osm: e.id, name: t.name || t.ref || '', ...info, keys, pts,
       // a way on layer 1 or above is a deck over whatever it crosses, bridge tag or not
       // (parts of the Telugu Talli Flyover are tagged only layer=1)
-      bridge: (!!t.bridge && t.bridge !== 'no') || (parseInt(t.layer, 10) || 0) >= 1, tunnel: !!t.tunnel && t.tunnel !== 'no', round: t.junction === 'roundabout',
+      bridge: (!!t.bridge && t.bridge !== 'no') || ((parseInt(t.layer, 10) || 0) >= 1 && /flyover|bridge|overpass|elevated|skyway/i.test(t.name || '')), tunnel: !!t.tunnel && t.tunnel !== 'no', round: t.junction === 'roundabout',
       // 0 asphalt/concrete, 1 paving stones or setts, 2 unpaved
       surf: /unpaved|gravel|dirt|ground|sand|earth|mud|compacted|fine_gravel/.test(t.surface || '') ? 2 : /paving_stones|sett|cobblestone|bricks/.test(t.surface || '') ? 1 : 0,
       layer: parseInt(t.layer, 10) || 0,
@@ -1063,7 +1063,7 @@ function buildRoute(def) {
       }).filter((c) => c.pos).sort((a, b) => b.score - a.score || routeDist(a.pos, 3000) - routeDist(b.pos, 3000));
       const best = scored[0];
       if (process.env.DEBUG_FAMOUS) console.log('famous?', def.id, f.id, scored.slice(0, 3).map((c) => `${c.e.type}${c.e.id}:${(c.e.tags?.name || '').slice(0, 30)} score ${c.score.toFixed(1)} dist ${Math.round(routeDist(c.pos, 3000))}`).join(' | '));
-      if (!best || routeDist(best.pos, 1300) > 1100) continue;
+      if (!best || routeDist(best.pos, 1300) > (f.style === 'buddha' ? 1100 : 900)) continue; // further out the terrain ends (the Buddha stands in the lake)
       if (f.style === 'buddha') {
         landmarks.push({ type: 'buddha', x: r1(best.pos[0]), y: r1(best.pos[1]) });
         placed++;
@@ -1393,7 +1393,8 @@ function buildRoute(def) {
     // handcarts and tea stalls on the footpaths of busy shopping streets
     if (r.rank >= 3) {
       for (let s = 15; s < len - 10; s += 22) {
-        const q = sidePoint(r, s, hash(`${r.osm}st${s}`) < 0.5 ? 1 : -1, r.width / 2 + 1.3);
+        // on a one-way carriageway the outer kerb (left of travel), never the median
+        const q = sidePoint(r, s, r.oneway ? (r.reverse ? 1 : -1) : hash(`${r.osm}st${s}`) < 0.5 ? 1 : -1, r.width / 2 + 1.3);
         if (routeDist([q.x, q.y]) > 350 || hash(`${r.osm}sp${s}`) > 0.28 || !nearShops([q.x, q.y])) continue;
         // stalls stand on the footpath, never on any carriageway or inside a building
         if (!clearOfRoads([q.x, q.y], 0.8)) continue;
@@ -1699,6 +1700,63 @@ function buildRoute(def) {
     }
   }
 
+  // ---- last clean-up: nothing may sit inside or on top of something else ----
+  {
+    const bOut = buildings;
+    const bIdx = new Grid(30);
+    const boxOf = (p) => { const xs = p.map((q) => q[0]), ys = p.map((q) => q[1]); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; };
+    bOut.forEach((b) => { b._box = boxOf(b.p); bIdx.addBox(...b._box, b); });
+    const shrunk = (p, m) => { const c = centroid(p); return p.map((q) => { const dx = q[0] - c[0], dy = q[1] - c[1], L = Math.hypot(dx, dy) || 1; return [q[0] - (dx / L) * m, q[1] - (dy / L) * m]; }); };
+    // buildings overlapping each other (their walls flickered): the smaller one goes
+    const gone = new Set();
+    const byArea = bOut.slice().sort((x, y) => Math.abs(polygonArea(y.p)) - Math.abs(polygonArea(x.p)));
+    for (const b of byArea) {
+      if (gone.has(b)) continue;
+      const [x0, y0, x1, y1] = b._box;
+      for (const o of bIdx.near((x0 + x1) / 2, (y0 + y1) / 2, Math.max(x1 - x0, y1 - y0) / 2 + 2)) {
+        if (o === b || gone.has(o)) continue;
+        if (o._box[0] > x1 || o._box[2] < x0 || o._box[1] > y1 || o._box[3] < y0) continue;
+        if (shrunk(o.p, 0.4).some((q) => pointInPolygon(q, b.p)) || shrunk(b.p, 0.4).some((q) => pointInPolygon(q, o.p))) gone.add(o);
+      }
+    }
+    for (let i = bOut.length - 1; i >= 0; i--) if (gone.has(bOut[i])) bOut.splice(i, 1);
+    const inBld = (q) => {
+      for (const b of bIdx.near(q[0], q[1], 1)) if (!gone.has(b) && q[0] > b._box[0] - 0.3 && q[0] < b._box[2] + 0.3 && q[1] > b._box[1] - 0.3 && q[1] < b._box[3] + 0.3 && pointInPolygon(q, b.p)) return true;
+      return false;
+    };
+    const onCarriageway = (q, margin) => {
+      for (const [r, i] of roadGrid.near(q[0], q[1], 15)) {
+        if (Math.max(r.lh[i - 1], r.lh[i]) > 0.8) continue;
+        if (segDist(q, r.pts[i - 1], r.pts[i]) < r.width / 2 + margin) return true;
+      }
+      return false;
+    };
+    const before = [trees.length, lights.length, parked.length, stalls.length];
+    for (let i = trees.length - 1; i >= 0; i--) if (inBld(trees[i])) trees.splice(i, 1);
+    for (let i = lights.length - 1; i >= 0; i--) if (inBld(lights[i])) lights.splice(i, 1);
+    for (let i = parked.length - 1; i >= 0; i--) if (inBld([parked[i].x, parked[i].y]) || onCarriageway([parked[i].x, parked[i].y], -0.3)) parked.splice(i, 1);
+    for (let i = stalls.length - 1; i >= 0; i--) if (inBld([stalls[i].x, stalls[i].y]) || onCarriageway([stalls[i].x, stalls[i].y], 1.0)) stalls.splice(i, 1);
+    // the plaza round the Charminar is open: no buildings clipping the monument
+    for (const l of landmarks) {
+      if (l.type !== 'charminar') continue;
+      for (let i = bOut.length - 1; i >= 0; i--) if (dist(centroid(bOut[i].p), [l.x, l.y]) < 30) { gone.add(bOut[i]); bOut.splice(i, 1); }
+    }
+    // famous models: step back off any road their plot reaches
+    for (const l of landmarks) {
+      if (l.type !== 'famous' || l.style === 'gateway') continue;
+      const fx = Math.sin(l.a), fy = Math.cos(l.a), rx = Math.cos(l.a), ry = -Math.sin(l.a);
+      const hits = () => {
+        for (const u of [-0.5, -0.25, 0, 0.25, 0.5]) for (const v of [-0.5, -0.25, 0, 0.25, 0.5])
+          if (onCarriageway([l.x + rx * u * l.w + fx * v * l.d, l.y + ry * u * l.w + fy * v * l.d], 0.5)) return true;
+        return false;
+      };
+      for (let k = 0; k < 20 && hits(); k++) { l.x = r1(l.x - fx * 1.5); l.y = r1(l.y - fy * 1.5); } // away from the road it faces
+      for (let k = 0; k < 6 && hits(); k++) { l.w = r1(l.w * 0.9); l.d = r1(l.d * 0.9); }
+    }
+    const after = [trees.length, lights.length, parked.length, stalls.length];
+    console.log(`   clean-up: ${gone.size} overlapping buildings, ${before[0] - after[0]} trees, ${before[1] - after[1]} lights, ${before[2] - after[2]} parked, ${before[3] - after[3]} stalls removed`);
+  }
+
   // ---- output ----
   const rev = (r, arr) => (r.reverse ? arr.slice().reverse() : arr);
   // The open approach ramps of an underpass dip below the street; drawn at street level
@@ -1767,7 +1825,7 @@ function buildRoute(def) {
     buildings,
     water: waterOut,
     parks: parksNear.map((pk) => pk.map((q) => [r1(q[0]), r1(q[1])])),
-    trees, lights, signals, landmarks,
+    trees, lights, signals, landmarks, sf: 1, // sf: every road says which of its points are a structure (u)
   };
   const json = JSON.stringify(world);
   writeFileSync(join(outDir, `${def.id}.json`), json);

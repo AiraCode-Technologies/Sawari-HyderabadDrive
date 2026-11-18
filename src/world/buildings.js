@@ -260,7 +260,7 @@ export function buildBuildings(world, group, quality, T, index) {
     let nearest = null;
     for (const q of [...p, [cx, cy]]) {
       const s = index.surface(q[0], q[1], T.at(q[0], q[1]), 18, 6);
-      if (s && s.h - T.at(q[0], q[1]) < 0.8 && (!nearest || s.d - s.seg.w / 2 < nearest.d - nearest.seg.w / 2)) nearest = s;
+      if (s && !s.seg.st && (!nearest || s.d - s.seg.w / 2 < nearest.d - nearest.seg.w / 2)) nearest = s;
     }
     if (nearest) {
       gmin = nearest.h + 0.15;
@@ -332,7 +332,11 @@ export function buildBuildings(world, group, quality, T, index) {
         }
         if (shopFront && detail) {
           // a shallow awning over the shopfronts
-          plain.quad(P(a[0] + ox * 0.05, a[1] + oy * 0.05, gmin + 2.55), P(c[0] + ox * 0.05, c[1] + oy * 0.05, gmin + 2.55), P(c[0] + ox * 1.1, c[1] + oy * 1.1, gmin + 2.3), P(a[0] + ox * 1.1, a[1] + oy * 1.1, gmin + 2.3), c3(['#2e6da4', '#b03a2e', '#1e8449', '#7d6608'][seed % 4]), null, UP);
+          // inset from the wall's ends (no flap sticking out past a corner), with a front edge
+          const awCol = c3(['#2e6da4', '#b03a2e', '#1e8449', '#7d6608'][seed % 4]);
+          const ia = [a[0] + (c[0] - a[0]) * 0.04, a[1] + (c[1] - a[1]) * 0.04], ic = [c[0] + (a[0] - c[0]) * 0.04, c[1] + (a[1] - c[1]) * 0.04];
+          plain.quad(P(ia[0] + ox * 0.05, ia[1] + oy * 0.05, gmin + 2.55), P(ic[0] + ox * 0.05, ic[1] + oy * 0.05, gmin + 2.55), P(ic[0] + ox * 1.1, ic[1] + oy * 1.1, gmin + 2.3), P(ia[0] + ox * 1.1, ia[1] + oy * 1.1, gmin + 2.3), awCol, null, UP);
+          plain.quad(P(ia[0] + ox * 1.1, ia[1] + oy * 1.1, gmin + 2.05), P(ic[0] + ox * 1.1, ic[1] + oy * 1.1, gmin + 2.05), P(ic[0] + ox * 1.1, ic[1] + oy * 1.1, gmin + 2.3), P(ia[0] + ox * 1.1, ia[1] + oy * 1.1, gmin + 2.3), awCol, null, out);
         }
       }
       // main wall

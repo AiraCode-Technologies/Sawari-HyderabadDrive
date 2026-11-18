@@ -40,10 +40,74 @@ export function buildWorld(world, quality, terrain, index) {
         height[j * nx + i] = Math.min(height[j * nx + i], w.l - 2.2);
         cls[j * nx + i] = GROUND_KEYS.indexOf('bed');
       });
+    // A clean shoreline: the bed shelves gently down from the edge, and the ground just outside
+    // sits a little above the water, so the waterline follows the shore instead of zigzagging
+    // along the 10 m mesh (the water surface itself reaches 3 m past the mapped edge).
+    for (const w of world.water) {
+      const ring = w.o;
+      let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
+      for (const q of ring) { bx0 = Math.min(bx0, q[0]); by0 = Math.min(by0, q[1]); bx1 = Math.max(bx1, q[0]); by1 = Math.max(by1, q[1]); }
+      const inside = (x, y) => {
+        let ins = false;
+        for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+          const [xa, ya] = ring[a], [xb, yb] = ring[b];
+          if (ya > y !== yb > y && x < ((xb - xa) * (y - ya)) / (yb - ya) + xa) ins = !ins;
+        }
+        return ins;
+      };
+      const edgeDist = (x, y) => {
+        let best = Infinity;
+        for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+          const ex = ring[a][0] - ring[b][0], ey = ring[a][1] - ring[b][1], l2 = ex * ex + ey * ey || 1e-9;
+          const t = Math.max(0, Math.min(1, ((x - ring[b][0]) * ex + (y - ring[b][1]) * ey) / l2));
+          best = Math.min(best, Math.hypot(x - ring[b][0] - ex * t, y - ring[b][1] - ey * t));
+        }
+        return best;
+      };
+      const i0 = Math.max(0, Math.floor((bx0 - 16 - x0) / d)), i1 = Math.min(nx - 1, Math.ceil((bx1 + 16 - x0) / d));
+      const j0 = Math.max(0, Math.floor((by0 - 16 - y0) / d)), j1 = Math.min(ny - 1, Math.ceil((by1 + 16 - y0) / d));
+      for (let j = j0; j <= j1; j++)
+        for (let i = i0; i <= i1; i++) {
+          const x = x0 + i * d, y = y0 + j * d, k = j * nx + i;
+          const e = edgeDist(x, y);
+          if (e > 16) continue;
+          if (inside(x, y)) height[k] = Math.min(height[k], w.l - 0.5 - e * 0.12);
+          else if (e < 12) height[k] = Math.max(height[k], w.l + 0.3 + e * 0.03);
+        }
+    }
     // Tuck the ground just under every ground-level road and its footpaths. Every road in
     // reach counts (not just the one nearest in height: beside a flyover that was the deck,
     // and the street below got no tuck), and the ground stays flat a little way out before
     // rising, so a 10 m mesh triangle reaching across a road never pokes through it.
+    // first the ground beside every road on the ground comes up to it, just below the footpath,
+    // falling away beyond (where grading lifted a road, its dark side skirt showed like a wall)
+    for (let j = 0; j < ny; j++)
+      for (let i = 0; i < nx; i++) {
+        const k = j * nx + i, x = x0 + i * d, y = y0 + j * d;
+        if (cls[k] === GROUND_KEYS.indexOf('bed')) continue; // not in a lake
+        for (const s of index.grid.query(x, y, 10)) {
+          if (s.st) continue;
+          const ex = s.bx - s.ax, ey = s.by - s.ay, l2 = ex * ex + ey * ey || 1e-9;
+          const t = Math.max(0, Math.min(1, ((x - s.ax) * ex + (y - s.ay) * ey) / l2));
+          const dd = Math.hypot(x - s.ax - ex * t, y - s.ay - ey * t);
+          const flat = s.w / 2 + 3.5;
+          if (dd > flat + 6) continue;
+          const up = s.ah + (s.bh - s.ah) * t - 0.15 - Math.max(0, dd - flat) * 0.6;
+          if (height[k] >= up) continue;
+          // never raised over a lower road close by (the mesh would lean across it)
+          let cap = up;
+          for (const o of index.grid.query(x, y, 14)) {
+            if (o === s || o.st) continue;
+            const fx2 = o.bx - o.ax, fy2 = o.by - o.ay, m2 = fx2 * fx2 + fy2 * fy2 || 1e-9;
+            const u = Math.max(0, Math.min(1, ((x - o.ax) * fx2 + (y - o.ay) * fy2) / m2));
+            const od = Math.hypot(x - o.ax - fx2 * u, y - o.ay - fy2 * u);
+            if (od > o.w / 2 + 12) continue;
+            const oh = o.ah + (o.bh - o.ah) * u;
+            cap = Math.min(cap, oh - 0.15 + Math.max(0, od - o.w / 2 - 2) * 0.2);
+          }
+          if (height[k] < cap) height[k] = cap;
+        }
+      }
     for (let j = 0; j < ny; j++)
       for (let i = 0; i < nx; i++) {
         const k = j * nx + i, x = x0 + i * d, y = y0 + j * d;
@@ -55,8 +119,8 @@ export function buildWorld(world, quality, terrain, index) {
           const reach = s.w / 2 + 16;
           if (dist > reach) continue;
           const sh = s.ah + (s.bh - s.ah) * t;
-          if (sh - g0 > 0.8) continue; // a deck overhead: the ground carries on beneath it
-          const target = sh - 0.3 + Math.max(0, dist - (s.w / 2 + 6)) * 0.35;
+          if (s.st) continue; // a deck overhead: the ground carries on beneath it
+          const target = sh - 0.15 + Math.max(0, dist - (s.w / 2 + 7)) * 0.2;
           if (height[k] > target) height[k] = target;
         }
       }
@@ -121,10 +185,24 @@ export function buildWorld(world, quality, terrain, index) {
   // ---------- water at its real level, with slowly drifting ripples ----------
   const waterMap = waterTexture(quality.aniso || 4);
   waterMap.repeat.set(1 / 24, 1 / 24);
-  const waterMat = new THREE.MeshPhongMaterial({ color: '#3f7d9f', map: waterMap, shininess: 90, specular: '#a9cde3', transparent: true, opacity: 0.93 });
+  const waterMat = new THREE.MeshPhongMaterial({ color: '#3f7d9f', map: waterMap, shininess: 60, specular: '#5f7f93', transparent: true, opacity: 0.93 });
   group.userData.waterMap = waterMap;
   for (const w of world.water) {
-    const s = new THREE.Shape(w.o.map((q) => new THREE.Vector2(q[0], q[1])));
+    // grow the outline 3 m outwards (each corner moved along its bisector)
+    const o = w.o, n = o.length;
+    let area = 0;
+    for (let a = 0; a < n; a++) area += o[a][0] * o[(a + 1) % n][1] - o[(a + 1) % n][0] * o[a][1];
+    const sgn = area > 0 ? -1 : 1; // outward side for this winding
+    const grown = o.map((q, a) => {
+      const p0 = o[(a + n - 1) % n], p1 = o[(a + 1) % n];
+      const t0 = [q[0] - p0[0], q[1] - p0[1]], t1 = [p1[0] - q[0], p1[1] - q[1]];
+      const l0 = Math.hypot(...t0) || 1, l1 = Math.hypot(...t1) || 1;
+      let nx2 = (t0[1] / l0 + t1[1] / l1) * sgn, ny2 = (-t0[0] / l0 - t1[0] / l1) * sgn;
+      const nl = Math.hypot(nx2, ny2) || 1;
+      const k = Math.min(3 / Math.max(0.35, nl / 2), 6);
+      return new THREE.Vector2(q[0] + (nx2 / nl) * k, q[1] + (ny2 / nl) * k);
+    });
+    const s = new THREE.Shape(grown);
     for (const hole of w.h || []) s.holes.push(new THREE.Path(hole.map((q) => new THREE.Vector2(q[0], q[1]))));
     const geo = new THREE.ShapeGeometry(s);
     geo.rotateX(-Math.PI / 2);

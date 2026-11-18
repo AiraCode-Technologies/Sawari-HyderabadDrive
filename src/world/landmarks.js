@@ -141,8 +141,8 @@ function pylon(l, quality) {
   }
   const pts = [];
   for (const s of [-1, 1])
-    for (let k = 1; k <= 9; k++) {
-      const z = k * 7.5;
+    for (let k = 1; k <= 6; k++) {
+      const z = k * 7.5; // a 45 m fan each way: within the straight part of the deck
       for (const along of [-z, z]) pts.push(new THREE.Vector3(s * off, H - 4 - k * 1.2, 0), new THREE.Vector3(s * (l.w / 2 - 0.2), l.h + 0.9, along));
     }
   const cables = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: '#f5f5f0' }));

@@ -14,7 +14,7 @@ export function buildProps(world, group, quality, T, index) {
   const onCarriageway = (x, y) => {
     const g = T.at(x, y);
     const s = index.surface(x, y, g, 0.15, 6);
-    return !!s && s.d < s.seg.w / 2 + 0.15 && s.h - g < 0.8;
+    return !!s && s.d < s.seg.w / 2 + 0.15 && !s.seg.st;
   };
 
   // Props on or beside a footpath stand on the footpath (road level + kerb),

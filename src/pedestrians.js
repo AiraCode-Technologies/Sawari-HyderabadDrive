@@ -39,7 +39,7 @@ export class Pedestrians {
     this.nextId = 1;
     // footpath-bearing roads at ground level
     this.paths = world.roads
-      .filter((r) => (RANK[r.k] || 0) >= 2 && r.p.every((q) => q[2] - terrain.at(q[0], q[1]) < 0.8))
+      .filter((r) => (RANK[r.k] || 0) >= 2 && (world.sf ? !(r.u && r.u.some((v) => v)) : r.p.every((q) => q[2] - terrain.at(q[0], q[1]) < 0.8)))
       .map((r) => {
         const cum = [0];
         for (let i = 1; i < r.p.length; i++) cum.push(cum[i - 1] + Math.hypot(r.p[i][0] - r.p[i - 1][0], r.p[i][1] - r.p[i - 1][1]));

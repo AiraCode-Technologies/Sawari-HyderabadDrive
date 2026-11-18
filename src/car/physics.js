@@ -84,7 +84,7 @@ export class CarPhysics {
       h = s.h + 0.06;
       // the raised kerb and footpath beyond the carriageway
       const over = s.d - s.seg.w / 2;
-      if (over > 0 && s.road.kerb && s.h - this.index.ground(x, y) < 0.8) h += Math.min(0.15, over * 0.9);
+      if (over > 0 && s.road.kerb && !s.seg.st) h += Math.min(0.15, over * 0.9);
     } else h = this.index.ground(x, y);
     return h + this.index.bumpAt(x, y, this.h);
   }
@@ -196,6 +196,7 @@ export class CarPhysics {
     this.latAcc = this.r * this.vx;
     this.yawRate = this.r;
     this.braking = brake > 0.05 && sp > 0.3;
+    this.brakeAmt = brake; this.handbrakeOn = handbrake; // for the brake and tyre sounds
 
     this.heading += this.r * dt;
     if (this.heading > Math.PI) this.heading -= 2 * Math.PI;
@@ -204,8 +205,9 @@ export class CarPhysics {
     this.x += (fx * this.vx + rx * this.vy) * dt;
     this.y += (fy * this.vx + ry * this.vy) * dt;
 
-    // ---- flyover parapets keep the car on the deck
-    if (this.h - this.index.ground(this.x, this.y) > 1.2) {
+    // ---- flyover parapets keep the car on the deck (only when it is on one: a road on the
+    // ground can sit above the raw terrain after grading, and used to snap onto a nearby deck)
+    if (this.surface?.seg?.st && this.h - this.index.ground(this.x, this.y) > 1.2) {
       const el = this.index.nearestElevated(this.x, this.y, this.h);
       if (el && el.q.d > el.seg.w / 2 - 0.95) {
         const lim = el.seg.w / 2 - 0.95;

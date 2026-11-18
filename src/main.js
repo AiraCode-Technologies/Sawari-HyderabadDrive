@@ -62,6 +62,7 @@ function desktopOnly() {
       <div class="brand">
         <div class="brand-mark"><img src="logo.svg" alt="" width="48" height="48" /></div>
         <div><h1 class="brand-name">Sawari</h1><div class="brand-tag">Drive Hyderabad</div></div>
+        ${themeButton()}
       </div>
       <div class="gate" role="alertdialog" aria-labelledby="gate-title" aria-describedby="gate-text">
         <svg class="gate-icon" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -100,6 +101,27 @@ function desktopOnly() {
   app.appendChild(el);
 }
 
+// Light or dark start page: the same choice as on the website (shared, remembered).
+// The game itself stays dark over the 3D view either way.
+const THEME_KEY = 'hyd-site-theme';
+function themeButton() {
+  const dark = document.documentElement.dataset.theme !== 'light';
+  return `<button class="theme-btn" data-theme-toggle aria-pressed="${dark}" aria-label="${dark ? 'Switch to light mode' : 'Switch to dark mode'}"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/></svg></button>`;
+}
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-theme-toggle]');
+  if (!btn) return;
+  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem(THEME_KEY, next);
+  } catch {
+    /* private mode: only for this visit */
+  }
+  btn.setAttribute('aria-pressed', String(next === 'dark'));
+  btn.setAttribute('aria-label', next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+});
+
 function menu() {
   let bests = {};
   try {
@@ -115,6 +137,7 @@ function menu() {
         <div class="brand-mark"><img src="logo.svg" alt="" width="48" height="48" /></div>
         <div><h1 class="brand-name">Sawari</h1><div class="brand-tag">Drive Hyderabad</div></div>
         <a class="home-link" href="index.html">← Back to the website</a>
+        ${themeButton()}
       </div>
       <p class="tagline">Practise famous Hyderabad roads in your browser: real streets, left-hand traffic, signals and turn-by-turn guidance.</p>
       <div class="section-title">Choose a route</div>

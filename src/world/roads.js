@@ -13,14 +13,17 @@ function offsets(pts) {
     let tx = b[0] - a[0], ty = b[1] - a[1];
     const tl = Math.hypot(tx, ty) || 1;
     tx /= tl; ty /= tl;
-    let scale = 1;
+    let scale = 1, sharp = false;
     if (i > 0 && i < n - 1) {
       const sx = pts[i][0] - pts[i - 1][0], sy = pts[i][1] - pts[i - 1][1];
       const sl = Math.hypot(sx, sy) || 1;
       const dot = (-ty * -sy) / sl + (tx * sx) / sl;
-      scale = 1 / Math.max(0.5, dot);
+      // a sharp corner (over ~50 degrees): a mitred edge would fold over itself, so the
+      // edge keeps its width and the corner gets a round fill (see buildRoads)
+      if (dot < 0.64) sharp = true;
+      else scale = 1 / dot;
     }
-    out.push({ nx: -ty * scale, ny: tx * scale });
+    out.push({ nx: -ty * scale, ny: tx * scale, sharp });
   }
   return out;
 }
@@ -30,7 +33,32 @@ const shade = (c, k) => new THREE.Color(c.r * k, c.g * k, c.b * k);
 
 // Asphalt drawn slightly higher for bigger roads, so where two roads overlap at
 // a junction the more important one is drawn on top without flicker.
-export const roadTop = (r, ri) => ROAD_TOP + (rankOf(r) - 4) * 0.008 + (ri % 3) * 0.002;
+// Where roads overlap at a junction, the bigger road's surface is drawn a little higher, and
+// roads of the same class that meet get different layers (like colouring a map), so no two
+// overlapping surfaces ever share a height (they flickered against each other).
+let LAYERS = null;
+export function roadLayers(roads) {
+  const byNode = new Map();
+  roads.forEach((r, ri) => r.p.forEach((q) => {
+    const k = `${q[0]},${q[1]}`;
+    if (!byNode.has(k)) byNode.set(k, []);
+    byNode.get(k).push(ri);
+  }));
+  const adj = roads.map(() => new Set());
+  for (const rs of byNode.values()) for (const a of rs) for (const b of rs) if (a !== b && rankOf(roads[a]) === rankOf(roads[b])) adj[a].add(b);
+  const col = new Array(roads.length).fill(-1);
+  const order = roads.map((_, i) => i).sort((a, b) => adj[b].size - adj[a].size || a - b);
+  for (const ri of order) {
+    const used = new Set([...adj[ri]].map((o) => col[o]));
+    let c = 0;
+    while (used.has(c) && c < 4) c++;
+    col[ri] = c;
+  }
+  LAYERS = col;
+  return col;
+}
+// (12 mm between road classes, up to 7.5 mm of layers within one; the verge strip lies at 1 cm)
+export const roadTop = (r, ri) => ROAD_TOP + (rankOf(r) - 4) * 0.012 + (LAYERS ? LAYERS[ri] : ri % 3) * 0.0025;
 
 // Carriageways, footpaths with kerbs, medians, bridge decks and parapets,
 // lane markings, zebra crossings and stop lines, speed breakers and pillars.
@@ -48,9 +76,10 @@ export function buildRoads(world, group, quality, T, index, junctions) {
   const cWhite = c3('#e9e8e0'), cYellow = c3('#e8c547');
   const cConc = c3('#b9b4ab'), cConcDark = c3('#8f8a82'), cKerbY = c3('#e3b931'), cKerbB = c3('#2a2a2a'), cMedGreen = c3('#6f8f45');
   const cKerbStone = c3('#c4beb2'), cKerbFace = c3('#a9a397');
-  const cPatchDark = c3('#3c3f44'), cPatchLight = c3('#5f5e5a'), cIron = c3('#3a3733'), cIronRim = c3('#55524c');
+  const cPatchDark = c3('#3c3f44'), cPatchLight = c3('#43454a') /* never paler than the road: it read as dirt */, cIron = c3('#3a3733'), cIronRim = c3('#55524c');
 
   const pillars = [];
+  roadLayers(world.roads);
   world.roads.forEach((r, ri) => {
     const pts = r.p;
     if (pts.length < 2) return;
@@ -78,19 +107,43 @@ export function buildRoads(world, group, quality, T, index, junctions) {
     const lanes = sec.filter((q, i) => i < 2 || i >= sec.length - 2 || (q[0] < hw - 0.6 && q[0] > -hw + 0.6)).sort((a, b) => b[0] - a[0]);
     const secCol = lanes.map(([, dust, sh]) => shade(mix(base, r.f === 2 ? base : cDust, dust * 0.75), sh));
 
+    // where this road overlaps a bigger road's carriageway (a junction), its surface dips a
+    // few centimetres under, so graded heights never let it show through the bigger road
+    const myLayer = LAYERS ? LAYERS[ri] : 0;
+    const dip = pts.map((q) => {
+      for (const sg of index.grid.query(q[0], q[1], 0)) {
+        if (sg.ri === ri) continue;
+        const o = world.roads[sg.ri], ro = rankOf(o);
+        if (ro < rank || (ro === rank && (LAYERS ? LAYERS[sg.ri] : 0) <= myLayer)) continue;
+        const ex = sg.bx - sg.ax, ey = sg.by - sg.ay, l2 = ex * ex + ey * ey || 1e-9;
+        const t = Math.max(0, Math.min(1, ((q[0] - sg.ax) * ex + (q[1] - sg.ay) * ey) / l2));
+        if (Math.hypot(q[0] - sg.ax - ex * t, q[1] - sg.ay - ey * t) < sg.w / 2 + 0.3 && Math.abs(sg.ah + (sg.bh - sg.ah) * t - q[2]) < 1) return 0.06;
+      }
+      return 0;
+    });
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], c = pts[i], oa = off[i - 1], oc = off[i];
       const va = cum[i - 1] / 5, vc = cum[i] / 5;
+      const ta = top - dip[i - 1], tc = top - dip[i];
       for (let k = 1; k < lanes.length; k++) {
         const l0 = lanes[k - 1][0], l1 = lanes[k][0];
-        const A = P(a[0] + oa.nx * l0, a[1] + oa.ny * l0, a[2] + top), B = P(a[0] + oa.nx * l1, a[1] + oa.ny * l1, a[2] + top);
-        const C = P(c[0] + oc.nx * l1, c[1] + oc.ny * l1, c[2] + top), D = P(c[0] + oc.nx * l0, c[1] + oc.ny * l0, c[2] + top);
+        const A = P(a[0] + oa.nx * l0, a[1] + oa.ny * l0, a[2] + ta), B = P(a[0] + oa.nx * l1, a[1] + oa.ny * l1, a[2] + ta);
+        const C = P(c[0] + oc.nx * l1, c[1] + oc.ny * l1, c[2] + tc), D = P(c[0] + oc.nx * l0, c[1] + oc.ny * l0, c[2] + tc);
         const uv = [[l0 / 5, va], [l1 / 5, va], [l1 / 5, vc], [l0 / 5, vc]];
         asphalt.tri2(A, B, C, D, secCol[k - 1], secCol[k], uv);
       }
+      if (off[i - 1].sharp) {
+        // round fill at a sharp corner, so the two straight pieces join without a gap
+        const segs = 14;
+        for (let k = 0; k < segs; k++) {
+          const a0 = (k / segs) * Math.PI * 2, a1 = ((k + 1) / segs) * Math.PI * 2;
+          const C = P(a[0], a[1], a[2] + top), Q0 = P(a[0] + Math.cos(a0) * hw, a[1] + Math.sin(a0) * hw, a[2] + top), Q1 = P(a[0] + Math.cos(a1) * hw, a[1] + Math.sin(a1) * hw, a[2] + top);
+          asphalt.quad(C, C, Q0, Q1, base, [[0, 0], [0, 0], [Math.cos(a0) * hw / 5, Math.sin(a0) * hw / 5], [Math.cos(a1) * hw / 5, Math.sin(a1) * hw / 5]], UP);
+        }
+      }
       const liftA = a[2] - gAt(a[0], a[1]), liftC = c[2] - gAt(c[0], c[1]);
       // a structure (deck or ramp) per the data; older data: guess from the height above ground
-      const elevated = r.u ? !!(r.u[i - 1] || r.u[i]) : Math.max(liftA, liftC) > 0.8;
+      const elevated = world.sf ? !!(r.u && (r.u[i - 1] || r.u[i])) : Math.max(liftA, liftC) > 0.8;
       if (!elevated) {
         // a flush paved strip under everything (shows at junctions and on minor roads)
         // under the carriageway itself, then the verges in short pieces that stop wherever
@@ -98,12 +151,12 @@ export function buildRoads(world, group, quality, T, index, junctions) {
         const w2 = rank >= 2 ? hw + sw : hw + 0.4;
         const sideCol = rank >= 3 ? cSide : cShoulder;
         side.quad(
-          P(a[0] + oa.nx * hw, a[1] + oa.ny * hw, a[2] + 0.03), P(a[0] - oa.nx * hw, a[1] - oa.ny * hw, a[2] + 0.03),
-          P(c[0] - oc.nx * hw, c[1] - oc.ny * hw, c[2] + 0.03), P(c[0] + oc.nx * hw, c[1] + oc.ny * hw, c[2] + 0.03), sideCol,
+          P(a[0] + oa.nx * hw, a[1] + oa.ny * hw, a[2] + 0.01), P(a[0] - oa.nx * hw, a[1] - oa.ny * hw, a[2] + 0.01),
+          P(c[0] - oc.nx * hw, c[1] - oc.ny * hw, c[2] + 0.01), P(c[0] + oc.nx * hw, c[1] + oc.ny * hw, c[2] + 0.01), sideCol,
           [[0, cum[i - 1] / 2], [hw / 2, cum[i - 1] / 2], [hw / 2, cum[i] / 2], [0, cum[i] / 2]], UP);
         {
           const segLen = cum[i] - cum[i - 1];
-          const n = Math.max(1, Math.ceil(segLen / 2.5));
+          const n = Math.max(1, Math.ceil(segLen / 1.5));
           for (const s of [1, -1]) {
             const at = (t, l) => {
               const nx = oa.nx + (oc.nx - oa.nx) * t, ny = oa.ny + (oc.ny - oa.ny) * t;
@@ -113,16 +166,18 @@ export function buildRoads(world, group, quality, T, index, junctions) {
               const t0 = (k - 1) / n, t1 = k / n;
               let clear = true;
               for (const t of [t0, (t0 + t1) / 2, t1])
-                for (const l of [hw + 0.3, (hw + w2) / 2, w2]) {
+                for (const l of [hw + 0.3, hw + (w2 - hw) * 0.33, hw + (w2 - hw) * 0.66, w2]) {
                   const q = at(t, l);
-                  if (index.onOtherCarriageway(q[0], q[1], q[2], ri, 0.1)) clear = false;
+                  if (index.onOtherCarriageway(q[0], q[1], q[2], ri, 0.4)) clear = false;
                 }
               if (!clear) continue;
               const i0 = at(t0, hw), i1 = at(t1, hw), o0 = at(t0, w2), o1 = at(t1, w2);
               const v0 = (cum[i - 1] + segLen * t0) / 2, v1 = (cum[i - 1] + segLen * t1) / 2;
-              side.quad(P(i0[0], i0[1], i0[2] + 0.03), P(i1[0], i1[1], i1[2] + 0.03), P(o1[0], o1[1], o1[2] + 0.03), P(o0[0], o0[1], o0[2] + 0.03), sideCol,
+              side.quad(P(i0[0], i0[1], i0[2] + 0.01), P(i1[0], i1[1], i1[2] + 0.01), P(o1[0], o1[1], o1[2] + 0.01), P(o0[0], o0[1], o0[2] + 0.01), sideCol,
                 [[hw / 2, v0], [hw / 2, v1], [w2 / 2, v1], [w2 / 2, v0]], UP);
-              side.quad(P(o0[0], o0[1], o0[2] + 0.03), P(o1[0], o1[1], o1[2] + 0.03), P(o1[0], o1[1], o1[2] - 1.8), P(o0[0], o0[1], o0[2] - 1.8), cSkirt, null, [oa.nx * s, 0, -oa.ny * s]);
+              // the edge slopes down and out like an earth bank (a vertical face read as a dark wall)
+              const ex0 = oa.nx * s * 1.8, ey0 = oa.ny * s * 1.8, ex1 = oc.nx * s * 1.8, ey1 = oc.ny * s * 1.8;
+              side.quad(P(o0[0], o0[1], o0[2] + 0.01), P(o1[0], o1[1], o1[2] + 0.01), P(o1[0] + ex1, o1[1] + ey1, o1[2] - 1.8), P(o0[0] + ex0, o0[1] + ey0, o0[2] - 1.8), cSkirt, null, [oa.nx * s * 0.7, 0.7, -oa.ny * s * 0.7]);
             }
           }
         }
@@ -132,7 +187,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
           for (const s of [1, -1]) {
             if (s === -1 && r.m && (r.m[i - 1] > 0 || r.m[i] > 0)) continue;
             const segLen = cum[i] - cum[i - 1];
-            const n = Math.max(1, Math.ceil(segLen / 2.5));
+            const n = Math.max(1, Math.ceil(segLen / 1.5));
             const at = (t, l) => {
               const nx = oa.nx + (oc.nx - oa.nx) * t, ny = oa.ny + (oc.ny - oa.ny) * t;
               return [a[0] + (c[0] - a[0]) * t + nx * l * s, a[1] + (c[1] - a[1]) * t + ny * l * s, a[2] + (c[2] - a[2]) * t];
@@ -143,9 +198,9 @@ export function buildRoads(world, group, quality, T, index, junctions) {
               if (k === 0 || k === n + 1) { keep.push(true); continue; }
               let ok = true;
               for (const t of [t0, (t0 + t1) / 2, t1])
-                for (const l of [hw + 0.05, hw + sw * 0.5, hw + sw]) {
+                for (const l of [hw + 0.05, hw + sw * 0.25, hw + sw * 0.5, hw + sw * 0.75, hw + sw]) {
                   const q = at(t, l);
-                  if (index.onOtherCarriageway(q[0], q[1], q[2], ri)) ok = false;
+                  if (index.onOtherCarriageway(q[0], q[1], q[2], ri, 0.5)) ok = false;
                 }
               keep.push(ok);
             }
@@ -180,6 +235,8 @@ export function buildRoads(world, group, quality, T, index, junctions) {
         for (const s of [1, -1]) {
           if (s === -1 && paired) continue;
           const ax = a[0] + oa.nx * hw * s, ay = a[1] + oa.ny * hw * s, bx = c[0] + oc.nx * hw * s, by = c[1] + oc.ny * hw * s;
+          // where another carriageway runs on (a ramp splitting off or joining), no parapet
+          if (index.onOtherCarriageway((ax + bx) / 2, (ay + by) / 2, (a[2] + c[2]) / 2, ri, -0.3)) continue;
           const out = [oa.nx * s, 0, -oa.ny * s];
           const base0 = r.b ? a[2] - 1.1 : gAt(ax, ay) - 0.5, base1 = r.b ? c[2] - 1.1 : gAt(bx, by) - 0.5;
           concrete.quad(P(ax, ay, base0), P(bx, by, base1), P(bx, by, c[2] + 0.95), P(ax, ay, a[2] + 0.95), cConcDark, null, out);
@@ -257,7 +314,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
         const inA = [q0.x + r0x * hw, q0.y + r0y * hw], inB = [q1.x + r1x * hw, q1.y + r1y * hw];
         const outA = [q0.x + r0x * (hw + m0), q0.y + r0y * (hw + m0)], outB = [q1.x + r1x * (hw + m1), q1.y + r1y * (hw + m1)];
         const stripe = Math.floor(s / 2) % 2 === 0 ? cKerbY : cKerbB;
-        const elevatedHere = r.u ? !!r.u[Math.min(q0.i, r.u.length - 1)] : q0.h - gAt(q0.x, q0.y) > 0.8;
+        const elevatedHere = world.sf ? !!(r.u && r.u[Math.min(q0.i, r.u.length - 1)]) : q0.h - gAt(q0.x, q0.y) > 0.8;
         if (m0 > 0.3) {
           median.quad(P(inA[0], inA[1], q0.h + top - 0.02), P(inB[0], inB[1], q1.h + top - 0.02), P(inB[0], inB[1], q1.h + mt), P(inA[0], inA[1], q0.h + mt), stripe, null, [-r0x, 0, r0y]);
           // kerb cap, then a planted strip (or concrete on flyovers and narrow medians)
@@ -314,6 +371,16 @@ export function buildRoads(world, group, quality, T, index, junctions) {
     }
   });
 
+  // how many carriageways cover a point (2 or more: inside a junction box)
+  const roadsAt = (x, y, h) => {
+    const seen = new Set();
+    for (const sg of index.grid.query(x, y, 0.5)) {
+      const ex = sg.bx - sg.ax, ey = sg.by - sg.ay, l2 = ex * ex + ey * ey || 1e-9;
+      const t = Math.max(0, Math.min(1, ((x - sg.ax) * ex + (y - sg.ay) * ey) / l2));
+      if (Math.hypot(x - sg.ax - ex * t, y - sg.ay - ey * t) < sg.w / 2 && Math.abs(sg.ah + (sg.bh - sg.ah) * t - h) < 1.5) seen.add(sg.ri);
+    }
+    return seen.size;
+  };
   // zebra crossings and stop lines before signals
   for (const s of world.signals) {
     for (const dir of uniqueDirs(s.dirs)) {
@@ -323,6 +390,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       const w = i >= 0 ? s.ws[i] : s.w;
       for (let k = -w / 2 + 0.5; k < w / 2 - 0.4; k += 1.1) {
         const x0 = s.x - fx * 7 + rx * k, y0 = s.y - fy * 7 + ry * k;
+        if (roadsAt(x0 + fx * 1.5 + rx * 0.27, y0 + fy * 1.5 + ry * 0.27, s.h) >= 2) continue; // inside the junction box
         marks.quad(
           P(x0, y0, h), P(x0 + rx * 0.55, y0 + ry * 0.55, h),
           P(x0 + rx * 0.55 + fx * 3, y0 + ry * 0.55 + fy * 3, h), P(x0 + fx * 3, y0 + fy * 3, h), cWhite, null, UP);
@@ -330,6 +398,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       // stop line across the approaching (left-hand) lanes
       const sx = s.x - fx * 8.6, sy = s.y - fy * 8.6;
       const l0 = -w / 2 + 0.3, l1 = -0.15;
+      if (roadsAt(sx + rx * (l0 + l1) / 2, sy + ry * (l0 + l1) / 2, s.h) < 2)
       marks.quad(
         P(sx + rx * l0, sy + ry * l0, h), P(sx + rx * l1, sy + ry * l1, h),
         P(sx + rx * l1 - fx * 0.4, sy + ry * l1 - fy * 0.4, h), P(sx + rx * l0 - fx * 0.4, sy + ry * l0 - fy * 0.4, h), cWhite, null, UP);
