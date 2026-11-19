@@ -178,16 +178,27 @@ function loading(text) {
   return el;
 }
 
+// Every drive is a new session built from a fresh copy of the route data: the download
+// is kept (as text), but building the world writes into the objects it is given, so a
+// second drive must never reuse the first one's.
 async function loadWorld(id) {
   if (!cache.has(id)) {
     const res = await fetch(`data/${id}.json`);
     if (!res.ok) throw new Error(`Could not load route data (HTTP ${res.status})`);
-    cache.set(id, await res.json());
+    cache.set(id, await res.text());
   }
-  return cache.get(id);
+  return JSON.parse(cache.get(id));
 }
 
+let starting = false;
 async function play(id) {
+  if (starting) return; // a double tap on Start driving starts one drive, not two
+  starting = true;
+  if (game) {
+    // never two drives at once: the old one is shut down completely first
+    game.dispose();
+    game = null;
+  }
   const meta = index.routes.find((r) => r.id === id);
   const l = loading(`Building ${meta ? meta.name : 'route'}…`);
   try {
@@ -207,8 +218,16 @@ async function play(id) {
     menu();
   } finally {
     l.remove();
+    starting = false;
   }
 }
+
+// Coming back to this page with the browser's Back or Forward button can restore it as
+// it was left, mid-drive and with its sound already shut down: load it afresh instead,
+// so every visit starts a new session.
+addEventListener('pageshow', (e) => {
+  if (e.persisted) location.reload();
+});
 
 async function boot() {
   const l = loading('Loading routes…');
