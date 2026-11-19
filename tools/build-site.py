@@ -239,7 +239,7 @@ home = head('index') + header('./') + f"""      <section class="hero">
             <p>Sawari runs in your browser on any device, with nothing to install. The controls fit the device in your hands.</p>
           </div>
           <div class="grid g4">
-            <div class="card">{icon('phone')}<h3>Phones</h3><p>Hold your phone sideways: steer with the slider, then press GO and BRAKE.</p></div>
+            <div class="card">{icon('phone')}<h3>Phones</h3><p>Hold your phone sideways: turn the on-screen steering wheel, then press GO and BRAKE.</p></div>
             <div class="card">{icon('tablet')}<h3>Tablets</h3><p>Bigger on-screen controls and more of the road in view, on iPad and Android tablets.</p></div>
             <div class="card">{icon('laptop')}<h3>Laptops</h3><p>Drive with the arrow keys or WASD, with the indicators on Q and E.</p></div>
             <div class="card">{icon('pc')}<h3>PCs</h3><p>A big screen with sharp shadows, and a gamepad works too.</p></div>

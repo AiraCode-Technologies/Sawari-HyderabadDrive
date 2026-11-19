@@ -218,16 +218,15 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 .t-buttons { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); display: flex; gap: 6px; }
 .t-buttons button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); display: grid; place-items: center; padding: 0; }
 .t-buttons button svg { width: 22px; height: 22px; }
-.t-buttons button.down, .t-inds button.down { background: rgba(255, 255, 255, 0.25); }
-.t-inds { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: calc(max(14px, env(safe-area-inset-bottom)) + 100px); display: flex; gap: 10px; }
-.t-inds button { width: 56px; height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); display: grid; place-items: center; padding: 0; }
-.t-inds button svg { width: 26px; height: 26px; }
-.t-inds .t-ind.on { background: #2a9c5c; border-color: #2a9c5c; }
-.t-steer { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); width: min(42vw, 300px); height: 96px; touch-action: none; }
-.t-track { position: absolute; left: 0; right: 0; top: 50%; height: 14px; margin-top: -7px; border-radius: 7px; background: rgba(16, 24, 32, 0.65); border: 1px solid var(--line); }
-.t-knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(244, 241, 234, 0.92); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
-.t-knob::before { content: ''; position: absolute; inset: 22px 30px; border-radius: 2px; background: #6b7580; }
-.t-pedals { position: absolute; right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); display: flex; align-items: flex-end; gap: 12px; }
+.t-buttons button.down, .t-drive button.down { background: rgba(255, 255, 255, 0.25); }
+.t-pedals { position: absolute; right: max(36px, env(safe-area-inset-right)); bottom: max(24px, env(safe-area-inset-bottom)); display: flex; align-items: flex-end; gap: 14px; }
+/* steering wheel with the indicators either side of it */
+.t-drive { position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px; }
+.t-drive .t-ind { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.t-drive .t-ind svg { width: 24px; height: 24px; }
+.t-drive .t-ind.on { background: #2a9c5c; border-color: #2a9c5c; }
+.t-wheel { width: 150px; height: 150px; touch-action: none; border-radius: 50%; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45)); will-change: transform; }
+.t-wheel svg { width: 100%; height: 100%; display: block; }
 .t-pedal { display: grid; place-items: center; border-radius: 16px; font-weight: 800; font-size: 14px; letter-spacing: 0.08em; color: #fff; border: 2px solid rgba(255, 255, 255, 0.25); touch-action: none; }
 .t-brake { width: 92px; height: 78px; background: rgba(185, 45, 35, 0.78); }
 .t-gas { width: 82px; height: 118px; background: rgba(31, 138, 85, 0.8); }
@@ -250,7 +249,8 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 }
 /* narrow phones: a shorter slider and a smaller speed cluster, so they never overlap */
 @media (max-width: 760px) {
-  .t-steer { width: min(34vw, 240px); }
+  .t-wheel { width: 116px; height: 116px; }
+  .t-drive .t-ind { width: 40px; height: 40px; }
   .touch .cluster { transform: translateX(-50%) scale(0.6); }
   .t-brake { width: 80px; height: 70px; }
   .t-gas { width: 72px; height: 96px; }
@@ -258,11 +258,10 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 }
 /* tablets: bigger controls for bigger hands-off-the-bezel reach */
 @media (min-width: 900px) and (min-height: 600px) {
-  .t-steer { width: min(36vw, 380px); height: 120px; }
-  .t-knob { width: 84px; height: 84px; margin: -42px 0 0 -42px; }
-  .t-knob::before { inset: 28px 39px; }
-  .t-inds { bottom: calc(max(20px, env(safe-area-inset-bottom)) + 130px); }
-  .t-inds button { width: 68px; height: 56px; }
+  .t-wheel { width: 190px; height: 190px; }
+  .t-drive { gap: 14px; left: max(28px, env(safe-area-inset-left)); bottom: max(28px, env(safe-area-inset-bottom)); }
+  .t-drive .t-ind { width: 60px; height: 60px; }
+  .t-pedals { right: max(52px, env(safe-area-inset-right)); bottom: max(36px, env(safe-area-inset-bottom)); }
   .t-buttons button { width: 52px; height: 52px; }
   .t-buttons button svg { width: 26px; height: 26px; }
   .t-brake { width: 120px; height: 100px; font-size: 16px; }
@@ -291,3 +290,11 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 .start-row.sticky .primary { width: 100%; max-width: 520px; margin: 0 auto; display: block; padding: 15px 26px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
 :root[data-theme='light'] .start-row.sticky { background: linear-gradient(180deg, rgba(246, 243, 238, 0) 0%, rgba(246, 243, 238, 0.94) 30%, #f1ece3 100%); }
 
+
+/* "Steering wheel on: Right": the wheel (with its indicators) and the pedals swap sides */
+.touch-ui.wheel-right .t-drive { left: auto; right: max(16px, env(safe-area-inset-right)); }
+.touch-ui.wheel-right .t-pedals { right: auto; left: max(36px, env(safe-area-inset-left)); }
+@media (min-width: 900px) and (min-height: 600px) {
+  .touch-ui.wheel-right .t-drive { left: auto; right: max(28px, env(safe-area-inset-right)); }
+  .touch-ui.wheel-right .t-pedals { right: auto; left: max(52px, env(safe-area-inset-left)); }
+}

@@ -3,7 +3,7 @@ import { Game } from './game.js';
 const app = document.getElementById('app');
 const COLORS = ['#c8202a', '#f1f1ee', '#1f4f9a', '#a9aeb4', '#202326', '#d9822b'];
 const SETTINGS_VERSION = 2;
-const DEFAULTS = { v: SETTINGS_VERSION, route: 'tank-bund', color: COLORS[0], traffic: 'dense', guides: 'on', voice: 'on', quality: 'high', camera: 'chase', time: 'noon' };
+const DEFAULTS = { v: SETTINGS_VERSION, route: 'tank-bund', color: COLORS[0], traffic: 'dense', guides: 'on', voice: 'on', quality: 'high', camera: 'chase', time: 'noon', wheel: 'left' };
 
 function loadSettings() {
   try {
@@ -126,9 +126,10 @@ function menu() {
         <div class="option"><label>Spoken directions</label>${seg('voice', [['on', 'On'], ['off', 'Off']])}</div>
         <div class="option"><label>Graphics</label>${seg('quality', [['high', 'High (shadows)'], ['low', 'Fast']])}</div>
         <div class="option"><label>Start in</label>${seg('camera', [['chase', 'Chase view'], ['cockpit', 'Driver’s seat']])}</div>
+        ${TOUCH ? `<div class="option"><label>Steering wheel on</label>${seg('wheel', [['left', 'Left (pedals right)'], ['right', 'Right (pedals left)']])}</div>` : ''}
       </div>
       ${TOUCH
-        ? `<p class="keys touch-how">Hold your phone sideways. Drag the slider on the left to steer; <b>GO</b> and <b>BRAKE</b> are on the right (hold BRAKE when stopped to reverse).</p>
+        ? `<p class="keys touch-how">Hold your phone sideways. Turn the steering wheel with your thumb and use <b>GO</b> and <b>BRAKE</b> (hold BRAKE when stopped to reverse). Pick which side the wheel goes in the options below.</p>
       <div class="start-row sticky"><button class="primary" data-start>Start driving</button></div>`
         : `<div class="start-row">
         <button class="primary" data-start>Start driving</button>

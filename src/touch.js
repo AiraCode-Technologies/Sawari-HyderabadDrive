@@ -1,10 +1,11 @@
 import { clamp } from './util.js';
 
 // On-screen controls for phones and tablets, laid out for landscape:
-//   bottom left  - a steering slider: drag left or right, let go and it self-centres
-//   bottom right - brake and accelerator pedals (hold; holding the brake at a stop selects
-//                  reverse, exactly as the keyboard does)
-//   above it     - left and right indicators, under the left thumb
+//   bottom left  - a steering wheel you turn with your thumb (it follows the finger round,
+//                  full lock at 150 degrees either way, and spins back to centre when let
+//                  go), with the left and right indicators on either side of it
+//   bottom right - brake and accelerator pedals, set in from the edge (hold; holding the
+//                  brake at a stop selects reverse, exactly as the keyboard does)
 //   top right    - horn, view, lights, back to the route, pause
 // Everything feeds the same Input object as the keyboard and gamepad, so the rules,
 // the debrief and the rest of the game work unchanged.
@@ -17,6 +18,18 @@ const ICON = {
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/>',
   pause: '<path d="M8 5v14M16 5v14"/>',
 };
+const MAX = 150; // degrees of wheel turn for full lock
+// a three-spoke steering wheel: rim, spokes, hub, and a marker at the top
+const WHEEL = `<svg viewBox="0 0 120 120" aria-hidden="true">
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#1d242c" stroke-width="15"/>
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#39434e" stroke-width="10"/>
+  <circle cx="60" cy="60" r="58.5" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
+  <path d="M60 60 L14 70 M60 60 L106 70 M60 60 L60 108" stroke="#2b333c" stroke-width="11" stroke-linecap="round"/>
+  <path d="M60 60 L14 70 M60 60 L106 70 M60 60 L60 108" stroke="#47525e" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="60" cy="60" r="17" fill="#232a32" stroke="#56626f" stroke-width="2.5"/>
+  <circle cx="60" cy="60" r="6" fill="#f2a93b"/>
+  <rect x="56" y="3.5" width="8" height="13" rx="2" fill="#f2a93b"/>
+</svg>`;
 const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
 
 // keep a finger's moves and release on the control it pressed (some browsers refuse
@@ -30,14 +43,17 @@ const capture = (el, e) => {
 };
 
 export class TouchControls {
-  constructor(root, input) {
+  constructor(root, input, opts = {}) {
     this.input = input;
     input.touch = { steer: 0, throttle: 0, brake: 0, active: true };
     const el = (this.el = document.createElement('div'));
-    el.className = 'touch-ui';
+    // the player's choice on the start page: the wheel on the right swaps it with the
+    // pedals; the buttons at the top and everything else stay where they are
+    el.className = `touch-ui${opts.wheel === 'right' ? ' wheel-right' : ''}`;
     el.innerHTML = `
-      <div class="t-inds">
+      <div class="t-drive">
         <button data-tap="KeyQ" class="t-ind" aria-label="Left indicator">${svg('left')}</button>
+        <div class="t-wheel" role="slider" aria-label="Steering wheel: turn it with your thumb" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0">${WHEEL}</div>
         <button data-tap="KeyE" class="t-ind" aria-label="Right indicator">${svg('right')}</button>
       </div>
       <div class="t-buttons">
@@ -47,7 +63,6 @@ export class TouchControls {
         <button data-tap="KeyR" aria-label="Back to the route">${svg('reset')}</button>
         <button data-tap="Escape" aria-label="Pause">${svg('pause')}</button>
       </div>
-      <div class="t-steer" aria-label="Steering: drag left or right"><div class="t-track"></div><div class="t-knob"></div></div>
       <div class="t-pedals">
         <div class="t-pedal t-brake" data-pedal="brake" aria-label="Brake">BRAKE</div>
         <div class="t-pedal t-gas" data-pedal="throttle" aria-label="Accelerator">GO</div>
@@ -98,42 +113,59 @@ export class TouchControls {
       p.addEventListener('pointercancel', up);
     });
 
-    // steering slider: the knob follows the finger along the track (full lock at the ends)
-    const pad = el.querySelector('.t-steer'), knob = el.querySelector('.t-knob');
-    let steerId = null, cx = 0, half = 1;
-    const setSteer = (x) => {
-      const v = clamp((x - cx) / half, -1, 1);
-      input.touch.steer = Math.sign(v) * Math.abs(v) ** 1.3; // finer near the centre
-      knob.style.transform = `translateX(${v * half}px)`;
-    };
-    pad.addEventListener('pointerdown', (e) => {
+    // steering wheel: it turns with the finger going round its centre, like a real wheel
+    // under your hand; the angle sets the steering (full lock at MAX degrees)
+    const wheel = (this.wheel = el.querySelector('.t-wheel'));
+    let steerId = null, cx = 0, cy = 0, last = 0;
+    this.held = false;
+    this.angle = 0; // degrees, + clockwise (right)
+    const at = (e) => (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI;
+    wheel.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      capture(pad, e);
+      capture(wheel, e);
       steerId = e.pointerId;
-      const r = pad.getBoundingClientRect();
+      const r = wheel.getBoundingClientRect();
       cx = r.left + r.width / 2;
-      half = r.width / 2 - 28;
-      setSteer(e.clientX);
+      cy = r.top + r.height / 2;
+      last = at(e);
+      this.angle = input.steer * MAX; // pick the wheel up where it is
+      this.held = true;
     });
-    pad.addEventListener('pointermove', (e) => { if (e.pointerId === steerId) setSteer(e.clientX); });
+    wheel.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== steerId) return;
+      // too close to the hub the angle jumps about: wait for the finger to move out
+      if (Math.hypot(e.clientX - cx, e.clientY - cy) < 14) return;
+      const a = at(e);
+      let d = a - last;
+      if (d > 180) d -= 360;
+      if (d < -180) d += 360;
+      last = a;
+      this.angle = clamp(this.angle + d, -MAX, MAX);
+      input.touch.steer = this.angle / MAX;
+    });
     const release = (e) => {
       if (e.pointerId !== steerId) return;
       steerId = null;
-      input.touch.steer = 0;
-      knob.style.transform = '';
+      this.held = false;
+      input.touch.steer = 0; // the wheel spins back as the steering self-centres (see update)
     };
-    pad.addEventListener('pointerup', release);
-    pad.addEventListener('pointercancel', release);
+    wheel.addEventListener('pointerup', release);
+    wheel.addEventListener('pointercancel', release);
     // a long press must not open the browser's menu or select text
     this.noMenu = (e) => e.preventDefault();
     el.addEventListener('contextmenu', this.noMenu);
   }
 
   // indicator buttons light up with the car's indicators
+  // (every frame) and the wheel shows the steering: under the finger while held, and
+  // spinning back to centre with the steering once let go
   update(ind) {
     const [l, r] = this.el.querySelectorAll('.t-ind');
     l.classList.toggle('on', !!ind.left);
     r.classList.toggle('on', !!ind.right);
+    const deg = this.held ? this.angle : this.input.steer * MAX;
+    this.wheel.style.transform = `rotate(${deg.toFixed(1)}deg)`;
+    this.wheel.setAttribute('aria-valuenow', (deg / MAX).toFixed(2));
   }
 
   dispose() {

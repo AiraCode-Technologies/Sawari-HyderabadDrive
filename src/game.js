@@ -131,7 +131,7 @@ export class Game {
     this.rules = new Rules(this.nav, world.signals);
     this.input = new Input(r.domElement);
     // phones and tablets drive with on-screen controls
-    if (settings.touch) this.touchUi = new TouchControls(root, this.input);
+    if (settings.touch) this.touchUi = new TouchControls(root, this.input, { wheel: settings.wheel });
     this.portrait = matchMedia('(orientation: portrait)');
     this.rig = new CameraRig(this.camera);
     if (settings.camera === 'cockpit') this.rig.toggle();
