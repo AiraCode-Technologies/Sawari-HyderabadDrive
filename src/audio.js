@@ -305,6 +305,15 @@ export class Audio {
     if (m && 'speechSynthesis' in window) speechSynthesis.cancel();
   }
 
+  // Silence everything at once (pause, the end of a drive, a hidden tab) and wake it
+  // again later; speech is separate and is cancelled by the caller when it should stop.
+  quiet(on) {
+    this.quieted = on;
+    if (!this.ctx) return;
+    if (on) this.ctx.suspend().catch(() => {});
+    else this.ctx.resume().catch(() => {});
+  }
+
   stop() {
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     if (this.ctx) this.ctx.close();

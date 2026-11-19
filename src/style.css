@@ -298,3 +298,6 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
   .touch-ui.wheel-right .t-drive { left: auto; right: max(28px, env(safe-area-inset-right)); }
   .touch-ui.wheel-right .t-pedals { right: auto; left: max(52px, env(safe-area-inset-left)); }
 }
+
+/* the horn in the middle of the steering wheel lights up while pressed */
+.t-wheel.honk .t-hub circle { fill: #3a4450; stroke: #f2a93b; }

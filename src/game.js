@@ -138,7 +138,9 @@ export class Game {
     this.hud = new Hud(root, world);
     this.audio = new Audio();
     // phones only allow sound after a tap: wake it on the first touch of the controls
-    this.unlockAudio = () => { if (this.audio.ctx?.state === 'suspended') this.audio.ctx.resume(); };
+    this.unlockAudio = () => {
+      if (this.audio.ctx?.state === 'suspended' && (this.state === 'driving' || this.state === 'countdown')) this.audio.quiet(false);
+    };
     root.addEventListener('pointerdown', this.unlockAudio);
     this.audio.voiceOn = settings.voice !== 'off';
 
@@ -156,6 +158,16 @@ export class Game {
     this.last = performance.now();
     this.overlay = null;
 
+    this.onHide = () => {
+      if (document.visibilityState !== 'hidden') return;
+      if (this.state === 'driving' || this.state === 'countdown') this.pause();
+      this.audio.horn(false);
+      this.audio.quiet(true);
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+    };
+    this.onLeave = () => this.audio.stop();
+    document.addEventListener('visibilitychange', this.onHide);
+    addEventListener('pagehide', this.onLeave);
     this.onResize = () => this.resize();
     addEventListener('resize', this.onResize);
     this.resize();
@@ -455,6 +467,8 @@ export class Game {
   pause() {
     this.prevState = this.state;
     this.state = 'paused';
+    this.audio.horn(false);
+    this.audio.quiet(true); // engine, tyres and traffic go silent while paused
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     this.showOverlay(
       `<h2>Paused</h2><p class="sub">${this.world.name} · ${fmtTime(this.time)} · ${this.rules.faults.length} faults so far</p>
@@ -471,6 +485,7 @@ export class Game {
   resume() {
     this.closeOverlay();
     this.state = this.prevState === 'countdown' ? 'countdown' : 'driving';
+    this.audio.quiet(false);
     this.last = performance.now();
     this.renderer.domElement.focus();
   }
@@ -514,6 +529,8 @@ export class Game {
     if (this.state === 'finished') return;
     this.state = 'finished';
     this.phys.v = 0;
+    this.audio.horn(false);
+    this.audio.quiet(true);
     this.hud.banner(null);
     this.audio.say('You have arrived at your destination.');
     const score = this.rules.score();
@@ -560,6 +577,8 @@ export class Game {
   dispose() {
     cancelAnimationFrame(this.raf);
     removeEventListener('resize', this.onResize);
+    document.removeEventListener('visibilitychange', this.onHide);
+    removeEventListener('pagehide', this.onLeave);
     this.input.dispose();
     this.touchUi?.dispose();
     this.root.removeEventListener('pointerdown', this.unlockAudio);

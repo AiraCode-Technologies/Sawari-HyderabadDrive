@@ -101,9 +101,9 @@ Traffic can be set from None to Dense (about 80 vehicles around you: cars, SUVs,
 A gamepad also works: left stick steers, RT/LT throttle and brake, LB/RB indicators, Y camera.
 
 Phones and tablets get on-screen controls, held sideways: a steering wheel turned with the thumb
-(full lock at 150 degrees, it spins back to centre when let go) with the indicators either side of
-it, GO and BRAKE pedals (hold BRAKE at a standstill to reverse), and horn, view, lights,
-back-to-route and pause top right. The wheel sits bottom left with the pedals bottom right; the
+(full lock at 150 degrees, it spins back to centre when let go; its centre is the horn) with the
+indicators either side of it, GO and BRAKE pedals (hold BRAKE at a standstill to reverse), and view,
+lights, back-to-route and pause top right. The wheel sits bottom left with the pedals bottom right; the
 start page's "Steering wheel on" option swaps the two. `play.html?touch=1` shows them on a computer too.
 
 ## What is checked

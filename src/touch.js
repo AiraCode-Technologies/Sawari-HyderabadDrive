@@ -3,16 +3,16 @@ import { clamp } from './util.js';
 // On-screen controls for phones and tablets, laid out for landscape:
 //   bottom left  - a steering wheel you turn with your thumb (it follows the finger round,
 //                  full lock at 150 degrees either way, and spins back to centre when let
-//                  go), with the left and right indicators on either side of it
+//                  go); press its centre to sound the horn, as in a real car; the left and
+//                  right indicators sit on either side of it
 //   bottom right - brake and accelerator pedals, set in from the edge (hold; holding the
 //                  brake at a stop selects reverse, exactly as the keyboard does)
-//   top right    - horn, view, lights, back to the route, pause
+//   top right    - view, lights, back to the route, pause
 // Everything feeds the same Input object as the keyboard and gamepad, so the rules,
 // the debrief and the rest of the game work unchanged.
 const ICON = {
   left: '<path d="M10 5 3 12l7 7M3 12h18"/>',
   right: '<path d="m14 5 7 7-7 7M21 12H3"/>',
-  horn: '<path d="M4 10v4h3l6 5V5L7 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
   view: '<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/>',
   lights: '<path d="M9 6c-3.3 0-6 2.7-6 6s2.7 6 6 6h2V6zM15 8h6M15 12h6M15 16h6"/>',
   reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/>',
@@ -26,8 +26,8 @@ const WHEEL = `<svg viewBox="0 0 120 120" aria-hidden="true">
   <circle cx="60" cy="60" r="58.5" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.2"/>
   <path d="M60 60 L14 70 M60 60 L106 70 M60 60 L60 108" stroke="#2b333c" stroke-width="11" stroke-linecap="round"/>
   <path d="M60 60 L14 70 M60 60 L106 70 M60 60 L60 108" stroke="#47525e" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="60" cy="60" r="17" fill="#232a32" stroke="#56626f" stroke-width="2.5"/>
-  <circle cx="60" cy="60" r="6" fill="#f2a93b"/>
+  <g class="t-hub"><circle cx="60" cy="60" r="23" fill="#232a32" stroke="#56626f" stroke-width="2.5"/>
+  <path d="M50 56.5v7h5l9 7.5v-22l-9 7.5z M68 55a7 7 0 0 1 0 10" fill="none" stroke="#f2a93b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>
   <rect x="56" y="3.5" width="8" height="13" rx="2" fill="#f2a93b"/>
 </svg>`;
 const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
@@ -53,11 +53,10 @@ export class TouchControls {
     el.innerHTML = `
       <div class="t-drive">
         <button data-tap="KeyQ" class="t-ind" aria-label="Left indicator">${svg('left')}</button>
-        <div class="t-wheel" role="slider" aria-label="Steering wheel: turn it with your thumb" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0">${WHEEL}</div>
+        <div class="t-wheel" role="slider" aria-label="Steering wheel: turn it with your thumb; press the centre for the horn" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0">${WHEEL}</div>
         <button data-tap="KeyE" class="t-ind" aria-label="Right indicator">${svg('right')}</button>
       </div>
       <div class="t-buttons">
-        <button data-hold="KeyH" aria-label="Horn">${svg('horn')}</button>
         <button data-tap="KeyC" aria-label="Change view">${svg('view')}</button>
         <button data-tap="KeyL" aria-label="Headlights">${svg('lights')}</button>
         <button data-tap="KeyR" aria-label="Back to the route">${svg('reset')}</button>
@@ -120,11 +119,19 @@ export class TouchControls {
     this.held = false;
     this.angle = 0; // degrees, + clockwise (right)
     const at = (e) => (Math.atan2(e.clientY - cy, e.clientX - cx) * 180) / Math.PI;
+    let hornId = null;
     wheel.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       capture(wheel, e);
-      steerId = e.pointerId;
       const r = wheel.getBoundingClientRect();
+      // the hub in the middle is the horn (held while pressed), the rim steers
+      if (Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) < r.width * 0.2) {
+        hornId = e.pointerId;
+        input.keys.add('KeyH');
+        wheel.classList.add('honk');
+        return;
+      }
+      steerId = e.pointerId;
       cx = r.left + r.width / 2;
       cy = r.top + r.height / 2;
       last = at(e);
@@ -144,6 +151,12 @@ export class TouchControls {
       input.touch.steer = this.angle / MAX;
     });
     const release = (e) => {
+      if (e.pointerId === hornId) {
+        hornId = null;
+        input.keys.delete('KeyH');
+        wheel.classList.remove('honk');
+        return;
+      }
       if (e.pointerId !== steerId) return;
       steerId = null;
       this.held = false;
