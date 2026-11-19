@@ -32,6 +32,10 @@ ICON = {
     'chat': '<path d="M4 5h16v11H9l-5 4z"/>',
     'shield': '<path d="M12 3 5 6v5c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/>',
     'alert': '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.5"/>',
+    'phone': '<rect x="7" y="2.5" width="10" height="19" rx="2.2"/><path d="M11 18.5h2"/>',
+    'tablet': '<rect x="4" y="3" width="16" height="18" rx="2.2"/><path d="M11 17.5h2"/>',
+    'laptop': '<rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M2.5 19h19l-1.5-3h-16z"/>',
+    'pc': '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/>',
     'data': '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
 }
 def icon(name):
@@ -224,6 +228,23 @@ home = head('index') + header('./') + f"""      <section class="hero">
             <div class="stat"><div class="num">23</div><div class="label">kinds of vehicle in traffic</div></div>
             <div class="stat"><div class="num">4</div><div class="label">times of day, morning to night</div></div>
           </div>
+        </div>
+      </section>
+
+      <section class="section" id="devices">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Play anywhere</span>
+            <h2>Now on phones, tablets, laptops and PCs</h2>
+            <p>Sawari runs in your browser on any device, with nothing to install. The controls fit the device in your hands.</p>
+          </div>
+          <div class="grid g4">
+            <div class="card">{icon('phone')}<h3>Phones</h3><p>Hold your phone sideways: steer with the slider, then press GO and BRAKE.</p></div>
+            <div class="card">{icon('tablet')}<h3>Tablets</h3><p>Bigger on-screen controls and more of the road in view, on iPad and Android tablets.</p></div>
+            <div class="card">{icon('laptop')}<h3>Laptops</h3><p>Drive with the arrow keys or WASD, with the indicators on Q and E.</p></div>
+            <div class="card">{icon('pc')}<h3>PCs</h3><p>A big screen with sharp shadows, and a gamepad works too.</p></div>
+          </div>
+          <div class="btn-row" style="margin-top:26px"><a class="btn primary" href="/play.html">Start driving</a></div>
         </div>
       </section>
 
@@ -427,7 +448,7 @@ write('features.html', features_page)
 
 # ======================= ABOUT =======================
 faqs = [
-    ('Is it free? Do I need to install anything?', 'Yes, it is free, and there is nothing to install. It runs in a modern browser (Chrome, Edge or Firefox) on a laptop or desktop. A keyboard or a gamepad works best.'),
+    ('Is it free? Do I need to install anything?', 'Yes, it is free, and there is nothing to install. It runs in a modern browser on a phone, tablet, laptop or desktop. Phones and tablets have on-screen controls (hold them sideways); on a computer, a keyboard or a gamepad works best.'),
     ('Are these the official driving test routes?', 'No. They are famous, busy Hyderabad roads chosen for practice. They are not RTA test routes.'),
     ('Are the buildings exact copies of the real ones?', 'No. Building outlines, heights where mapped, shop names and places of worship come from OpenStreetMap. Facades, stalls, hoardings, most street lamps and some filler buildings are generated to look typical of each area, so treat them as realistic rather than exact.'),
     ('Why left-hand traffic and a right-hand-drive car?', 'Because that is how India drives. You sit on the right and keep to the left of the road.'),

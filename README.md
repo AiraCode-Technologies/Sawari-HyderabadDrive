@@ -100,6 +100,10 @@ Traffic can be set from None to Dense (about 80 vehicles around you: cars, SUVs,
 
 A gamepad also works: left stick steers, RT/LT throttle and brake, LB/RB indicators, Y camera.
 
+Phones and tablets get on-screen controls, held sideways: a steering slider bottom left with the
+indicators above it, GO and BRAKE bottom right (hold BRAKE at a standstill to reverse), and horn,
+view, lights, back-to-route and pause top right. `play.html?touch=1` shows them on a computer too.
+
 ## What is checked
 
 Faults are shown as they happen and listed in the debrief with advice: speeding, driving

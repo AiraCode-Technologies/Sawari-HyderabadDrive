@@ -215,7 +215,7 @@ def post_page(p, by_slug, posts, head, header, footer, cta):
     if p.get('route'):
         drive = f"""
             <div class="drive-box">
-              <div><strong>Practise this route in Sawari</strong><p>Free in your browser on a laptop or desktop. No download, no sign-up.</p></div>
+              <div><strong>Practise this route in Sawari</strong><p>Free in your browser on a phone, tablet, laptop or desktop. No download, no sign-up.</p></div>
               <div class="btn-row"><a class="btn primary small" href="/play.html?route={p['route']}">Drive it now</a><a class="btn ghost small" href="/routes.html#{p['route']}">Route details</a></div>
             </div>"""
     related = [by_slug[s] for s in p['related']]

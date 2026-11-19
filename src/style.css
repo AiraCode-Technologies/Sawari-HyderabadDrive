@@ -167,21 +167,8 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 .home-link { margin-left: auto; color: var(--muted); font-size: 14px; text-decoration: none; }
 .home-link:hover { color: var(--ink); }
 
-/* phones and tablets: use a desktop or laptop */
-.desktop-only .menu-inner { max-width: 560px; }
-.gate { margin-top: 36px; padding: 32px 26px; border-radius: 18px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--line); text-align: center; }
-.gate-icon { width: 76px; height: 76px; color: var(--accent); margin: 0 auto 14px; display: block; }
-.gate h2 { margin: 0 0 12px; font-size: 24px; }
-.gate p { margin: 0 0 12px; color: var(--muted); line-height: 1.6; }
-.gate .gate-how { margin-top: 18px; color: var(--ink); font-weight: 600; }
-.gate-link { padding: 10px 14px; border-radius: 10px; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); font-size: 14px; word-break: break-all; color: var(--ink); }
-.gate-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 22px; }
-.gate-actions .primary, .gate-actions .secondary { width: 100%; text-align: center; text-decoration: none; display: block; }
-.gate-msg { min-height: 22px; margin-top: 14px; font-size: 14px; color: var(--good); }
-
 /* ---------- theme toggle and the light start page ----------
-   The website's light/dark choice carries over to the start page, the loading screen and the
-   desktop-only notice. The game's own HUD and dialogs stay dark over the 3D view. */
+   The website's light/dark choice carries over to the start page and the loading screen. The game's own HUD and dialogs stay dark over the 3D view. */
 .theme-btn { width: 38px; height: 38px; flex: none; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.06); color: var(--ink); display: grid; place-items: center; margin-left: 12px; }
 .brand > div + .theme-btn { margin-left: auto; }
 .theme-btn svg { width: 19px; height: 19px; }
@@ -205,8 +192,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 :root[data-theme='light'] .menu { background: radial-gradient(120% 90% at 80% 0%, #fff4df 0%, #f6f3ee 55%, #ebe5da 100%); }
 :root[data-theme='light'] .loading { background: #f6f3ee; }
 :root[data-theme='light'] .menu .route-card,
-:root[data-theme='light'] .menu .option,
-:root[data-theme='light'] .menu .gate { background: rgba(255, 255, 255, 0.78); box-shadow: 0 1px 3px rgba(30, 40, 50, 0.07); }
+:root[data-theme='light'] .menu .option { background: rgba(255, 255, 255, 0.78); box-shadow: 0 1px 3px rgba(30, 40, 50, 0.07); }
 :root[data-theme='light'] .menu .route-card.selected { background: #fff3df; }
 :root[data-theme='light'] .menu .chip { background: rgba(20, 30, 40, 0.07); }
 :root[data-theme='light'] .menu .chip.easy { background: rgba(31, 138, 85, 0.13); color: #17663f; }
@@ -219,7 +205,89 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 :root[data-theme='light'] .menu kbd { background: #fff; border-color: rgba(20, 30, 40, 0.2); }
 :root[data-theme='light'] .menu .credit { color: #6b7580; }
 :root[data-theme='light'] .menu .credit a { color: #2b5b86; }
-:root[data-theme='light'] .menu .gate-link { background: rgba(20, 30, 40, 0.05); }
 :root[data-theme='light'] .menu .theme-btn { background: #fff; }
 :root[data-theme='light'] .loading .spinner { border-color: rgba(20, 30, 40, 0.15); border-top-color: var(--accent); }
 :root[data-theme='light'] .menu .swatch:not(.on) { border-color: rgba(20, 30, 40, 0.22) !important; }
+
+/* ---------- phones and tablets: on-screen controls (touch.js) ---------- */
+.touch, .touch * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.touch canvas.view { touch-action: none; }
+.touch-ui { position: absolute; inset: 0; z-index: 6; pointer-events: none; touch-action: none; }
+.touch-ui > * { pointer-events: auto; }
+.touch-ui button { -webkit-appearance: none; appearance: none; }
+.t-buttons { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); display: flex; gap: 6px; }
+.t-buttons button { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.t-buttons button svg { width: 22px; height: 22px; }
+.t-buttons button.down, .t-inds button.down { background: rgba(255, 255, 255, 0.25); }
+.t-inds { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: calc(max(14px, env(safe-area-inset-bottom)) + 100px); display: flex; gap: 10px; }
+.t-inds button { width: 56px; height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); display: grid; place-items: center; padding: 0; }
+.t-inds button svg { width: 26px; height: 26px; }
+.t-inds .t-ind.on { background: #2a9c5c; border-color: #2a9c5c; }
+.t-steer { position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); width: min(42vw, 300px); height: 96px; touch-action: none; }
+.t-track { position: absolute; left: 0; right: 0; top: 50%; height: 14px; margin-top: -7px; border-radius: 7px; background: rgba(16, 24, 32, 0.65); border: 1px solid var(--line); }
+.t-knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(244, 241, 234, 0.92); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
+.t-knob::before { content: ''; position: absolute; inset: 22px 30px; border-radius: 2px; background: #6b7580; }
+.t-pedals { position: absolute; right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); display: flex; align-items: flex-end; gap: 12px; }
+.t-pedal { display: grid; place-items: center; border-radius: 16px; font-weight: 800; font-size: 14px; letter-spacing: 0.08em; color: #fff; border: 2px solid rgba(255, 255, 255, 0.25); touch-action: none; }
+.t-brake { width: 92px; height: 78px; background: rgba(185, 45, 35, 0.78); }
+.t-gas { width: 82px; height: 118px; background: rgba(31, 138, 85, 0.8); }
+.t-pedal.down { transform: scale(0.94); filter: brightness(1.25); }
+/* the HUD makes room: speed in the middle at the bottom, guidance up top, no keyboard hint */
+.touch .cluster { right: auto; left: 50%; bottom: 6px; transform: translateX(-50%) scale(0.72); transform-origin: bottom center; }
+.touch .cluster .ind { display: none; }
+.touch .nav-card { top: max(8px, env(safe-area-inset-top)); bottom: auto; left: max(8px, env(safe-area-inset-left)); transform: scale(0.85); transform-origin: top left; min-width: 0; }
+.touch .trip { display: none; }
+.touch .hint, .touch .osm { display: none; }
+.touch .toasts { top: 84px; }
+@media (max-height: 420px) {
+  .t-gas { height: 100px; }
+}
+/* held upright: ask for landscape */
+.t-rotate { display: none; }
+@media (orientation: portrait) {
+  .t-rotate { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; padding: 24px; text-align: center; background: rgba(8, 12, 16, 0.94); color: var(--ink); font-size: 18px; font-weight: 600; pointer-events: auto; }
+  .t-rotate svg { width: 64px; height: 64px; display: block; margin: 0 auto 14px; color: var(--accent); }
+}
+/* narrow phones: a shorter slider and a smaller speed cluster, so they never overlap */
+@media (max-width: 760px) {
+  .t-steer { width: min(34vw, 240px); }
+  .touch .cluster { transform: translateX(-50%) scale(0.6); }
+  .t-brake { width: 80px; height: 70px; }
+  .t-gas { width: 72px; height: 96px; }
+  .t-buttons button { width: 40px; height: 40px; }
+}
+/* tablets: bigger controls for bigger hands-off-the-bezel reach */
+@media (min-width: 900px) and (min-height: 600px) {
+  .t-steer { width: min(36vw, 380px); height: 120px; }
+  .t-knob { width: 84px; height: 84px; margin: -42px 0 0 -42px; }
+  .t-knob::before { inset: 28px 39px; }
+  .t-inds { bottom: calc(max(20px, env(safe-area-inset-bottom)) + 130px); }
+  .t-inds button { width: 68px; height: 56px; }
+  .t-buttons button { width: 52px; height: 52px; }
+  .t-buttons button svg { width: 26px; height: 26px; }
+  .t-brake { width: 120px; height: 100px; font-size: 16px; }
+  .t-gas { width: 108px; height: 156px; font-size: 16px; }
+  .touch .cluster { transform: translateX(-50%) scale(0.85); }
+  .touch .nav-card { transform: none; }
+}
+.home-link .hl-short { display: none; }
+/* narrow phones held upright: the start page header stays on one line */
+@media (max-width: 480px) {
+  .brand h1 { font-size: 24px; }
+  .home-link { font-size: 13px; white-space: nowrap; }
+  .home-link .hl-full { display: none; }
+  .home-link .hl-short { display: inline; }
+  .brand-tag { letter-spacing: 0.06em; }
+  .menu { padding-top: 24px; }
+}
+/* phones and tablets: "Start driving" stays pinned to the bottom of the screen while the
+   routes and options scroll underneath it */
+.touch-how { margin: 22px 0 0; }
+.start-row.sticky {
+  position: sticky; bottom: 0; z-index: 2;
+  margin: 18px -16px 0; padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(11, 17, 23, 0) 0%, rgba(11, 17, 23, 0.92) 30%, #0b1117 100%);
+}
+.start-row.sticky .primary { width: 100%; max-width: 520px; margin: 0 auto; display: block; padding: 15px 26px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); }
+:root[data-theme='light'] .start-row.sticky { background: linear-gradient(180deg, rgba(246, 243, 238, 0) 0%, rgba(246, 243, 238, 0.94) 30%, #f1ece3 100%); }
+

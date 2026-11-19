@@ -26,7 +26,18 @@ function saveSettings(s) {
   }
 }
 
+let firstVisit = true;
+try {
+  firstVisit = !localStorage.getItem('hyd-drive-settings');
+} catch {
+  /* no storage */
+}
 let settings = loadSettings();
+// ?touch=1 shows the phone controls on any device (handy for checking the layout)
+const TOUCH = isPhoneOrTablet() || new URLSearchParams(location.search).get('touch') === '1';
+settings.touch = TOUCH;
+// a phone's first drive: the fast graphics and normal traffic, so it runs smoothly
+if (TOUCH && firstVisit) Object.assign(settings, { quality: 'low', traffic: 'medium' });
 // a link from the website can pick the route: play.html?route=charminar
 const wanted = new URLSearchParams(location.search).get('route');
 if (wanted) settings.route = wanted;
@@ -40,9 +51,8 @@ function seg(name, options) {
   return `<div class="seg" data-set="${name}">${options.map(([v, label]) => `<button data-v="${v}" class="${settings[name] === v ? 'on' : ''}">${label}</button>`).join('')}</div>`;
 }
 
-// The simulator needs a keyboard (or a gamepad) and a big screen, so phones and
-// tablets get a "use a desktop or laptop" screen instead of the menu. Touch-screen
-// laptops and tablets with a mouse or trackpad attached count as computers.
+// Phones and tablets drive with on-screen touch controls (touch.js). Touch-screen
+// laptops and tablets with a mouse or trackpad attached count as computers (keyboard).
 function isPhoneOrTablet() {
   const ua = navigator.userAgent;
   const finePointer = matchMedia('(any-pointer: fine)').matches; // a mouse or trackpad
@@ -51,54 +61,6 @@ function isPhoneOrTablet() {
   const tablet = /iPad|Android|Tablet|Silk|Kindle/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   if (tablet && !finePointer) return true;
   return navigator.maxTouchPoints > 0 && !finePointer; // any other touch-only device
-}
-
-function desktopOnly() {
-  const el = document.createElement('div');
-  el.className = 'menu desktop-only';
-  const link = location.href.split('#')[0];
-  el.innerHTML = `
-    <div class="menu-inner">
-      <div class="brand">
-        <div class="brand-mark"><img src="logo.svg" alt="" width="48" height="48" /></div>
-        <div><h1 class="brand-name">Sawari</h1><div class="brand-tag">Drive Hyderabad</div></div>
-        ${themeButton()}
-      </div>
-      <div class="gate" role="alertdialog" aria-labelledby="gate-title" aria-describedby="gate-text">
-        <svg class="gate-icon" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="12" y="12" width="40" height="27" rx="3"/><path d="M5 47h54l-4 5H9z"/><path d="M27 44h10"/>
-        </svg>
-        <h2 id="gate-title">Please use a desktop or laptop</h2>
-        <p id="gate-text">Sawari is a full 3D driving simulator. It needs a keyboard (or a gamepad) and a bigger screen, so it can't be played on a phone or tablet.</p>
-        <p class="gate-how">Open this page on your computer to start driving:</p>
-        <div class="gate-link">${esc(link.replace(/^https?:\/\//, ''))}</div>
-        <div class="gate-actions">
-          ${navigator.share ? '<button class="primary" data-send>Send the link to my computer</button>' : ''}
-          <button class="${navigator.share ? 'secondary' : 'primary'}" data-copy>Copy link</button>
-          <a class="secondary" href="index.html">Back to the website</a>
-        </div>
-        <div class="gate-msg" role="status" aria-live="polite"></div>
-      </div>
-    </div>`;
-  const msg = el.querySelector('.gate-msg');
-  el.addEventListener('click', async (e) => {
-    if (e.target.closest('[data-send]')) {
-      try {
-        await navigator.share({ title: 'Sawari · Drive Hyderabad', text: 'Open Sawari on a desktop or laptop:', url: link });
-      } catch {
-        /* the share sheet was closed */
-      }
-    }
-    if (e.target.closest('[data-copy]')) {
-      try {
-        await navigator.clipboard.writeText(link);
-        msg.textContent = 'Link copied. Paste it in a message or email to open it on your computer.';
-      } catch {
-        msg.textContent = 'Copy this address: ' + link;
-      }
-    }
-  });
-  app.appendChild(el);
 }
 
 // Light or dark start page: the same choice as on the website (shared, remembered).
@@ -136,7 +98,7 @@ function menu() {
       <div class="brand">
         <div class="brand-mark"><img src="logo.svg" alt="" width="48" height="48" /></div>
         <div><h1 class="brand-name">Sawari</h1><div class="brand-tag">Drive Hyderabad</div></div>
-        <a class="home-link" href="index.html">← Back to the website</a>
+        <a class="home-link" href="index.html" aria-label="Back to the website">← <span class="hl-full">Back to the website</span><span class="hl-short">Website</span></a>
         ${themeButton()}
       </div>
       <p class="tagline">Practise famous Hyderabad roads in your browser: real streets, left-hand traffic, signals and turn-by-turn guidance.</p>
@@ -165,10 +127,13 @@ function menu() {
         <div class="option"><label>Graphics</label>${seg('quality', [['high', 'High (shadows)'], ['low', 'Fast']])}</div>
         <div class="option"><label>Start in</label>${seg('camera', [['chase', 'Chase view'], ['cockpit', 'Driver’s seat']])}</div>
       </div>
-      <div class="start-row">
+      ${TOUCH
+        ? `<p class="keys touch-how">Hold your phone sideways. Drag the slider on the left to steer; <b>GO</b> and <b>BRAKE</b> are on the right (hold BRAKE when stopped to reverse).</p>
+      <div class="start-row sticky"><button class="primary" data-start>Start driving</button></div>`
+        : `<div class="start-row">
         <button class="primary" data-start>Start driving</button>
         <div class="keys"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> drive · <kbd>Q</kbd> <kbd>E</kbd> indicators · <kbd>C</kbd> camera · <kbd>Tab</kbd> all controls</div>
-      </div>
+      </div>`}
       <p class="credit">Road, building and lake data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, available under the ODbL. For practice only: this simulator does not replace driving lessons, and routes are not official test routes.</p>
     </div>`;
   el.addEventListener('click', (e) => {
@@ -184,6 +149,7 @@ function menu() {
       opt.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === opt));
     }
     if (e.target.closest('[data-start]')) {
+      if (TOUCH) landscapeFullscreen();
       saveSettings(settings);
       el.remove();
       play(settings.route);
@@ -191,6 +157,16 @@ function menu() {
     saveSettings(settings);
   });
   app.appendChild(el);
+}
+
+// Phones: the whole screen, held sideways (Android allows both from a tap; iPhones
+// ignore them, and the game asks to turn the phone if it is upright).
+function landscapeFullscreen() {
+  const d = document.documentElement;
+  const go = d.requestFullscreen ? d.requestFullscreen({ navigationUI: 'hide' }) : null;
+  Promise.resolve(go)
+    .then(() => screen.orientation?.lock?.('landscape'))
+    .catch(() => {});
 }
 
 function loading(text) {
@@ -211,7 +187,6 @@ async function loadWorld(id) {
 }
 
 async function play(id) {
-  if (isPhoneOrTablet()) return desktopOnly(); // never start the simulator on a phone or tablet
   const meta = index.routes.find((r) => r.id === id);
   const l = loading(`Building ${meta ? meta.name : 'route'}…`);
   try {
@@ -235,16 +210,17 @@ async function play(id) {
 }
 
 async function boot() {
-  if (isPhoneOrTablet()) {
-    desktopOnly();
-    return;
-  }
   const l = loading('Loading routes…');
   try {
     const res = await fetch('data/routes.json');
     index = await res.json();
     if (!index.routes.some((r) => r.id === settings.route)) settings.route = index.routes[0].id;
     menu();
+    // development only: ?autostart=1 skips the menu (automated browser checks)
+    if (import.meta.env.DEV && new URLSearchParams(location.search).get('autostart') === '1') {
+      document.querySelector('.menu')?.remove();
+      play(settings.route);
+    }
   } catch (err) {
     l.innerHTML = `<div class="box">Could not load the route list. Run <kbd>npm run build-data</kbd> first.</div>`;
     return;

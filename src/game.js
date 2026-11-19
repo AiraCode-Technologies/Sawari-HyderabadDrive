@@ -5,6 +5,7 @@ import { Terrain } from './world/terrain.js';
 import { createCarModel, CAR } from './car/carModel.js';
 import { CarPhysics } from './car/physics.js';
 import { Input } from './input.js';
+import { TouchControls } from './touch.js';
 import { CameraRig } from './cameraRig.js';
 import { Navigator, TURN_TEXT } from './nav.js';
 import { createRouteBand, createSteeringGuide } from './guide.js';
@@ -47,7 +48,7 @@ export class Game {
     // renderer
     const r = (this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' }));
     // full resolution normally; lowered a little only if this computer cannot keep up (see loop)
-    this.maxRatio = Math.min(devicePixelRatio, settings.quality === 'high' ? 1.75 : 1.25);
+    this.maxRatio = Math.min(devicePixelRatio, settings.touch ? 1 : settings.quality === 'high' ? 1.75 : 1.25); // phones: 1x (their 3x screens would be far too heavy)
     this.ratio = this.maxRatio;
     this.perf = { t: 0, n: 0 };
     r.setPixelRatio(this.ratio);
@@ -129,10 +130,16 @@ export class Game {
     this.people = new Pedestrians(world, scene, settings.traffic, this.terrain, this.index);
     this.rules = new Rules(this.nav, world.signals);
     this.input = new Input(r.domElement);
+    // phones and tablets drive with on-screen controls
+    if (settings.touch) this.touchUi = new TouchControls(root, this.input);
+    this.portrait = matchMedia('(orientation: portrait)');
     this.rig = new CameraRig(this.camera);
     if (settings.camera === 'cockpit') this.rig.toggle();
     this.hud = new Hud(root, world);
     this.audio = new Audio();
+    // phones only allow sound after a tap: wake it on the first touch of the controls
+    this.unlockAudio = () => { if (this.audio.ctx?.state === 'suspended') this.audio.ctx.resume(); };
+    root.addEventListener('pointerdown', this.unlockAudio);
     this.audio.voiceOn = settings.voice !== 'off';
 
     this.lighting = new Lighting(this, settings.time);
@@ -206,6 +213,8 @@ export class Game {
     input.update(dt, Math.abs(this.phys.v));
 
     // global keys
+    // phones drive held sideways only: turned upright mid-drive, the game pauses
+    if (this.touchUi && this.portrait.matches && (this.state === 'driving' || this.state === 'countdown')) this.pause();
     if (input.took('Escape')) this.state === 'paused' ? this.resume() : this.state === 'driving' || this.state === 'countdown' ? this.pause() : null;
     if (input.took('Tab')) this.toggleHelp();
     if (input.took('KeyC')) this.toast(this.rig.toggle() === 'cockpit' ? 'Driver’s view' : 'Chase view', 'info', 1200);
@@ -284,7 +293,7 @@ export class Game {
         this.wrongWayTime = against ? (this.wrongWayTime || 0) + dt : 0;
         this.hud.banner(
           this.wrongWayTime > 2 ? 'Wrong direction — make a U-turn at the next median opening (look for the blue U-turn sign)'
-          : this.nav.offRoute ? 'Off route — head back to the blue band, or press R to return to it' : null,
+          : this.nav.offRoute ? `Off route — head back to the blue band, or ${this.settings.touch ? 'tap ↺' : 'press R'} to return to it` : null,
         );
         if (this.nav.arrived) this.finish();
       } else {
@@ -374,6 +383,7 @@ export class Game {
     const s = this.phys.steer / 0.6;
     if (ind.left) { ind.peak = Math.max(ind.peak, -s); if (ind.peak > 0.35 && s > -0.06) ind.left = false; }
     if (ind.right) { ind.peak = Math.max(ind.peak, s); if (ind.peak > 0.35 && s < 0.06) ind.right = false; }
+    this.touchUi?.update(ind);
   }
 
   voice() {
@@ -551,6 +561,8 @@ export class Game {
     cancelAnimationFrame(this.raf);
     removeEventListener('resize', this.onResize);
     this.input.dispose();
+    this.touchUi?.dispose();
+    this.root.removeEventListener('pointerdown', this.unlockAudio);
     this.audio.horn(false);
     this.audio.stop();
     this.hud.dispose();

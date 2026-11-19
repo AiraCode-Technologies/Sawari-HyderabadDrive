@@ -1,0 +1,144 @@
+import { clamp } from './util.js';
+
+// On-screen controls for phones and tablets, laid out for landscape:
+//   bottom left  - a steering slider: drag left or right, let go and it self-centres
+//   bottom right - brake and accelerator pedals (hold; holding the brake at a stop selects
+//                  reverse, exactly as the keyboard does)
+//   above it     - left and right indicators, under the left thumb
+//   top right    - horn, view, lights, back to the route, pause
+// Everything feeds the same Input object as the keyboard and gamepad, so the rules,
+// the debrief and the rest of the game work unchanged.
+const ICON = {
+  left: '<path d="M10 5 3 12l7 7M3 12h18"/>',
+  right: '<path d="m14 5 7 7-7 7M21 12H3"/>',
+  horn: '<path d="M4 10v4h3l6 5V5L7 10zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/>',
+  view: '<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/>',
+  lights: '<path d="M9 6c-3.3 0-6 2.7-6 6s2.7 6 6 6h2V6zM15 8h6M15 12h6M15 16h6"/>',
+  reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/>',
+  pause: '<path d="M8 5v14M16 5v14"/>',
+};
+const svg = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name]}</svg>`;
+
+// keep a finger's moves and release on the control it pressed (some browsers refuse
+// capture for unusual pointers; the control still works without it)
+const capture = (el, e) => {
+  try {
+    el.setPointerCapture(e.pointerId);
+  } catch {
+    /* not capturable */
+  }
+};
+
+export class TouchControls {
+  constructor(root, input) {
+    this.input = input;
+    input.touch = { steer: 0, throttle: 0, brake: 0, active: true };
+    const el = (this.el = document.createElement('div'));
+    el.className = 'touch-ui';
+    el.innerHTML = `
+      <div class="t-inds">
+        <button data-tap="KeyQ" class="t-ind" aria-label="Left indicator">${svg('left')}</button>
+        <button data-tap="KeyE" class="t-ind" aria-label="Right indicator">${svg('right')}</button>
+      </div>
+      <div class="t-buttons">
+        <button data-hold="KeyH" aria-label="Horn">${svg('horn')}</button>
+        <button data-tap="KeyC" aria-label="Change view">${svg('view')}</button>
+        <button data-tap="KeyL" aria-label="Headlights">${svg('lights')}</button>
+        <button data-tap="KeyR" aria-label="Back to the route">${svg('reset')}</button>
+        <button data-tap="Escape" aria-label="Pause">${svg('pause')}</button>
+      </div>
+      <div class="t-steer" aria-label="Steering: drag left or right"><div class="t-track"></div><div class="t-knob"></div></div>
+      <div class="t-pedals">
+        <div class="t-pedal t-brake" data-pedal="brake" aria-label="Brake">BRAKE</div>
+        <div class="t-pedal t-gas" data-pedal="throttle" aria-label="Accelerator">GO</div>
+      </div>
+      <div class="t-rotate" role="alert"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 9a9 9 0 0 1 3-5M21 15a9 9 0 0 1-3 5"/></svg>Turn your phone sideways to drive</div></div>`;
+    root.appendChild(el);
+    root.classList.add('touch');
+    this.root = root;
+
+    // one-shot and held buttons
+    const held = new Map(); // pointerId -> key code
+    el.querySelectorAll('[data-tap]').forEach((b) =>
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        input.pressed.add(b.dataset.tap);
+        b.classList.add('down');
+        setTimeout(() => b.classList.remove('down'), 120);
+      }));
+    el.querySelectorAll('[data-hold]').forEach((b) => {
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        capture(b, e);
+        held.set(e.pointerId, b.dataset.hold);
+        input.keys.add(b.dataset.hold);
+        b.classList.add('down');
+      });
+      const up = (e) => {
+        if (!held.has(e.pointerId)) return;
+        input.keys.delete(held.get(e.pointerId));
+        held.delete(e.pointerId);
+        b.classList.remove('down');
+      };
+      b.addEventListener('pointerup', up);
+      b.addEventListener('pointercancel', up);
+    });
+
+    // pedals: held while touched (each pedal its own finger)
+    el.querySelectorAll('[data-pedal]').forEach((p) => {
+      const name = p.dataset.pedal;
+      p.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        capture(p, e);
+        input.touch[name] = 1;
+        p.classList.add('down');
+      });
+      const up = () => { input.touch[name] = 0; p.classList.remove('down'); };
+      p.addEventListener('pointerup', up);
+      p.addEventListener('pointercancel', up);
+    });
+
+    // steering slider: the knob follows the finger along the track (full lock at the ends)
+    const pad = el.querySelector('.t-steer'), knob = el.querySelector('.t-knob');
+    let steerId = null, cx = 0, half = 1;
+    const setSteer = (x) => {
+      const v = clamp((x - cx) / half, -1, 1);
+      input.touch.steer = Math.sign(v) * Math.abs(v) ** 1.3; // finer near the centre
+      knob.style.transform = `translateX(${v * half}px)`;
+    };
+    pad.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      capture(pad, e);
+      steerId = e.pointerId;
+      const r = pad.getBoundingClientRect();
+      cx = r.left + r.width / 2;
+      half = r.width / 2 - 28;
+      setSteer(e.clientX);
+    });
+    pad.addEventListener('pointermove', (e) => { if (e.pointerId === steerId) setSteer(e.clientX); });
+    const release = (e) => {
+      if (e.pointerId !== steerId) return;
+      steerId = null;
+      input.touch.steer = 0;
+      knob.style.transform = '';
+    };
+    pad.addEventListener('pointerup', release);
+    pad.addEventListener('pointercancel', release);
+    // a long press must not open the browser's menu or select text
+    this.noMenu = (e) => e.preventDefault();
+    el.addEventListener('contextmenu', this.noMenu);
+  }
+
+  // indicator buttons light up with the car's indicators
+  update(ind) {
+    const [l, r] = this.el.querySelectorAll('.t-ind');
+    l.classList.toggle('on', !!ind.left);
+    r.classList.toggle('on', !!ind.right);
+  }
+
+  dispose() {
+    this.el.remove();
+    this.root.classList.remove('touch');
+    this.input.touch = null;
+  }
+}

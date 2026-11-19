@@ -1,6 +1,6 @@
 import { clamp } from './util.js';
 
-// Keyboard + gamepad. Steering from keys ramps in and self-centres so the car
+// Keyboard, gamepad and on-screen touch controls (touch.js). Steering from keys ramps in and self-centres so the car
 // does not twitch; gamepad axes are used directly.
 export class Input {
   constructor(target) {
@@ -54,6 +54,15 @@ export class Input {
     this.throttle = this.down('ArrowUp', 'KeyW') ? 1 : 0;
     this.brake = this.down('ArrowDown', 'KeyS') ? 1 : 0;
     this.handbrake = this.down('Space');
+
+    // on-screen controls (phones and tablets): the slider steers directly, a little
+    // smoothed, unless a key is steering; the pedals add to the keys
+    const t = this.touch;
+    if (t) {
+      if (!want) this.steer += clamp(t.steer - this.steer, -6 * dt, 6 * dt);
+      this.throttle = Math.max(this.throttle, t.throttle);
+      this.brake = Math.max(this.brake, t.brake);
+    }
 
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (const p of pads) {
