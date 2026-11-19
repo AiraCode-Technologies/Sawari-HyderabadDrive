@@ -38,7 +38,8 @@ Field rules:
 - `title`: the on-page H1, natural wording, may be longer than 60 characters.
 - `seoTitle`: the `<title>`, **at most 60 characters** including ` | Sawari`, main phrase first.
 - `description`: meta description, **140 to 160 characters**, includes the main phrase.
-- `category`: one of `Route guides`, `Learning to drive`, `Road skills`, `Behind the build`.
+- `category`: one of `Route guides`, `Learning to drive`, `Road skills`, `Hyderabad roads`,
+  `Behind the build`, `Release notes`.
 - `image`: one of `hero`, `night`, `cockpit`, `junction`, `tank-bund`, `necklace-road`,
   `charminar`, `hitec-city`, `banjara-hills` (screenshots from the simulator in `public/img/`).
 - `route` (optional): a route id; the post then ends with a "drive this route" button.
@@ -75,5 +76,11 @@ Road skills: `hyderabad-traffic-rules-guide`, `indicators-and-lane-discipline`,
 `u-turns-in-hyderabad`, `driving-on-flyovers-hyderabad`, `roundabouts-how-to-drive-india`,
 `speed-breakers-speed-limits-hyderabad`, `sharing-the-road-autos-buses-two-wheelers`,
 `night-driving-hyderabad-tips`, `monsoon-driving-hyderabad`
+
+Hyderabad roads: `hyderabad-outer-ring-road-guide`, `hyderabad-regional-ring-road-rrr`,
+`hyderabad-metro-guide-for-drivers`, `hyderabad-flyovers-and-underpasses`,
+`driving-to-hyderabad-airport`, `weekend-road-trips-from-hyderabad`,
+`hyderabad-traffic-hotspots-peak-hours`, `electric-cars-in-hyderabad`,
+`history-of-hyderabad-roads`, `telangana-tg-number-plates-explained`
 
 Behind the build: `how-we-built-hyderabad-in-3d`

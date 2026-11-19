@@ -25,7 +25,7 @@ light/dark theme (follows the system setting; the header toggle overrides it and
 | Routes | `routes.html` | page intro, all five routes in detail, difficulty guide, practice tips, call to action |
 | Features | `features.html` | page intro, driving, streets and city life, dashboard and controls, time of day and graphics, call to action |
 | About & FAQ | `about.html` | page intro, why it exists, how the city is built, FAQ, safety notice, credits |
-| Blog | `blog/index.html`, `blog/<slug>.html` | 20 articles: route guides, learning to drive, road skills, behind the build (English only) |
+| Blog | `blog/index.html`, `blog/<slug>.html` | articles: route guides, learning to drive, road skills, Hyderabad roads, behind the build, release notes (English only) |
 | The game | `play.html` | (the driving game; `play.html?route=charminar` pre-selects a route) |
 
 Every page exists in English (site root) and in Hindi, Urdu (right to left) and Telugu under

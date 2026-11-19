@@ -25,6 +25,7 @@ CATEGORIES = {
     'Route guides': ('route-guides', 'Street-by-street guides to the five Hyderabad routes in Sawari, and to driving them for real.'),
     'Learning to drive': ('learning-to-drive', 'Licences, the RTA test, road signs and how to build up from your first drive.'),
     'Road skills': ('road-skills', 'The habits that keep you safe in Hyderabad traffic, one skill at a time.'),
+    'Hyderabad roads': ('hyderabad-roads', 'The city\'s ring roads, flyovers, metro and new expansions, and what they mean for the way Hyderabad drives.'),
     'Behind the build': ('behind-the-build', 'How Sawari turns open map data into a city you can drive.'),
     'Release notes': ('release-notes', 'What changed in each version of Sawari: new places, fixes and improvements, newest first.'),
 }

@@ -208,13 +208,18 @@ export class CarPhysics {
     // ---- flyover parapets keep the car on the deck (only when it is on one: a road on the
     // ground can sit above the raw terrain after grading, and used to snap onto a nearby deck)
     if (this.surface?.seg?.st && this.h - this.index.ground(this.x, this.y) > 1.2) {
-      const el = this.index.nearestElevated(this.x, this.y, this.h);
-      if (el && el.q.d > el.seg.w / 2 - 0.95) {
+      // only when the car is off every carriageway at its height: where the deck runs on
+      // into a slip road or the road beyond (a joint, a fork), the car simply drives on
+      const on = this.index.surface(this.x, this.y, this.h, 0, 1.2);
+      const el = on && on.d < on.seg.w / 2 - 0.9 ? null : this.index.nearestElevated(this.x, this.y, this.h);
+      const sd = el?.side;
+      if (sd && sd.d > el.seg.w / 2 - 0.95) {
+        // pushed square to the deck's line only, never back along it
         const lim = el.seg.w / 2 - 0.95;
-        const kk = lim / el.q.d;
-        const nx = (el.q.cx - this.x) / el.q.d, ny = (el.q.cy - this.y) / el.q.d; // towards the deck centre
-        this.x = el.q.cx + (this.x - el.q.cx) * kk;
-        this.y = el.q.cy + (this.y - el.q.cy) * kk;
+        const kk = lim / sd.d;
+        const nx = (sd.cx - this.x) / sd.d, ny = (sd.cy - this.y) / sd.d; // towards the deck centre
+        this.x = sd.cx + (this.x - sd.cx) * kk;
+        this.y = sd.cy + (this.y - sd.cy) * kk;
         this.impact(nx, ny, 0, events, 'scrape');
       }
     }

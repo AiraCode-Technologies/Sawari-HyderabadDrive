@@ -124,28 +124,47 @@ function buddha(x, y, quality) {
   return shadowed(g, quality.shadows);
 }
 
-// One cable-stayed pylon straddling the deck, with cables fanned along the bridge.
+// One pylon of the Durgam Cheruvu cable bridge: a white portal straddling the deck,
+// standing about 38 m above the road (the real pylons are 50-57 m from their base),
+// with stay cables fanned along the deck: over the main span towards the middle of the
+// lake (half of its 233.85 m) and over the back span towards the shore (96 m).
+// The road runs along local -Z; `toMid` says which way the main span lies.
 function pylon(l, quality) {
   const g = new THREE.Group();
   const white = new THREE.MeshLambertMaterial({ color: '#eceae4', flatShading: true });
-  const H = 48, off = l.w / 2 + 1.2;
+  const deck = l.h, top = deck + 38, off = l.w / 2 + 1.4;
   for (const s of [-1, 1]) {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(1.6, H, 2), white);
-    leg.position.set(s * off, H / 2, 0);
+    // legs, a little slimmer towards the top
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.5, top, 4, 1).rotateY(Math.PI / 4).scale(1, 1, 1.4), white);
+    leg.position.set(s * off, top / 2, 0);
     g.add(leg);
   }
-  for (const y of [l.h - 1.4, H - 6]) {
-    const beam = new THREE.Mesh(new THREE.BoxGeometry(off * 2 + 1.6, 1.4, 1.8), white);
+  for (const y of [deck - 1.6, top - 5, top - 0.8]) {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(off * 2 + 2, y > deck ? 1.6 : 2.2, 2.2), white);
     beam.position.y = y;
     g.add(beam);
   }
-  const pts = [];
+  // stay cables as slim rods (a line would be one pixel wide and vanish at a distance)
+  const main = l.span ? l.span / 2 - 6 : 45, back = l.span ? 90 : 45;
+  const n = 11, ends = [];
+  const forward = l.toMid ? -l.toMid : 1; // local z towards the middle of the lake
   for (const s of [-1, 1])
-    for (let k = 1; k <= 6; k++) {
-      const z = k * 7.5; // a 45 m fan each way: within the straight part of the deck
-      for (const along of [-z, z]) pts.push(new THREE.Vector3(s * off, H - 4 - k * 1.2, 0), new THREE.Vector3(s * (l.w / 2 - 0.2), l.h + 0.9, along));
+    for (let k = 1; k <= n; k++) {
+      const hA = top - 16 + (k / n) * 13; // anchors spread down the leg
+      for (const [dirz, reach] of [[forward, main], [-forward, back]]) {
+        const z = dirz * (12 + (reach - 12) * (k / n));
+        ends.push([new THREE.Vector3(s * (off - 0.6), hA, 0), new THREE.Vector3(s * (l.w / 2 - 0.4), deck + 1.0, z)]);
+      }
     }
-  const cables = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: '#f5f5f0' }));
+  const rod = new THREE.CylinderGeometry(0.11, 0.11, 1, 5, 1, true);
+  const cables = new THREE.InstancedMesh(rod, new THREE.MeshLambertMaterial({ color: '#f4f4ef' }), ends.length);
+  const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), sc = new THREE.Vector3();
+  ends.forEach(([a, b], i) => {
+    const d = b.clone().sub(a);
+    qn.setFromUnitVectors(up, d.clone().normalize());
+    m.compose(a.clone().add(b).multiplyScalar(0.5), qn, sc.set(1, d.length(), 1));
+    cables.setMatrixAt(i, m);
+  });
   g.add(cables);
   g.position.set(l.x, 0, -l.y);
   g.rotation.y = -l.dir;

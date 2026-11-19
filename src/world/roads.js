@@ -79,11 +79,22 @@ export function buildRoads(world, group, quality, T, index, junctions) {
   const cPatchDark = c3('#3c3f44'), cPatchLight = c3('#43454a') /* never paler than the road: it read as dirt */, cIron = c3('#3a3733'), cIronRim = c3('#55524c');
 
   const pillars = [];
+  // a cable-stayed main span: between a pair of pylons, within 25 m of the line joining them
+  const pyl = (world.landmarks || []).filter((l) => l.type === 'pylon' && l.span);
+  const inMainSpan = (x, y) => {
+    if (pyl.length !== 2) return false;
+    const [a, b] = pyl, dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+    const t = ((x - a.x) * dx + (y - a.y) * dy) / l2;
+    return t > 0.02 && t < 0.98 && Math.abs((x - a.x) * dy - (y - a.y) * dx) / Math.sqrt(l2) < 25;
+  };
   roadLayers(world.roads);
   world.roads.forEach((r, ri) => {
     const pts = r.p;
     if (pts.length < 2) return;
     const off = offsets(pts);
+    // where the road tapers into a wider deck (r.wv), every edge at that point moves out
+    // with it: the asphalt, kerbs, footpaths and parapets all follow the taper
+    if (r.wv) off.forEach((o, i) => { const k = r.wv[i] / r.w; o.nx *= k; o.ny *= k; });
     const hw = r.w / 2;
     const rank = rankOf(r);
     const sw = footpathWidth(r);
@@ -284,11 +295,13 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       }
     }
 
-    // pillars under bridges, standing on the real ground
+    // pillars under bridges, standing on the real ground (none in a cable-stayed main
+    // span: the Durgam Cheruvu bridge crosses the lake between its pylons unsupported)
     if (r.b) {
       for (let s = 12; s < len - 6; s += 30) {
         const q = sampleAlong(pts, s);
         const gh = gAt(q.x, q.y);
+        if (inMainSpan(q.x, q.y)) continue;
         if (q.h - gh > 2.5) {
           pillars.push({ ...q, gh });
           index.ring(q.x, q.y, 1.0, q.h - 1.2, 'post');

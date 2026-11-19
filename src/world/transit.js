@@ -34,24 +34,22 @@ export function buildTransit(world, group, quality, T, index) {
         for (const o of metro ? [-2.55, -0.95, 0.95, 2.55] : [-0.75, 0.75])
           track.quad(L(a, o - 0.04, a[2] + 0.22), L(a, o + 0.04, a[2] + 0.22), L(b, o + 0.04, b[2] + 0.22), L(b, o - 0.04, b[2] + 0.22), cRail, null, UP);
       }
-      // piers every ~28 m, but never on a carriageway: each one moves along the line or
-      // sideways under the deck to the nearest spot clear of every road, or is left out
+      // One round pier at a time, on the line's centre (the median the viaduct follows),
+      // about every 30 m as on the real Hyderabad Metro and never closer than 25 m. A pier
+      // that would land on a carriageway slides a few metres along the line, never
+      // sideways; if there is no clear spot it is left out and that span is longer.
       const len = polyLen(pts);
       const onRoad = (x, y, g) => !!index.carriagewayAt(x, y, g, 1.5, -2, 3);
+      const SPAN = metro ? 30 : 28, MIN_GAP = metro ? 25 : 16;
       let lastS = -1e9;
-      for (let s = 14; s < len - 6; s += 28) {
+      for (let s = SPAN / 2; s < len - 6; s += SPAN) {
         let spot = null;
-        for (const ds of [0, 2, -2, 4, -4, 6, -6, 8, -8, 10, -10]) {
+        for (const ds of [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5]) {
           const s2 = s + ds;
-          if (s2 < 6 || s2 > len - 6 || s2 - lastS < 16) continue;
+          if (s2 < 6 || s2 > len - 6 || s2 - lastS < MIN_GAP) continue;
           const q = sampleAlong(pts, s2);
-          const fx = Math.sin(q.dir), fy = Math.cos(q.dir);
-          for (const lat of [0, 1.5, -1.5, 3, -3]) {
-            const x = q.x + fy * lat, y = q.y - fx * lat;
-            const g = T.at(x, y);
-            if (q.h - g > 4 && !onRoad(x, y, g)) { spot = { ...q, x, y, g, s: s2 }; break; }
-          }
-          if (spot) break;
+          const g = T.at(q.x, q.y);
+          if (q.h - g > 4 && !onRoad(q.x, q.y, g)) { spot = { ...q, g, s: s2 }; break; }
         }
         if (!spot) continue;
         lastS = spot.s;
@@ -134,31 +132,8 @@ export function buildTransit(world, group, quality, T, index) {
     roof.rotateX(-Math.PI / 2); // upper half, axis along the platform
     roof.scale(1, 0.32, 1);
     at(0, 0, s.h + 4.8, roof, '#f2f2ef');
-    // columns under the concourse only where no carriageway runs: the nearest clear spot
-    // to each side of the centre line (the median, the footpaths)
-    for (const along of [-45, -15, 15, 45])
-      for (const side of [0, -1, 1]) {
-        let lat = null;
-        if (side === 0) {
-          // under the tracks, in the median the viaduct follows
-          for (const cand of [0, 0.8, -0.8, 1.6, -1.6]) {
-            const x = s.x + fx * along + rx * cand, y = s.y + fy * along + ry * cand;
-            if (!index.carriagewayAt(x, y, T.at(x, y), 0.9, -2, 4)) { lat = cand; break; }
-          }
-        } else
-          for (let k = 11; k >= 5 && lat === null; k -= 0.5) {
-            const cand = side * k, x = s.x + fx * along + rx * cand, y = s.y + fy * along + ry * cand;
-            if (!index.carriagewayAt(x, y, T.at(x, y), 1.2, -2, 4)) lat = cand;
-          }
-        if (lat === null) continue;
-        const x = s.x + fx * along + rx * lat, y = s.y + fy * along + ry * lat, gg = T.at(x, y);
-        const hgt = under - gg + 0.5;
-        if (hgt > 1) {
-          at(along, lat, gg - 0.5 + hgt / 2, new THREE.BoxGeometry(1.4, hgt, 1.4), '#cfcac0');
-          index.ring(x, y, 0.9, under, 'post');
-          group.userData.columns.push([x, y, gg]);
-        }
-      }
+    // no columns of its own: the station rests on the line's single round median piers,
+    // which run on through it at the same 30 m rhythm
   }
   if (parts.length) {
     const m = new THREE.Mesh(mergeColored(parts), new THREE.MeshLambertMaterial({ vertexColors: true }));

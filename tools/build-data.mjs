@@ -18,6 +18,7 @@ mkdirSync(outDir, { recursive: true });
 
 const ATTRIBUTION = '© OpenStreetMap contributors (ODbL)';
 const r1 = (v) => Math.round(v * 10) / 10;
+const r2 = (v) => Math.round(v * 100) / 100; // road heights: centimetres, so gentle grades rise evenly
 
 // ---------- small geometry helpers ----------
 function hash(str) {
@@ -87,6 +88,7 @@ function pointAlong(pts, s) {
         p: [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t],
         dir: bearing(pts[i - 1], pts[i]),
         i,
+        t,
       };
     }
     s -= l;
@@ -190,14 +192,14 @@ function buildRoute(def) {
     // laid them on top of the roads they pass under (passages through buildings stay)
     if (t.tunnel && t.tunnel !== 'no' && t.tunnel !== 'building_passage') continue;
     const info = roadInfo(t);
-    // add a point at least every 10 m so the road can follow the terrain; the
+    // add a point at least every 4 m so slopes rise in small, even steps (not 10 m facets); the
     // added points get private keys so they never become junctions
     const keys = [], pts = [];
     const orig = geo(e.geometry), rawKeys = e.geometry.map(nodeKey);
     for (let i = 0; i < orig.length; i++) {
       if (i > 0) {
         const a = orig[i - 1], b = orig[i];
-        const n = Math.floor(dist(a, b) / 10);
+        const n = Math.floor(dist(a, b) / 4);
         for (let k = 1; k <= n; k++) {
           const f = k / (n + 1);
           pts.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
@@ -361,7 +363,7 @@ function buildRoute(def) {
         if (!best || best.dd < 1.5) return; // converging into one road here
         // a real median between them: a kerbed strip, or room for metro piers where the metro runs above
         const mid = [(p[0] + best.q[0]) / 2, (p[1] + best.q[1]) / 2];
-        const need = (r.width + best.o.width) / 2 + (metroNear(mid) ? 2.8 : 1.2) - best.dd;
+        const need = (r.width + best.o.width) / 2 + (metroNear(mid) ? 3.4 : 1.2) - best.dd;
         if (need <= 0.05) return;
         // leave the stretch near where the two halves join alone
         const shared = new Set(best.o.keys);
@@ -537,7 +539,7 @@ function buildRoute(def) {
   // Route-able nodes near a waypoint (optionally only on roads named `on`), best first.
   // `hdg` (degrees, 0 = north, clockwise) keeps only nodes with an outgoing edge
   // heading that way, which picks the right carriageway of a divided road.
-  function nearestNodes(p, on, hdg, n = 8) {
+  function nearestNodes(p, on, hdg, n = 20) { // 20: road points are every 4 m, so both carriageways stay in reach
     const c = [];
     for (const [k, arr] of adj) {
       const named = arr.filter((e) => {
@@ -638,10 +640,11 @@ function buildRoute(def) {
   // Keep-left drive line. Recomputed after the carriageway widths are final
   // (divided roads can be narrowed where their halves overlap).
   const computeDrive = () => {
-    const segOffset = segRoad.map((ri) => {
+    const segOffset = segRoad.map((ri, k) => {
       const r = roads[ri];
-      if (!r.oneway) return Math.min(r.width / 4, 2.6);
-      return r.lanes >= 2 ? r.width / 2 - r.width / r.lanes / 2 : 0;
+      const w = r.wv ? (r.wv[edges[k].ia] + r.wv[edges[k].ib]) / 2 : r.width; // tapers at deck joints
+      if (!r.oneway) return Math.min(w / 4, 2.6);
+      return r.lanes >= 2 ? w / 2 - w / r.lanes / 2 : 0;
     });
     return routePts.map((p, i) => {
       const a = routePts[Math.max(0, i - 1)], b = routePts[Math.min(routePts.length - 1, i + 1)];
@@ -649,7 +652,7 @@ function buildRoute(def) {
       const dx = (b[0] - a[0]) / len, dy = (b[1] - a[1]) / len;
       const o = Math.min(segOffset[Math.max(0, i - 1)], segOffset[Math.min(segOffset.length - 1, i)]);
       // left normal of direction (dx, dy) is (-dy, dx)
-      return [r1(p[0] - dy * o), r1(p[1] + dx * o), r1(routeH[i])];
+      return [r1(p[0] - dy * o), r1(p[1] + dx * o), r2(routeH[i])];
     });
   };
   let drive = computeDrive();
@@ -675,6 +678,8 @@ function buildRoute(def) {
     else if (junction && deg > 22) type = turn > 0 ? 'slight-right' : 'slight-left';
     else if (junction && nextName && nextName !== prevName) type = 'continue';
     if (!type) continue;
+    // a name change just after the start (the start snapped onto a short link) is no instruction
+    if (type === 'continue' && along[i] < 20) continue;
     // following the same road around a bend or roundabout needs no prompt
     if (type.startsWith('slight') && prevName && prevName === nextName) continue;
     const prev = instructions.at(-1);
@@ -861,6 +866,43 @@ function buildRoute(def) {
   edges.forEach((e, k) => { routeH[k + 1] = roads[e.ri].h[e.ib]; routeL[k + 1] = roads[e.ri].lh[e.ib]; });
   routeH[0] = roads[edges[0].ri].h[edges[0].ia];
   routeL[0] = roads[edges[0].ri].lh[edges[0].ia];
+  // ---- width tapers where a road joins a wider deck ----
+  // A bridge or flyover that ends (or begins) at a narrower road used to step in width
+  // at the joint: a car in the deck's outer lane ran into the narrower road's edge and
+  // its embankment wall, and could not get off the deck. Real carriageways taper: the
+  // narrower road starts at the deck's width and eases to its own over 40 m.
+  for (const r of roads) r.wv = r.pts.map(() => r.width);
+  {
+    const TAPER = 40;
+    let tapered = 0;
+    const leave = (r, i) => (i === 0 ? bearing(r.pts[0], r.pts[1]) : bearing(r.pts[i], r.pts[i - 1])); // direction away from an end
+    for (const [, inc] of nodeRoads) {
+      if (inc.length < 2) continue;
+      for (const [ri, i] of inc) {
+        const r = roads[ri];
+        if (r.pts.length < 2 || (i !== 0 && i !== r.pts.length - 1)) continue;
+        let wide = 0;
+        for (const [oj, oi] of inc) {
+          const o = roads[oj];
+          if (oj === ri || o.pts.length < 2 || (oi !== 0 && oi !== o.pts.length - 1)) continue;
+          if (o.width <= r.width + 0.3 || !(o.lh[oi] > 0.8 || o.bridge)) continue; // only wider decks
+          // a continuation: the two roads leave the joint in roughly opposite directions
+          if (Math.abs(angleDiff(leave(r, i), leave(o, oi))) < Math.PI - 0.6) continue;
+          wide = Math.max(wide, o.width);
+        }
+        if (!wide) continue;
+        const step = i === 0 ? 1 : -1;
+        for (let k = i, d = 0; k >= 0 && k < r.pts.length; k += step) {
+          if (k !== i) d += dist(r.pts[k - step], r.pts[k]);
+          if (d > TAPER) break;
+          const f = 1 - d / TAPER, e = f * f * (3 - 2 * f);
+          r.wv[k] = Math.max(r.wv[k], r.width + (wide - r.width) * e);
+        }
+        tapered++;
+      }
+    }
+    if (tapered) console.log(`   ${tapered} road ends tapered into wider decks`);
+  }
   drive = computeDrive(); // widths may have changed
 
   // ---- buildings ----
@@ -1531,6 +1573,32 @@ function buildRoute(def) {
     }
   }
 
+  // Flyovers and bridges (the Durgam Cheruvu cable bridge among them) are lit from lamps
+  // on their parapets, about every 30 m: on the outer edge of a one-way deck, on both
+  // edges (staggered) of a two-way one. They stand on the deck, so they carry its height.
+  {
+    let n = 0;
+    for (const r of roadsNear) {
+      if (r.rank < 3 || !r.lh.some((v) => v > 1.5)) continue;
+      const len = polylineLength(r.pts);
+      const travel = r.reverse ? -1 : 1;
+      for (let s = 10, k = 0; s < len - 5; s += 30, k++) {
+        const { p, dir, i, t } = pointAlong(r.pts, s);
+        if (Math.min(r.lh[i - 1], r.lh[i]) < 1.5 || routeDist(p) > 300) continue;
+        const h = r.h[i - 1] + (r.h[i] - r.h[i - 1]) * t;
+        const w = r.wv ? r.wv[i - 1] + (r.wv[i] - r.wv[i - 1]) * t : r.width;
+        const rx = Math.cos(dir) * travel, ry = -Math.sin(dir) * travel; // right of travel
+        const side = r.oneway ? -1 : k % 2 ? 1 : -1; // -1: left of travel (the outer edge)
+        const off = w / 2 - 0.15; // on the parapet
+        const q = [p[0] + rx * side * off, p[1] + ry * side * off];
+        // the arm reaches in over the deck; the base sits on the parapet top
+        lights.push([r1(q[0]), r1(q[1]), r1(Math.atan2(-rx * side, -ry * side)), 0, r2(h + 0.5)]);
+        n++;
+      }
+    }
+    if (n) console.log(`   ${n} lamps on flyover and bridge parapets`);
+  }
+
   // ---- trees along the railway: the line runs through a green verge, not bare earth ----
   {
     const stationPts = X.stations.map((s) => [s.x, s.y]);
@@ -1664,9 +1732,13 @@ function buildRoute(def) {
       if (run && (!best || run.b - run.a > best.b - best.a)) best = run;
     }
     if (best) {
-      const span = best.b - best.a;
-      for (const f of span > 120 ? [0.3, 0.7] : [0.5]) {
-        const { p, dir, i: pi } = pointAlong(best.r.pts, best.a + span * f);
+      // The real bridge: two pylons, one at each side of the lake, with a 233.85 m main
+      // span between them (and 96 m back spans), so the lake itself is left clear.
+      // Centre that span on the stretch over the water.
+      const MAIN = 233.85, mid = (best.a + best.b) / 2, deckLen = polylineLength(best.r.pts);
+      const at = [mid - MAIN / 2, mid + MAIN / 2].filter((s) => s > 5 && s < deckLen - 5);
+      for (const s of at.length === 2 ? at : [mid]) {
+        const { p, dir, i: pi } = pointAlong(best.r.pts, s);
         // the other deck alongside: the pylon portal straddles both, centred on the median
         let pair = null;
         for (const o of cable) {
@@ -1682,7 +1754,7 @@ function buildRoute(def) {
         }
         const c = pair ? [(p[0] + pair.q[0]) / 2, (p[1] + pair.q[1]) / 2] : p;
         const w = pair ? pair.dd + (best.r.width + pair.w) / 2 : best.r.width;
-        landmarks.push({ type: 'pylon', x: r1(c[0]), y: r1(c[1]), dir: r1(dir), w: r1(w), h: r1(best.r.h[Math.min(pi, best.r.h.length - 1)]) });
+        landmarks.push({ type: 'pylon', x: r1(c[0]), y: r1(c[1]), dir: r1(dir), w: r1(w), h: r1(best.r.h[Math.min(pi, best.r.h.length - 1)]), span: at.length === 2 ? MAIN : 0, toMid: at.length === 2 ? Math.sign(mid - s) : 0 });
       }
     }
   }
@@ -1772,7 +1844,7 @@ function buildRoute(def) {
   const outRoads = roadsNear.filter((r) => !hiddenRamps.has(r)).map((r) => {
     const o = {
       n: r.name, k: r.cls, w: r1(r.width), l: r.lanes, o: r.oneway ? 1 : 0, s: r.speed,
-      p: rev(r, r.pts).map((q, i) => [r1(q[0]), r1(q[1]), r1(rev(r, r.h)[i])]),
+      p: rev(r, r.pts).map((q, i) => [r1(q[0]), r1(q[1]), r2(rev(r, r.h)[i])]),
       b: r.bridge && r.lift > 1 ? 1 : 0,
     };
     if (r.surf) o.f = r.surf;
@@ -1781,6 +1853,7 @@ function buildRoute(def) {
     // game used to guess from the height above the terrain, which levelling can change
     if (r.lh.some((v) => v > 0.8)) o.u = rev(r, r.lh).map((v) => (v > 0.8 ? 1 : 0));
     if (r.median && r.median.some((m) => m > 0)) o.m = rev(r, r.median);
+    if (r.wv && r.wv.some((v) => Math.abs(v - r.width) > 0.05)) o.wv = rev(r, r.wv).map(r1); // tapers into wider decks
     return o;
   });
   const xs = drive.map((d) => d[0]), ys = drive.map((d) => d[1]);

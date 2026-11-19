@@ -60,7 +60,8 @@ export function buildProps(world, group, quality, T, index) {
   instanced(new THREE.ConeGeometry(2.6, 1.3, 8).translate(0, 6.5, 0), new THREE.MeshLambertMaterial({ color: '#5c8a3a', flatShading: true }), species[3], placePalm);
 
   // ---------- street lights: single-arm on footpaths, double-arm on medians ----------
-  const lights = world.lights.filter((l) => !onCarriageway(l[0], l[1])).map((l) => ({ x: l[0], y: l[1], a: l[2], t: l[3] ?? 0, g: standAt(l[0], l[1]) }));
+  // a fifth value is the height the lamp stands at: lamps on flyover and bridge parapets
+  const lights = world.lights.filter((l) => l[4] !== undefined || !onCarriageway(l[0], l[1])).map((l) => ({ x: l[0], y: l[1], a: l[2], t: l[3] ?? 0, g: l[4] ?? standAt(l[0], l[1]) }));
   const single = lights.filter((l) => l.t === 0), double = lights.filter((l) => l.t === 1);
   const lamp = new THREE.MeshLambertMaterial({ color: '#e8e8e2', emissive: '#55524a' });
   // lamp heads in world space, for the night-time glow (see lighting.js)

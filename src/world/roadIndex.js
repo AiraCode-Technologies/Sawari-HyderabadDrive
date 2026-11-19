@@ -19,14 +19,16 @@ export class RoadIndex {
       r.kerb = rankOf(r) >= 3;
       for (let i = 1; i < r.p.length; i++) {
         const a = r.p[i - 1], b = r.p[i];
-        const seg = { ri, i, ax: a[0], ay: a[1], ah: a[2], bx: b[0], by: b[1], bh: b[2], w: r.w, len: Math.hypot(b[0] - a[0], b[1] - a[1]) };
+        // width: tapered where the road eases into a wider deck (r.wv), else the road's own
+        const w = r.wv ? (r.wv[i - 1] + r.wv[i]) / 2 : r.w;
+        const seg = { ri, i, ax: a[0], ay: a[1], ah: a[2], bx: b[0], by: b[1], bh: b[2], w, len: Math.hypot(b[0] - a[0], b[1] - a[1]) };
         // a deck or ramp (not a road on the ground): from the data's flags; older data guesses
         // from the height above the terrain, which levelled and smoothed roads can exceed
         seg.st = world.sf ? !!(r.u && (r.u[i - 1] || r.u[i])) : Math.max(a[2], b[2]) - terrain.at((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) > 0.8;
         if (seg.len < 0.05) continue;
         seg.dir = Math.atan2(b[0] - a[0], b[1] - a[1]);
         this.segs.push(seg);
-        const pad = r.w / 2 + 1;
+        const pad = w / 2 + 1;
         this.grid.add(Math.min(a[0], b[0]) - pad, Math.min(a[1], b[1]) - pad, Math.max(a[0], b[0]) + pad, Math.max(a[1], b[1]) + pad, seg);
       }
     });
@@ -156,7 +158,15 @@ export class RoadIndex {
       const sh = s.ah + (s.bh - s.ah) * q.t;
       const gh = this.terrain.at(q.cx, q.cy);
       if (!s.st || Math.abs(sh - h) > 1.5 || sh - gh < 1.2) continue; // decks and ramps only
-      if (q.d < bd) { bd = q.d; best = { seg: s, q, h: sh }; }
+      if (q.d < bd) {
+        bd = q.d;
+        // sideways offset from the segment's line, measured square to it even past its
+        // ends, so keeping the car on the deck never pulls it back along the road
+        const ux = (s.bx - s.ax) / (s.len || 1), uy = (s.by - s.ay) / (s.len || 1);
+        const along = (x - s.ax) * ux + (y - s.ay) * uy;
+        const fx = s.ax + ux * along, fy = s.ay + uy * along;
+        best = { seg: s, q, h: sh, side: { d: Math.hypot(x - fx, y - fy), cx: fx, cy: fy } };
+      }
     }
     return best;
   }
