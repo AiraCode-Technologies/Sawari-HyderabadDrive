@@ -862,6 +862,84 @@ function buildRoute(def) {
     def, extra, geo, proj, ground, roads: roadsNear, roadGrid, routeDist, KEEP, inWater, clearOfRoads, degree,
     H: { hash, rng, dist, polylineLength, polygonArea, centroid, pointInPolygon, segDist, bearing, angleDiff, pointAlong, Grid, r1 },
   });
+  // ---- smooth slopes on every road on the ground ----
+  // The grading above sets the heights; this last pass rounds off what is left of the
+  // kinks (where a side road eased out of a junction, where a stretch met a pinned
+  // junction height, where the terrain changed grade), so a slope rises in small, even
+  // steps: the 4 m points stay, but the change of grade from one to the next is tiny.
+  // Junction points stay where they are (every road through them shares that height),
+  // and flyovers, bridges and their ramps keep their own profiles.
+  {
+    const pinned = new Set();
+    for (const [k, inc] of nodeRoads) if (inc.length > 1) pinned.add(k);
+    const flatAt = (r, i) => !r.bridge && r.lh[i] <= 0.6;
+    let worstBefore = 0, worstAfter = 0;
+    const kink = (r, h, i) => {
+      const a = dist(r.pts[i - 1], r.pts[i]), b = dist(r.pts[i], r.pts[i + 1]);
+      return a > 0.5 && b > 0.5 ? Math.abs((h[i + 1] - h[i]) / b - (h[i] - h[i - 1]) / a) : 0;
+    };
+    // junctions first: two junction points close together, each set by a different main
+    // road, could sit at quite different heights (a step of a metre or more between them).
+    // Junction heights move together, every road through a junction keeping one height,
+    // until no step between neighbouring points is steeper than 12 %. A junction that
+    // also carries a deck or ramp stays where it is.
+    {
+      const nodeH = new Map(), fixedNode = new Set();
+      for (const k of pinned) {
+        const inc = nodeRoads.get(k);
+        nodeH.set(k, roads[inc[0][0]].h[inc[0][1]]);
+        if (inc.some(([ri, i]) => !flatAt(roads[ri], i))) fixedNode.add(k);
+      }
+      let fixes = 0;
+      for (let pass = 0; pass < 60; pass++) {
+        let moved = false;
+        for (const r of roads) {
+          for (let i = 1; i < r.pts.length; i++) {
+            if (!flatAt(r, i - 1) || !flatAt(r, i)) continue;
+            const ka = r.keys[i - 1], kb = r.keys[i];
+            const pa = nodeH.has(ka), pb = nodeH.has(kb);
+            if (!pa && !pb) continue;
+            const ha = pa ? nodeH.get(ka) : r.h[i - 1], hb = pb ? nodeH.get(kb) : r.h[i];
+            const over = Math.abs(hb - ha) - (0.12 * dist(r.pts[i - 1], r.pts[i]) + 0.03);
+            if (over <= 0) continue;
+            const sg = Math.sign(hb - ha);
+            const ma = pa ? !fixedNode.has(ka) : true, mb = pb ? !fixedNode.has(kb) : true;
+            if (!ma && !mb) continue;
+            const da = ma && mb ? over / 2 : ma ? over : 0, db = over - da;
+            if (da) { if (pa) nodeH.set(ka, ha + sg * da); else r.h[i - 1] = ha + sg * da; }
+            if (db) { if (pb) nodeH.set(kb, hb - sg * db); else r.h[i] = hb - sg * db; }
+            moved = true;
+            fixes++;
+          }
+        }
+        if (!moved) break;
+      }
+      for (const [k, h] of nodeH) for (const [ri, i] of nodeRoads.get(k)) if (flatAt(roads[ri], i)) roads[ri].h[i] = h;
+      if (fixes) console.log(`   ${fixes} steps at junctions eased to 12 % or less`);
+    }
+    for (const r of roads) {
+      const n = r.pts.length;
+      if (n < 3) continue;
+      const free = r.pts.map((_, i) => i > 0 && i < n - 1 && flatAt(r, i) && flatAt(r, i - 1) && flatAt(r, i + 1) && !pinned.has(r.keys[i]));
+      if (!free.some(Boolean)) continue;
+      for (let i = 1; i < n - 1; i++) if (free[i]) worstBefore = Math.max(worstBefore, kink(r, r.h, i));
+      let h = r.h.slice();
+      // each pass moves a point halfway to the straight line through its neighbours
+      for (let pass = 0; pass < 60; pass++) {
+        const out = h.slice();
+        for (let i = 1; i < n - 1; i++) {
+          if (!free[i]) continue;
+          const a = dist(r.pts[i - 1], r.pts[i]), b = dist(r.pts[i], r.pts[i + 1]);
+          out[i] = 0.5 * h[i] + 0.5 * (h[i - 1] * b + h[i + 1] * a) / ((a + b) || 1);
+        }
+        h = out;
+      }
+      r.h = h;
+      for (let i = 1; i < n - 1; i++) if (free[i]) worstAfter = Math.max(worstAfter, kink(r, r.h, i));
+    }
+    console.log(`   slopes smoothed: worst change of grade between 4 m steps ${(worstBefore * 100).toFixed(1)}% -> ${(worstAfter * 100).toFixed(1)}%`);
+  }
+
   // road heights may also have changed since routing (long decks raised clear of the ground)
   edges.forEach((e, k) => { routeH[k + 1] = roads[e.ri].h[e.ib]; routeL[k + 1] = roads[e.ri].lh[e.ib]; });
   routeH[0] = roads[edges[0].ri].h[edges[0].ia];
@@ -1866,7 +1944,8 @@ function buildRoute(def) {
     return { o: w.outer.map((q) => [r1(q[0]), r1(q[1])]), h: w.holes.map((h) => h.map((q) => [r1(q[0]), r1(q[1])])), l: r1(level) };
   });
 
-  // terrain grid over the playable area (decimetres above the start, base64 int16)
+  // terrain grid over the playable area (centimetres above the start, base64 int16; whole
+  // decimetres turned every gentle slope into flat terraces with 10 cm steps between them)
   const TD = 10, pad = 200;
   const tx0 = Math.floor((bounds.minX - pad) / TD) * TD, ty0 = Math.floor((bounds.minY - pad) / TD) * TD;
   const tnx = Math.ceil((bounds.maxX + pad - tx0) / TD) + 1, tny = Math.ceil((bounds.maxY + pad - ty0) / TD) + 1;
@@ -1877,9 +1956,10 @@ function buildRoute(def) {
       const v = ground(tx0 + i * TD, ty0 + j * TD);
       zmin = Math.min(zmin, v);
       zmax = Math.max(zmax, v);
-      zi[j * tnx + i] = Math.round(v * 10);
+      zi[j * tnx + i] = Math.round(v * 100);
     }
-  const terrain = { x0: tx0, y0: ty0, d: TD, nx: tnx, ny: tny, z: Buffer.from(zi.buffer).toString('base64') };
+  if (zmin < -327 || zmax > 327) throw new Error(`${def.id}: terrain ${zmin.toFixed(0)}..${zmax.toFixed(0)} m is outside what centimetres in int16 can hold (+-327 m)`);
+  const terrain = { x0: tx0, y0: ty0, d: TD, nx: tnx, ny: tny, s: 100, z: Buffer.from(zi.buffer).toString('base64') };
 
   const world = {
     id: def.id, name: def.name, area: def.area, blurb: def.blurb, difficulty: def.difficulty,

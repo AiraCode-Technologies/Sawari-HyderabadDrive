@@ -255,7 +255,11 @@ export class Game {
         if (this.countdown <= 0) {
           this.state = 'driving';
           this.hud.banner(null);
-          this.audio.say(`Starting ${this.world.name}. Keep left and follow the blue line.`);
+          // like a navigation app: the compass direction to set off in
+          const d0 = this.world.route.drive, k = Math.min(d0.length - 1, 8);
+          const dir = Math.atan2(d0[k][0] - d0[0][0], d0[k][1] - d0[0][1]);
+          const compass = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'][((Math.round(dir / (Math.PI / 4)) % 8) + 8) % 8];
+          this.audio.say(`Head ${compass}. Keep left and follow the blue line.`);
         }
       }
       this.handleIndicators(input);
@@ -398,18 +402,44 @@ export class Game {
     this.touchUi?.update(ind);
   }
 
+  // Spoken directions, worded and timed the way navigation apps do it:
+  //   a long stretch ahead  "Continue on HITEC City Road for 1.2 kilometres."
+  //   about 500 m out       "In 500 metres, turn left onto Inorbit Mall Road." (at speed only)
+  //   about 200 m out       "In 200 metres, turn left onto Inorbit Mall Road."
+  //   at the turn           "Turn left onto Inorbit Mall Road, then turn right."
+  // Distances are rounded as the apps round them, and the last call comes a few seconds
+  // before the turn, sooner the faster the car is going.
   voice() {
     const n = this.nav.next();
     if (!n) return;
+    const list = this.nav.instructions, i = list.indexOf(n);
     const d = n.at - this.nav.progress;
+    const v = Math.abs(this.phys.v);
     const key = `${n.at}`;
-    const what = n.type === 'arrive' ? 'your destination' : `${TURN_TEXT[n.type].toLowerCase()}${n.street ? ` onto ${n.street}` : ''}`;
-    if (d < 230 && d > 120 && !this.spoken.has(key + 'far')) {
-      this.spoken.add(key + 'far');
-      this.audio.say(n.type === 'arrive' ? 'In 200 metres, you will reach your destination.' : `In 200 metres, ${what}.`);
-    } else if (d < 45 && !this.spoken.has(key + 'near') && n.type !== 'arrive') {
-      this.spoken.add(key + 'near');
-      this.audio.say(`${TURN_TEXT[n.type]}${n.street ? ` onto ${n.street}` : ''}.`);
+    const turn = (s) => `${TURN_TEXT[s.type].toLowerCase()}${s.street ? ` onto ${s.street}` : ''}`;
+    const dist = (m) => {
+      if (m >= 950) {
+        const km = Math.round(m / 100) / 10;
+        return km === 1 ? '1 kilometre' : `${km} kilometres`;
+      }
+      return `${m >= 300 ? Math.round(m / 100) * 100 : Math.max(50, Math.round(m / 50) * 50)} metres`;
+    };
+    const say = (tag, text) => { if (!this.spoken.has(key + tag)) { this.spoken.add(key + tag); this.audio.say(text); } };
+    if (n.type === 'arrive') {
+      if (d < 215 && d > 60) say('prep', `In ${dist(d)}, you will reach your destination.`);
+      return;
+    }
+    // just after a turn, with a long way to the next one: how long to keep going
+    const prev = list[i - 1];
+    if (prev?.street && d > 900 && this.nav.progress - prev.at > 20) say('cont', `Continue on ${prev.street} for ${dist(d)}.`);
+    if (d < 520 && d > 430 && v > 11) say('far', `In ${dist(d)}, ${turn(n)}.`);
+    else if (d < 215 && d > Math.max(70, v * 6)) say('prep', `In ${dist(d)}, ${turn(n)}.`);
+    // the last call: a few seconds out; a second turn close behind gets a "then"
+    const after = list[i + 1];
+    const then = after && after.type !== 'arrive' && after.at - n.at < 130 ? `, then ${TURN_TEXT[after.type].toLowerCase()}` : '';
+    if (d < Math.max(30, v * 3.2)) {
+      say('now', `${TURN_TEXT[n.type]}${n.street ? ` onto ${n.street}` : ''}${then}.`);
+      if (then) this.spoken.add(`${after.at}prep`); // already announced: at it, just "Turn right"
     }
   }
 

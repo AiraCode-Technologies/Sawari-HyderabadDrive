@@ -1,5 +1,8 @@
 // Synthesised engine, brakes, tyres, indicator ticks and spoken directions. Everything is
-// generated in the browser; there are no audio files.
+// generated in the browser; there are no audio files. The engine is a train of
+// combustion pulses (engineSound.js); browsers without AudioWorklet get a tone engine.
+import { createPulseEngine } from './engineSound.js';
+
 export class Audio {
   constructor() {
     this.muted = false;
@@ -19,41 +22,16 @@ export class Audio {
     comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4;
     this.master.connect(comp).connect(ctx.destination);
 
-    // ---- engine: a 1.2 L four-cylinder. It fires twice per crank turn, so the
-    // note is rpm/30 Hz (28 Hz at idle, about 200 Hz at the redline), built from
-    // a few harmonics, roughened by a soft clipper that bites harder under load.
-    const osc = (type, gain, to) => {
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = type; g.gain.value = gain;
-      o.connect(g).connect(to); o.start();
-      return o;
-    };
-    this.engPre = ctx.createGain();
-    this.engPre.gain.value = 1;
-    this.shaper = ctx.createWaveShaper();
-    this.shaper.curve = this.clipCurve(2.2);
-    this.shaper.oversample = '2x';
-    this.engBody = ctx.createBiquadFilter(); // the chesty exhaust resonance
-    this.engBody.type = 'peaking'; this.engBody.frequency.value = 110; this.engBody.Q.value = 1.1; this.engBody.gain.value = 6;
-    this.engTone = ctx.createBiquadFilter();
-    this.engTone.type = 'lowpass'; this.engTone.frequency.value = 500; this.engTone.Q.value = 0.9;
-    // idle lope: the firing pulses are uneven at low revs (amplitude wobble)
-    this.lope = ctx.createGain();
-    this.lope.gain.value = 0.8;
-    this.lopeLfo = ctx.createOscillator();
-    this.lopeLfo.type = 'sine';
-    this.lopeDepth = ctx.createGain();
-    this.lopeDepth.gain.value = 0.2;
-    this.lopeLfo.connect(this.lopeDepth).connect(this.lope.gain);
-    this.lopeLfo.start();
-    this.engineGain = ctx.createGain();
-    this.engineGain.gain.value = 0.05;
-    this.engPre.connect(this.shaper).connect(this.engBody).connect(this.engTone).connect(this.lope).connect(this.engineGain).connect(this.master);
-    this.oFire = osc('sawtooth', 0.55, this.engPre); // firing note
-    this.oSub = osc('sine', 0.7, this.engPre); // crank half-order rumble
-    this.oH2 = osc('triangle', 0.25, this.engPre); // second order
-    this.oH3 = osc('square', 0.08, this.engPre); // valvetrain edge
-    this.oFire2 = osc('sawtooth', 0.3, this.engPre); // a slightly detuned twin: beating, never a pure buzz
+    // ---- engine: combustion pulses through the exhaust; the tone engine if the browser
+    // cannot run them
+    this.pulse = null;
+    createPulseEngine(ctx, this.master)
+      .then((e) => {
+        if (this.ctx !== ctx) return; // stopped meanwhile
+        if (e) this.pulse = e;
+        else this.toneEngine();
+      })
+      .catch(() => { if (this.ctx === ctx) this.toneEngine(); });
 
     // ---- shared noise (one 2 s buffer, slightly pink so it is not hissy)
     const len = ctx.sampleRate * 2;
@@ -98,6 +76,46 @@ export class Audio {
     this.prev = { speed: 0, brakeFrom: 0, shifting: false, gear: 'D' };
   }
 
+  // The older engine, made of steady tones: only for browsers without AudioWorklet.
+  toneEngine() {
+    // ---- engine: a 1.2 L four-cylinder. It fires twice per crank turn, so the
+    // note is rpm/30 Hz (28 Hz at idle, about 200 Hz at the redline), built from
+    // a few harmonics, roughened by a soft clipper that bites harder under load.
+    const ctx = this.ctx;
+    const osc = (type, gain, to) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; g.gain.value = gain;
+      o.connect(g).connect(to); o.start();
+      return o;
+    };
+    this.engPre = ctx.createGain();
+    this.engPre.gain.value = 1;
+    this.shaper = ctx.createWaveShaper();
+    this.shaper.curve = this.clipCurve(2.2);
+    this.shaper.oversample = '2x';
+    this.engBody = ctx.createBiquadFilter(); // the chesty exhaust resonance
+    this.engBody.type = 'peaking'; this.engBody.frequency.value = 110; this.engBody.Q.value = 1.1; this.engBody.gain.value = 6;
+    this.engTone = ctx.createBiquadFilter();
+    this.engTone.type = 'lowpass'; this.engTone.frequency.value = 500; this.engTone.Q.value = 0.9;
+    // idle lope: the firing pulses are uneven at low revs (amplitude wobble)
+    this.lope = ctx.createGain();
+    this.lope.gain.value = 0.8;
+    this.lopeLfo = ctx.createOscillator();
+    this.lopeLfo.type = 'sine';
+    this.lopeDepth = ctx.createGain();
+    this.lopeDepth.gain.value = 0.2;
+    this.lopeLfo.connect(this.lopeDepth).connect(this.lope.gain);
+    this.lopeLfo.start();
+    this.engineGain = ctx.createGain();
+    this.engineGain.gain.value = 0.05;
+    this.engPre.connect(this.shaper).connect(this.engBody).connect(this.engTone).connect(this.lope).connect(this.engineGain).connect(this.master);
+    this.oFire = osc('sawtooth', 0.55, this.engPre); // firing note
+    this.oSub = osc('sine', 0.7, this.engPre); // crank half-order rumble
+    this.oH2 = osc('triangle', 0.25, this.engPre); // second order
+    this.oH3 = osc('square', 0.08, this.engPre); // valvetrain edge
+    this.oFire2 = osc('sawtooth', 0.3, this.engPre); // a slightly detuned twin: beating, never a pure buzz
+  }
+
   clipCurve(k) {
     const n = 1024, c = new Float32Array(n), th = Math.tanh(k);
     for (let i = 0; i < n; i++) { const x = (i / (n - 1)) * 2 - 1; c[i] = Math.tanh(k * x) / th; }
@@ -116,6 +134,18 @@ export class Audio {
     const overrun = throttle < 0.05 && rpm > 1500; // coasting down on the engine
 
     // ---- engine
+    if (this.pulse) this.pulse.set({ rpm, load, r, overrun, shifting, inside, t });
+    else if (this.oFire) this.updateTone(t, set, rpm, r, load, overrun, shifting, inside);
+    set(this.intake.f.frequency, 600 + r * 1400, 0.08);
+    set(this.intake.g.gain, load * (0.012 + r * 0.04) * (inside ? 0.7 : 1), 0.08);
+    if (reverse !== (P.gear === 'R')) this.clunk(0.5); // the gearbox engaging
+    P.gear = reverse ? 'R' : 'D';
+    if (shifting && !P.shifting && throttle > 0.3) this.clunk(0.15); // a soft shift thump
+    P.shifting = shifting;
+    this.updateRest(t, set, P, speed, brake, latAcc, slip, handbrake, inside);
+  }
+
+  updateTone(t, set, rpm, r, load, overrun, shifting, inside) {
     const jitter = 1 + (Math.random() - 0.5) * 0.012 * (1 - r); // a living idle
     const fire = (rpm / 30) * jitter;
     set(this.oFire.frequency, fire, 0.03);
@@ -130,13 +160,9 @@ export class Audio {
     set(this.engBody.frequency, 90 + r * 90, 0.1);
     const eng = (0.03 + load * 0.045 + r * 0.03) * (overrun ? 0.7 : 1) * (shifting ? 0.55 : 1) * (inside ? 0.85 : 1);
     set(this.engineGain.gain, eng, shifting ? 0.03 : 0.08);
-    set(this.intake.f.frequency, 600 + r * 1400, 0.08);
-    set(this.intake.g.gain, load * (0.012 + r * 0.04) * (inside ? 0.7 : 1), 0.08);
-    if (reverse !== (P.gear === 'R')) this.clunk(0.5); // the gearbox engaging
-    P.gear = reverse ? 'R' : 'D';
-    if (shifting && !P.shifting && throttle > 0.3) this.clunk(0.15); // a soft shift thump
-    P.shifting = shifting;
+  }
 
+  updateRest(t, set, P, speed, brake, latAcc, slip, handbrake, inside) {
     // ---- road and wind
     set(this.rumble.g.gain, Math.min(0.11, speed * 0.0055) * (inside ? 0.7 : 1), 0.2);
     set(this.rumble.f.frequency, 220 + Math.min(400, speed * 12), 0.3);
@@ -289,12 +315,49 @@ export class Audio {
     o.stop(ctx.currentTime + 0.32);
   }
 
+  // The most natural English voice this device has, like a navigation app's: Indian
+  // English first, then British, Australian and American; the neural / natural / online
+  // / enhanced voices (Edge's Microsoft Natural voices, Chrome's and Android's Google
+  // voices, Apple's enhanced ones) ahead of the basic built-in ones; novelty voices never.
+  pickVoice() {
+    if (this.guideVoice !== undefined) return this.guideVoice;
+    const voices = speechSynthesis.getVoices();
+    if (!voices.length) return null; // not loaded yet: ask again next time
+    const score = (v) => {
+      const n = v.name.toLowerCase(), lang = v.lang.toLowerCase().replace('_', '-');
+      if (!lang.startsWith('en')) return -1;
+      if (/compact|eloquence|espeak|novelty|bad news|bells|whisper|zarvox|trinoids|albert|bubbles|cellos|jester|organ|superstar|wobble|boing|bahh|good news|pipe|junior|ralph|kathy|fred/.test(n)) return -1;
+      let s = lang === 'en-in' ? 30 : /en-(gb|au|ie|nz)/.test(lang) ? 16 : lang === 'en-us' ? 14 : 8;
+      if (/natural|neural|wavenet|studio|premium|enhanced|online/.test(n)) s += 26;
+      if (/google/.test(n)) s += 18;
+      if (/neerja|prabhat|veena|rishi|isha|heera|ravi|samantha|serena|karen|moira|sonia|libby|aria|jenny/.test(n)) s += 6;
+      if (!v.localService) s += 2; // cloud voices are usually the natural-sounding ones
+      return s;
+    };
+    const best = voices.map((v) => [score(v), v]).filter((x) => x[0] >= 0).sort((a, b) => b[0] - a[0])[0];
+    this.guideVoice = best ? best[1] : null;
+    return this.guideVoice;
+  }
+
   say(text) {
     if (!this.voiceOn || this.muted || !('speechSynthesis' in window)) return;
+    if (!this.voicesHooked) {
+      // voices load in the background: choose again once the full list arrives
+      this.voicesHooked = true;
+      speechSynthesis.addEventListener?.('voiceschanged', () => { this.guideVoice = undefined; });
+    }
     const u = new SpeechSynthesisUtterance(text);
-    const voices = speechSynthesis.getVoices();
-    u.voice = voices.find((v) => v.lang === 'en-IN') || voices.find((v) => v.lang.startsWith('en')) || null;
-    u.rate = 1.02;
+    const v = this.pickVoice();
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-IN';
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    // the engine and road dip while the voice speaks, as a navigation app ducks music
+    const duck = (on) => {
+      if (!this.ctx || !this.master || this.muted) return;
+      this.master.gain.setTargetAtTime(on ? 0.22 : 0.5, this.ctx.currentTime, on ? 0.08 : 0.35);
+    };
+    u.onstart = () => duck(true);
+    u.onend = u.onerror = () => duck(false);
     speechSynthesis.cancel();
     speechSynthesis.speak(u);
   }

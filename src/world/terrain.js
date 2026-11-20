@@ -11,7 +11,8 @@ export class Terrain {
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     const dm = new Int16Array(bytes.buffer);
     this.h = new Float32Array(dm.length);
-    for (let i = 0; i < dm.length; i++) this.h[i] = dm[i] / 10;
+    const scale = t.s || 10; // centimetres (s: 100) in current data, decimetres in older data
+    for (let i = 0; i < dm.length; i++) this.h[i] = dm[i] / scale;
   }
 
   // bilinear height at local (x east, y north)
