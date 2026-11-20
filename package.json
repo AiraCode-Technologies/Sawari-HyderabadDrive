@@ -1,7 +1,7 @@
 {
   "name": "hyderabad-drive",
   "private": true,
-  "version": "1.9.0",
+  "version": "1.9.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
     "build-data": "node tools/build-data.mjs"
   },
   "dependencies": {
+    "@vercel/og": "0.6.8",
     "three": "^0.170.0"
   },
   "devDependencies": {

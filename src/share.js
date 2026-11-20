@@ -19,7 +19,11 @@ export function readChallenge(params) {
 export function challengeLink({ route, time, traffic, score, secs, name }) {
   const q = new URLSearchParams({ route, time, traffic, vs: String(score), vt: String(Math.round(secs)) });
   if (name) q.set('by', name.slice(0, 24));
-  return `${location.origin}/play.html?${q}`;
+  // On the live site the link goes through /c (api/challenge.js), which gives chat apps a
+  // preview with this challenge's own card and sends people on to the game. Locally there
+  // are no server functions, so it points straight at the game.
+  const local = /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+  return `${location.origin}/${local ? 'play.html' : 'c'}?${q}`;
 }
 
 // how this drive went against the challenge it was started from (or null)
