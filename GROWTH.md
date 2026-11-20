@@ -9,12 +9,13 @@ Most visitors in India are on a phone, and phones currently get a "use a desktop
 - [x] Lighter graphics on phones: 1x resolution, fast mode and normal traffic on the first visit
 - [x] Landscape only: full screen and landscape lock on Android, "turn your phone sideways" prompt, drive pauses when held upright
 - [x] Layout checked at 640x360, 667x375, 844x390, 932x430 (phones), 1024x768 and 1180x820 (tablets), and the start page upright
-- [ ] Test on a real mid-range Android phone, an iPhone and an iPad (speed, feel of the steering, sound)
+- [x] Tested on a real Android phone: works well
+- [ ] Test on an iPhone and an iPad (speed, feel of the steering, sound)
 - [x] Update the website FAQ (all four languages) and the blog posts that say "laptop or desktop only"; "Play anywhere" section on the home page
 
 ## 2. Make every drive shareable
-- [ ] Score card image after the debrief, ready for WhatsApp and Instagram Stories
-- [ ] "Challenge a friend" link: same route, time and traffic, with the score to beat
+- [x] Score card image after the debrief, ready for WhatsApp and Instagram Stories (`src/share.js`)
+- [x] "Challenge a friend" link: same route, time and traffic, with the score to beat
 - [ ] Weekly leaderboard per route (needs a small backend)
 - [ ] Three 15–30 s clips (cable bridge at night, Charminar, Tank Bund) as Reels and Shorts
 - [ ] Full route videos on YouTube, linked from each route guide

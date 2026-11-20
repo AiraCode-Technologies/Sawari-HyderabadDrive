@@ -301,3 +301,19 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 
 /* the horn in the middle of the steering wheel lights up while pressed */
 .t-wheel.honk .t-hub circle { fill: #3a4450; stroke: #f2a93b; }
+
+/* ---------- sharing a drive: debrief buttons, name field, challenge result ---------- */
+.share-drive { margin: 4px 0 18px; padding: 14px 16px 6px; border-radius: 12px; background: rgba(242, 169, 59, 0.08); border: 1px solid rgba(242, 169, 59, 0.28); }
+.share-drive .actions { margin-top: 12px; }
+.share-name { display: block; font-size: 13px; color: var(--muted); }
+.share-name span { opacity: 0.8; }
+.share-name input { display: block; width: 100%; margin-top: 6px; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.06); color: var(--ink); font: inherit; font-size: 15px; }
+.share-name input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.share-msg { min-height: 18px; margin: 8px 0 6px; font-size: 13px; color: var(--good); }
+.versus { margin: -6px 0 12px; font-weight: 700; color: var(--accent); }
+.versus.won { color: #6fdc9a; }
+/* the start page, opened from a challenge link */
+.challenge-banner { margin: -10px 0 22px; padding: 14px 18px; border-radius: 14px; background: rgba(242, 169, 59, 0.12); border: 1px solid rgba(242, 169, 59, 0.45); }
+.challenge-banner .ch-title { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.challenge-banner p { margin: 0; line-height: 1.5; }
+:root[data-theme='light'] .menu .challenge-banner { background: #fff3df; }

@@ -1,4 +1,5 @@
 import { Game } from './game.js';
+import { readChallenge, fmt } from './share.js';
 
 const app = document.getElementById('app');
 const COLORS = ['#c8202a', '#f1f1ee', '#1f4f9a', '#a9aeb4', '#202326', '#d9822b'];
@@ -20,7 +21,8 @@ function loadSettings() {
 }
 function saveSettings(s) {
   try {
-    localStorage.setItem('hyd-drive-settings', JSON.stringify(s));
+    const { challenge, touch, ...keep } = s; // this visit only
+    localStorage.setItem('hyd-drive-settings', JSON.stringify(keep));
   } catch {
     /* storage unavailable: settings last for this visit only */
   }
@@ -39,8 +41,16 @@ settings.touch = TOUCH;
 // a phone's first drive: the fast graphics and normal traffic, so it runs smoothly
 if (TOUCH && firstVisit) Object.assign(settings, { quality: 'low', traffic: 'medium' });
 // a link from the website can pick the route: play.html?route=charminar
-const wanted = new URLSearchParams(location.search).get('route');
+const params = new URLSearchParams(location.search);
+const wanted = params.get('route');
 if (wanted) settings.route = wanted;
+// a friend's challenge link: the same route, time of day and traffic, and the score to beat
+const challenge = readChallenge(params);
+if (challenge) {
+  if (['morning', 'noon', 'evening', 'night'].includes(params.get('time'))) settings.time = params.get('time');
+  if (['off', 'low', 'medium', 'high', 'dense'].includes(params.get('traffic'))) settings.traffic = params.get('traffic');
+  settings.challenge = challenge;
+}
 let index = null;
 let game = null;
 const cache = new Map();
@@ -84,6 +94,16 @@ document.addEventListener('click', (e) => {
   btn.setAttribute('aria-label', next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
 });
 
+function challengeBanner() {
+  const c = settings.challenge;
+  const r = c && index.routes.find((x) => x.id === c.route);
+  if (!r) return '';
+  const when = { morning: 'in the morning', noon: 'at midday', evening: 'in the evening', night: 'at night' }[settings.time] || '';
+  const traffic = { off: 'no traffic', low: 'light traffic', medium: 'normal traffic', high: 'busy traffic', dense: 'dense traffic' }[settings.traffic] || '';
+  return `<div class="challenge-banner" role="note"><div class="ch-title">You've been challenged</div>
+    <p><b>${esc(c.name || 'A friend')}</b> scored <b>${c.score}</b> on <b>${esc(r.name)}</b> in ${fmt(c.secs)}, ${when} with ${traffic}. Same route, same conditions: can you beat it?</p></div>`;
+}
+
 function menu() {
   let bests = {};
   try {
@@ -102,6 +122,7 @@ function menu() {
         ${themeButton()}
       </div>
       <p class="tagline">Practise famous Hyderabad roads in your browser: real streets, left-hand traffic, signals and turn-by-turn guidance.</p>
+      ${challengeBanner()}
       <div class="section-title">Choose a route</div>
       <div class="routes">
         ${index.routes.map((r) => `

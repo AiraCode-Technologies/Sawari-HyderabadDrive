@@ -6,6 +6,7 @@ import { createCarModel, CAR } from './car/carModel.js';
 import { CarPhysics } from './car/physics.js';
 import { Input } from './input.js';
 import { TouchControls } from './touch.js';
+import { scoreCard, shareCard, shareLink, challengeLink, verdict } from './share.js';
 import { CameraRig } from './cameraRig.js';
 import { Navigator, TURN_TEXT } from './nav.js';
 import { createRouteBand, createSteeringGuide } from './guide.js';
@@ -563,6 +564,19 @@ export class Game {
     this.audio.quiet(true);
     this.hud.banner(null);
     this.audio.say('You have arrived at your destination.');
+    // a picture of the moment of arrival for the score card (read straight after drawing,
+    // while the frame is still in the canvas)
+    let shot = null;
+    try {
+      this.renderer.render(this.scene, this.camera);
+      const src = this.renderer.domElement;
+      shot = document.createElement('canvas');
+      shot.width = src.width;
+      shot.height = src.height;
+      shot.getContext('2d').drawImage(src, 0, 0);
+    } catch {
+      shot = null;
+    }
     const score = this.rules.score();
     const stars = score >= 95 ? 5 : score >= 85 ? 4 : score >= 70 ? 3 : score >= 50 ? 2 : 1;
     const avg = this.time > 0 ? (this.rules.distance / this.time) * 3.6 : 0;
@@ -586,21 +600,74 @@ export class Game {
     const list = faults.length
       ? `<ul class="fault-list">${faults.map((f) => `<li><span class="t">${fmtTime(f.t - 3)}</span><div><div class="what">${f.what}</div><div class="advice">${f.advice}</div></div></li>`).join('')}</ul>`
       : '<p class="sub">No faults. A clean drive — try a harder route or turn the traffic up.</p>';
+    // a challenge from a friend's link, for this route
+    const ch = this.settings.challenge?.route === this.world.id ? this.settings.challenge : null;
+    const result = verdict(ch, score, this.time);
+    let myName = '';
+    try {
+      myName = localStorage.getItem('sawari-name') || '';
+    } catch {
+      /* no storage */
+    }
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     this.showOverlay(
       `<h2>You made it</h2><p class="sub">${this.world.name} · ${this.world.area}</p>
        <div class="score"><span class="num">${score}</span><span class="stars">${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}</span></div>
+       ${result ? `<p class="versus ${result.won ? 'won' : ''}">${esc(result.text)}</p>` : ''}
        ${bestLine}
        <div class="stat-grid">
          <div class="stat"><div class="k">Time</div><div class="v">${fmtTime(this.time)}</div></div>
          <div class="stat"><div class="k">Distance</div><div class="v">${(this.rules.distance / 1000).toFixed(2)} km</div></div>
          <div class="stat"><div class="k">Average</div><div class="v">${Math.round(avg)} km/h</div></div>
        </div>
+       <div class="share-drive">
+         <label class="share-name">Your name for the card and challenge <span>(optional)</span><input data-name maxlength="24" autocomplete="nickname" value="${esc(myName)}" placeholder="e.g. Kiran" /></label>
+         <div class="actions"><button class="primary" data-a="card">Share score card</button><button class="secondary" data-a="challenge">Challenge a friend</button></div>
+         <p class="share-msg" role="status" aria-live="polite"></p>
+       </div>
        ${list}
        <div class="actions"><button class="primary" data-a="restart">Drive it again</button><button class="secondary" data-a="exit">Choose another route</button></div>`,
-      (o) => o.addEventListener('click', (e) => {
-        const a = e.target.closest('button')?.dataset.a;
-        if (a) this.onExit(a === 'restart' ? 'restart' : 'menu');
-      }),
+      (o) => {
+        const msg = o.querySelector('.share-msg'), nameIn = o.querySelector('[data-name]');
+        const name = () => {
+          const n = nameIn.value.replace(/[<>&"]/g, '').trim().slice(0, 24);
+          try {
+            localStorage.setItem('sawari-name', n);
+          } catch {
+            /* no storage */
+          }
+          return n;
+        };
+        const link = (n) => challengeLink({ route: this.world.id, time: this.settings.time, traffic: this.settings.traffic, score, secs: this.time, name: n });
+        const words = () =>
+          result?.won
+            ? `I beat ${result.who} on ${this.world.name} in Sawari: ${score} against ${result.theirs}! It's the free driving simulator on real Hyderabad roads. Your turn:`
+            : `I scored ${score}/100 ${'★'.repeat(stars)} on ${this.world.name} in Sawari, the free driving simulator on real Hyderabad roads. Can you beat me?`;
+        o.addEventListener('click', async (e) => {
+          const b = e.target.closest('button');
+          const a = b?.dataset.a;
+          if (a === 'restart' || a === 'exit') return this.onExit(a === 'restart' ? 'restart' : 'menu');
+          if (a === 'card') {
+            b.disabled = true;
+            msg.textContent = 'Making your score card…';
+            const n = name();
+            const blob = await scoreCard({ shot, route: this.world.name, area: this.world.area, score, stars, secs: this.time, km: this.rules.distance / 1000, faults: faults.length, name: n, result });
+            const how = await shareCard(blob, `${words()} ${link(n)}`);
+            msg.textContent = {
+              shared: 'Shared. Your friends can tap the link to take you on.',
+              cancelled: '',
+              'downloaded-copied': 'Score card saved to your downloads, and the challenge message is copied: paste it with the picture.',
+              downloaded: 'Score card saved to your downloads.',
+            }[how];
+            b.disabled = false;
+          }
+          if (a === 'challenge') {
+            const n = name();
+            const how = await shareLink(words(), link(n));
+            msg.textContent = { shared: 'Challenge sent.', cancelled: '', copied: 'Challenge link copied: paste it in a chat.', failed: `Copy this link: ${link(n)}` }[how];
+          }
+        });
+      },
     );
   }
 
