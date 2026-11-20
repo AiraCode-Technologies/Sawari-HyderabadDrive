@@ -207,3 +207,49 @@ export async function shareLink(text, url) {
     return 'failed';
   }
 }
+
+// ---------- the share row under "Challenge a friend" (like the website footer) ----------
+const ICONS = {
+  whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M12 3.2a8.8 8.8 0 0 0-7.6 13.2L3.2 20.8l4.5-1.2A8.8 8.8 0 1 0 12 3.2z"/><path fill="currentColor" d="M9 8.4c.3-.6.6-.6.9-.6h.5c.2 0 .4.1.5.4l.7 1.7c.1.2 0 .4-.1.6l-.5.6c-.1.2-.1.4 0 .5.5.9 1.3 1.7 2.3 2.2.2.1.4.1.5 0l.6-.7c.2-.2.4-.2.6-.1l1.6.8c.2.1.3.3.3.5v.4c-.1.6-.9 1.3-1.6 1.4-.7.1-1.6.1-3.6-.9-2.4-1.3-3.7-3.6-3.9-4.1-.3-.6-.4-1.6.1-2.2z"/></svg>',
+  facebook: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg>',
+  x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.75 3h3.07l-6.7 7.66L22 21h-6.17l-4.83-6.32L5.47 21H2.4l7.17-8.2L2 3h6.33l4.37 5.78L17.75 3zm-1.08 16.17h1.7L7.4 4.74H5.58l11.09 14.43z"/></svg>',
+  linkedin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>',
+  telegram: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.6 19.9c-.2 1.1-.9 1.4-1.8.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1L18 6.4c.4-.4-.1-.6-.6-.2L6 13.3 1.1 11.8c-1.1-.3-1.1-1 .2-1.5L20.5 2.9c.9-.3 1.7.2 1.4 1.4z"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg>',
+  more: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v12M7.5 7.5 12 3l4.5 4.5"/></svg>',
+};
+const attr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+// HTML for the row: real links for the apps that take one, buttons for the rest.
+export function socialRow(text, url) {
+  const e = encodeURIComponent, both = `${text} ${url}`;
+  const a = (cls, href, label) => `<a class="sb ${cls}" href="${attr(href)}" target="_blank" rel="noopener nofollow" aria-label="${label}" title="${label}">${ICONS[cls]}</a>`;
+  const b = (cls, act, label) => `<button type="button" class="sb ${cls}" data-share="${act}" aria-label="${label}" title="${label}">${ICONS[cls]}</button>`;
+  return `<div class="social-row">
+    ${a('whatsapp', `https://wa.me/?text=${e(both)}`, 'Send on WhatsApp')}
+    ${a('facebook', `https://www.facebook.com/sharer/sharer.php?u=${e(url)}`, 'Share on Facebook')}
+    ${a('x', `https://x.com/intent/post?text=${e(text)}&url=${e(url)}`, 'Post on X')}
+    ${a('linkedin', `https://www.linkedin.com/feed/?shareActive=true&text=${e(both)}`, 'Share on LinkedIn')}
+    ${a('telegram', `https://t.me/share/url?url=${e(url)}&text=${e(text)}`, 'Send on Telegram')}
+    ${b('instagram', 'instagram', 'Copy a caption for Instagram')}
+    <button type="button" class="sb-copy" data-share="copy">${ICONS.copy}<span>Copy link</span></button>
+    ${navigator.share ? b('more', 'more', 'More ways to share') : ''}
+  </div>`;
+}
+
+export async function copyText(t) {
+  try {
+    await navigator.clipboard.writeText(t);
+    return true;
+  } catch {
+    const ta = Object.assign(document.createElement('textarea'), { value: t });
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  }
+}

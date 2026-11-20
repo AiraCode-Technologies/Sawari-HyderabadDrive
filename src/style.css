@@ -317,3 +317,22 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 .challenge-banner .ch-title { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
 .challenge-banner p { margin: 0; line-height: 1.5; }
 :root[data-theme='light'] .menu .challenge-banner { background: #fff3df; }
+
+/* the share row under "Challenge a friend" (like the website footer's) */
+.share-panel { margin-top: 12px; }
+.share-hint { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.social-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sb { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.07); color: var(--ink); cursor: pointer; padding: 0; transition: transform 0.15s, background 0.15s, color 0.15s; text-decoration: none; }
+.sb svg { width: 20px; height: 20px; }
+.sb:hover, .sb:focus-visible { transform: translateY(-2px); color: #fff; border-color: transparent; }
+.sb.whatsapp:hover, .sb.whatsapp:focus-visible { background: #25d366; }
+.sb.facebook:hover, .sb.facebook:focus-visible { background: #1877f2; }
+.sb.x:hover, .sb.x:focus-visible { background: #000; }
+.sb.linkedin:hover, .sb.linkedin:focus-visible { background: #0a66c2; }
+.sb.telegram:hover, .sb.telegram:focus-visible { background: #229ed9; }
+.sb.instagram:hover, .sb.instagram:focus-visible { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+.sb.more:hover, .sb.more:focus-visible { background: rgba(255, 255, 255, 0.2); }
+.sb-copy { height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.07); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.sb-copy svg { width: 18px; height: 18px; }
+.sb-copy:hover, .sb-copy:focus-visible { border-color: var(--muted); background: rgba(255, 255, 255, 0.12); }
+@media (prefers-reduced-motion: reduce) { .sb { transition: none; } .sb:hover { transform: none; } }

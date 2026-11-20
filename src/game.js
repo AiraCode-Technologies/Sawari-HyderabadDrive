@@ -6,7 +6,7 @@ import { createCarModel, CAR } from './car/carModel.js';
 import { CarPhysics } from './car/physics.js';
 import { Input } from './input.js';
 import { TouchControls } from './touch.js';
-import { scoreCard, shareCard, shareLink, challengeLink, verdict } from './share.js';
+import { scoreCard, shareCard, shareLink, challengeLink, verdict, socialRow, copyText } from './share.js';
 import { CameraRig } from './cameraRig.js';
 import { Navigator, TURN_TEXT } from './nav.js';
 import { createRouteBand, createSteeringGuide } from './guide.js';
@@ -623,6 +623,7 @@ export class Game {
        <div class="share-drive">
          <label class="share-name">Your name for the card and challenge <span>(optional)</span><input data-name maxlength="24" autocomplete="nickname" value="${esc(myName)}" placeholder="e.g. Kiran" /></label>
          <div class="actions"><button class="primary" data-a="card">Share score card</button><button class="secondary" data-a="challenge">Challenge a friend</button></div>
+         <div class="share-panel" hidden></div>
          <p class="share-msg" role="status" aria-live="polite"></p>
        </div>
        ${list}
@@ -661,10 +662,28 @@ export class Game {
             }[how];
             b.disabled = false;
           }
+          // "Challenge a friend" opens the share row (like the website footer); it is built
+          // when opened, so it carries the name as it is typed now
           if (a === 'challenge') {
-            const n = name();
-            const how = await shareLink(words(), link(n));
-            msg.textContent = { shared: 'Challenge sent.', cancelled: '', copied: 'Challenge link copied: paste it in a chat.', failed: `Copy this link: ${link(n)}` }[how];
+            const panel = o.querySelector('.share-panel');
+            const opening = panel.hidden;
+            if (opening) {
+              const n = name();
+              panel.innerHTML = `<p class="share-hint">Send ${n ? 'your' : 'the'} challenge to a friend:</p>${socialRow(words(), link(n))}`;
+            }
+            panel.hidden = !opening;
+            b.setAttribute('aria-expanded', String(opening));
+            msg.textContent = '';
+          }
+          const s = e.target.closest('[data-share]')?.dataset.share;
+          if (s) {
+            const n = name(), url = link(n);
+            if (s === 'copy') msg.textContent = (await copyText(url)) ? 'Challenge link copied: paste it in a chat.' : `Copy this link: ${url}`;
+            if (s === 'instagram') msg.textContent = (await copyText(`${words()} ${url}`)) ? 'Caption copied: share your score card to Instagram and paste it there.' : '';
+            if (s === 'more') {
+              const how = await shareLink(words(), url);
+              msg.textContent = how === 'shared' ? 'Challenge sent.' : '';
+            }
           }
         });
       },
