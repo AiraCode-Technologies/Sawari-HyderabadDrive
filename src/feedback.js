@@ -1,11 +1,14 @@
 // "Send feedback": a small form in the game (start page, pause screen, results screen; the
 // website footer links to play.html?feedback=1). It is sent the way airacode.online sends its
-// contact form when its own server route is not available: through FormSubmit, which emails
-// each message as a table to AiraCode, sets the reply-to to the sender (if they gave an
-// email) and sends them an automatic thank-you. A hidden "honeypot" field drops spam bots.
+// contact form: first to our own server route, /api/feedback (api/feedback.js), which mails
+// the team through Resend with the sender as reply-to and sends the sender a receipt; if
+// that route is not there or cannot send (local development, no API key), through
+// FormSubmit instead, which emails the same message as a table. A hidden "honeypot" field
+// drops spam bots on both paths.
 import { track } from './analytics.js';
 
-const ENDPOINT = 'https://formsubmit.co/ajax/nagarajendra432@gmail.com';
+const API = '/api/feedback';
+const FALLBACK = 'https://formsubmit.co/ajax/nagarajendra432@gmail.com';
 const KINDS = [['bug', 'Something is broken'], ['idea', 'An idea'], ['route', 'A route I want'], ['other', 'Something else']];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
@@ -90,10 +93,23 @@ export function openFeedback(context = {}) {
     send.disabled = true;
     msg.textContent = 'Sending…';
     try {
-      const res = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+      // 1. our own route (Resend), as airacode.online does
+      const details = Object.fromEntries(Object.entries(body).filter(([k]) => !k.startsWith('_') && !['Type', 'Message', 'Name', 'Email', 'Route'].includes(k)));
+      let res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind, message, name: who, email: from, route, details, botField: f.get('_honey') || '' }),
+      }).catch(() => null);
+      let via = 'resend';
+      // 2. not there, or it could not send: FormSubmit, as airacode.online falls back
+      if (!res || !res.ok) {
+        if (res && res.status === 400) throw new Error((await res.json().catch(() => ({}))).error || 'Bad request');
+        via = 'formsubmit';
+        res = await fetch(FALLBACK, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+      }
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.success === 'false' || data.success === false) throw new Error(data.message || `HTTP ${res.status}`);
-      track('feedback_sent', { kind, route });
+      if (!res.ok || data.success === 'false' || data.success === false) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+      track('feedback_sent', { kind, route, via });
       form.innerHTML = `<h2>Thank you</h2><p class="sub">Your feedback is on its way to the team.${from ? ' We\'ll reply to you by email if we need to know more.' : ''}</p><div class="actions"><button class="primary" type="button" data-close>Close</button></div>`;
     } catch {
       send.disabled = false;

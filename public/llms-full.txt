@@ -6405,6 +6405,10 @@ Version 1.12.0 makes it easy to tell us what you think. Found a bug, have an ide
 
 Choose whether it is something broken, an idea, a route you want or something else, and write a few words. Your name and email are optional; leave an email if you would like a reply. The form also tells us which route you were on, the Sawari version, your kind of device and screen size, so we can reproduce problems. Nothing else is collected.
 
+## A reply in your inbox
+
+Added in 1.12.1: if you leave your email, you now get a confirmation with a copy of your message, and you can reply to it to add screenshots or more detail.
+
 ## Also fixed
 
 The "See the routes" button at the end of every blog article now opens the routes page.

@@ -49,6 +49,23 @@ characters, or it links to a post or route that doesn't exist. To add a post, ad
 the build; the English home page shows three posts and each route on the routes page links to
 its guide.
 
+### Feedback mail
+
+"Send feedback" (start page, pause and results screens, the website footer) posts to
+`/api/feedback` (`api/feedback.js`, a Vercel Edge function), which mails the team through
+Resend in the same way as airacode.online's contact form: an HTML notification with the sender
+as reply-to, and a receipt to the sender if they gave an email. If the route is missing or
+cannot send, the game falls back to FormSubmit. Set these in the Vercel project (Settings →
+Environment Variables); the names match airacode.online's, so its Resend key works:
+
+| Variable | Default |
+| --- | --- |
+| `RESEND_API_KEY` | none: required, or every message goes through the FormSubmit fallback |
+| `CONTACT_RECIPIENT_EMAIL` | `contact@airacode.online` |
+| `TEAM_ALERT_EMAIL` | `nagarajendra432@gmail.com` (also notified) |
+| `CONTACT_FROM_EMAIL` | `Sawari <contact@airacode.online>` (its domain must be verified in Resend) |
+| `CONTACT_FALLBACK_FROM_EMAIL` | `Sawari <onboarding@resend.dev>` |
+
 ### AI assistants (GEO)
 
 The build also writes `public/llms.txt` (what Sawari is, with a link to every page and post) and
