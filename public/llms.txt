@@ -11,7 +11,7 @@ Key facts:
 - Car: automatic gearbox with ABS; chase view or driver's seat; morning, midday, evening and night
 - Rules checked: speeding, keeping left, wrong way on one-way roads, leaving the road, red lights, collisions, speed breakers taken too fast, turns without an indicator
 - Sharing: a score card picture after each drive and a "challenge a friend" link with the score to beat
-- Languages: website in English, Hindi, Urdu and Telugu; blog (64 articles) in English
+- Languages: website in English, Hindi, Urdu and Telugu; blog (65 articles) in English
 - Data: map data © OpenStreetMap contributors (ODbL); terrain from open terrain tiles
 - Not affiliated with the Telangana Transport Department (RTA) or the traffic police
 
@@ -89,6 +89,7 @@ Key facts:
 ## Release notes
 - [Sawari 1.10.0: eleven new guides, a Hyderabad driving FAQ and glossary](https://sawari.airacode.online/blog/sawari-1-10-0-release-notes.html): Sawari 1.10.0 adds eleven guides, including a Hyderabad driving FAQ with 49 answers and a 60-term glossary, and credits AiraCode Technologies as its maker.
 - [Sawari 1.11.0: learning what helps you drive better](https://sawari.airacode.online/blog/sawari-1-11-0-release-notes.html): Sawari 1.11.0 adds privacy-respecting analytics, so we can see which routes are too hard, which phones struggle and which guides help, and improve Sawari.
+- [Sawari 1.12.0: send us feedback from inside the game](https://sawari.airacode.online/blog/sawari-1-12-0-release-notes.html): Sawari 1.12.0 adds a Send feedback form to the start page, pause and results screens and the website footer, so you can report bugs or ask for new routes.
 - [Sawari 1.8.0: a real engine note, navigation-style directions and smooth slopes](https://sawari.airacode.online/blog/sawari-1-8-0-release-notes.html): Sawari 1.8.0 gives the car an engine that sounds like one, spoken directions like a navigation app, and smooth slopes on every road in all five Hyderabad routes.
 - [Sawari 1.9.0: share your score card and challenge your friends](https://sawari.airacode.online/blog/sawari-1-9-0-release-notes.html): Sawari 1.9.0 makes every drive shareable: a score card for WhatsApp status and Instagram Stories, and a link that challenges a friend to beat your score.
 - [Sawari 1.5.0: the Durgam Cheruvu cable bridge, lit flyovers, real metro piers and smoother slopes](https://sawari.airacode.online/blog/sawari-1-5-0-release-notes.html): Sawari 1.5.0 rebuilds the Durgam Cheruvu cable bridge, lights every flyover, puts the metro on single round piers, smooths slopes and adds ten Hyderabad road guides.

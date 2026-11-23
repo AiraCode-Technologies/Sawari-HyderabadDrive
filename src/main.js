@@ -1,6 +1,7 @@
 import { Game } from './game.js';
 import { readChallenge, fmt } from './share.js';
 import { track } from './analytics.js';
+import { openFeedback } from './feedback.js';
 
 const app = document.getElementById('app');
 const COLORS = ['#c8202a', '#f1f1ee', '#1f4f9a', '#a9aeb4', '#202326', '#d9822b'];
@@ -158,6 +159,7 @@ function menu() {
         <button class="primary" data-start>Start driving</button>
         <div class="keys"><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> drive · <kbd>Q</kbd> <kbd>E</kbd> indicators · <kbd>C</kbd> camera · <kbd>Tab</kbd> all controls</div>
       </div>`}
+      <p class="feedback-line">Found a bug, have an idea or want a new route? <button type="button" class="text-link" data-feedback>Send feedback</button></p>
       <p class="credit">Road, building and lake data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, available under the ODbL. For practice only: this simulator does not replace driving lessons, and routes are not official test routes.</p>
     </div>`;
   el.addEventListener('click', (e) => {
@@ -172,6 +174,7 @@ function menu() {
       settings[name] = opt.dataset.v;
       opt.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === opt));
     }
+    if (e.target.closest('[data-feedback]')) openFeedback({ route: settings.route, where: 'start page' });
     if (e.target.closest('[data-start]')) {
       if (TOUCH) landscapeFullscreen();
       saveSettings(settings);
@@ -276,6 +279,7 @@ async function boot() {
     index = await res.json();
     if (!index.routes.some((r) => r.id === settings.route)) settings.route = index.routes[0].id;
     menu();
+    if (params.get('feedback') === '1') openFeedback({ where: 'website link' });
     // development only: ?autostart=1 skips the menu (automated browser checks)
     if (import.meta.env.DEV && new URLSearchParams(location.search).get('autostart') === '1') {
       document.querySelector('.menu')?.remove();

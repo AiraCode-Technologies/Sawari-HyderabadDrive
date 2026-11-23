@@ -278,7 +278,7 @@ def post_page(p, by_slug, posts, head, header, footer, cta):
         </div>
       </section>
 
-{cta('Try it on real Hyderabad roads', 'Five routes, real traffic and a debrief after every drive. Free in your browser.')}""" + footer('/')
+{cta('Try it on real Hyderabad roads', 'Five routes, real traffic and a debrief after every drive. Free in your browser.', '/')}""" + footer('/')
     head_html = head_block(p['seoTitle'], p['description'], url, p['image'], p['imageAlt'], ld, article=p)
     return body.replace('<!--SEO-->', head_html)
 
@@ -316,7 +316,7 @@ def index_page(posts, head, header, footer, cta, page_hero):
     hero = page_hero('Blog', 'Hyderabad driving guides and tips', f'{len(posts)} articles on driving in Hyderabad: route guides, getting your licence in Telangana, the RTA test and the road skills that keep you safe.')
     hero = hero.replace('<a href="./">Home</a>', '<a href="/">Home</a>')
     hero = hero.replace('        </div>\n      </section>', f'          <div class="chips cat-nav">{chips}</div>\n        </div>\n      </section>', 1)
-    body = head('blog') + header('/blog/', '/') + hero + '\n'.join(sections) + '\n' + cta('Read it, then drive it', 'Every route guide has a matching drive in Sawari. Free in your browser, no sign-up.') + footer('/')
+    body = head('blog') + header('/blog/', '/') + hero + '\n'.join(sections) + '\n' + cta('Read it, then drive it', 'Every route guide has a matching drive in Sawari. Free in your browser, no sign-up.', '/') + footer('/')
     return body.replace('<!--SEO-->', head_block(title, desc, url, 'hero', 'A car on an Old City street in Hyderabad at dusk, in the Sawari driving simulator', ld))
 
 

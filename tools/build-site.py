@@ -148,6 +148,7 @@ def footer(base=''):
               <li><a href="{link('features.html', base)}">Features</a></li>
               <li><a href="/blog/">Blog</a></li>
               <li><a href="{link('about.html', base)}">About &amp; FAQ</a></li>
+              <li><a href="/play.html?feedback=1">Send feedback</a></li>
             </ul>
           </div>
           <div>
@@ -193,7 +194,7 @@ def route_card(r):
             </div>
           </a>"""
 
-def cta(title, text):
+def cta(title, text, base=''):
     return f"""      <section class="section">
         <div class="wrap">
           <div class="cta">
@@ -203,7 +204,7 @@ def cta(title, text):
             </div>
             <div class="btn-row">
               <a class="btn primary" href="/play.html">Start driving</a>
-              <a class="btn ghost" href="routes.html">See the routes</a>
+              <a class="btn ghost" href="{link('routes.html', base)}">See the routes</a>
             </div>
           </div>
         </div>

@@ -3,6 +3,8 @@
 // crawled within hours instead of weeks. Run it after a deploy is live:
 //     node tools/indexnow.mjs              (every URL in public/sitemap.xml)
 //     node tools/indexnow.mjs /blog/x.html (just these paths)
+// In Git Bash on Windows, a path starting with / is rewritten into a Windows path: pass full
+// URLs there (https://sawari.airacode.online/blog/x.html) or run with MSYS_NO_PATHCONV=1.
 // The key file public/<key>.txt proves the site is ours; the key is not a secret.
 import { readFileSync } from 'node:fs';
 

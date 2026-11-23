@@ -336,3 +336,23 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 1px 6
 .sb-copy svg { width: 18px; height: 18px; }
 .sb-copy:hover, .sb-copy:focus-visible { border-color: var(--muted); background: rgba(255, 255, 255, 0.12); }
 @media (prefers-reduced-motion: reduce) { .sb { transition: none; } .sb:hover { transform: none; } }
+
+/* ---------- feedback form (src/feedback.js) ---------- */
+.feedback-overlay { z-index: 40; }
+.feedback-line { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+.text-link { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.feedback { width: min(600px, 100%); }
+.feedback .fb-kind { border: 0; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+.feedback .fb-kind legend { font-size: 13px; color: var(--muted); margin-bottom: 8px; padding: 0; }
+.feedback .fb-kind label { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.05); font-size: 14px; cursor: pointer; }
+.feedback .fb-kind label:has(input:checked) { border-color: var(--accent); background: rgba(242, 169, 59, 0.14); }
+.feedback .fb-field { display: block; font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.feedback .fb-field span { opacity: 0.8; }
+.feedback textarea, .feedback input:not([type=radio]) { display: block; width: 100%; margin-top: 6px; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.06); color: var(--ink); font: inherit; font-size: 15px; resize: vertical; }
+.feedback textarea:focus, .feedback input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.feedback .fb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 560px) { .feedback .fb-row { grid-template-columns: 1fr; } }
+.feedback .fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.feedback .fb-note { font-size: 12px; color: var(--muted); margin: 0; }
+.feedback .fb-msg { min-height: 18px; margin: 8px 0 0; font-size: 14px; color: var(--accent); }
+:root[data-theme='light'] .menu .feedback-line { color: var(--muted); }

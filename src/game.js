@@ -8,6 +8,7 @@ import { Input } from './input.js';
 import { TouchControls } from './touch.js';
 import { scoreCard, shareCard, shareLink, challengeLink, verdict, socialRow, copyText } from './share.js';
 import { track } from './analytics.js';
+import { openFeedback } from './feedback.js';
 import { CameraRig } from './cameraRig.js';
 import { Navigator, TURN_TEXT } from './nav.js';
 import { createRouteBand, createSteeringGuide } from './guide.js';
@@ -511,10 +512,12 @@ export class Game {
     if ('speechSynthesis' in window) speechSynthesis.cancel();
     this.showOverlay(
       `<h2>Paused</h2><p class="sub">${this.world.name} · ${fmtTime(this.time)} · ${this.rules.faults.length} faults so far</p>
-       <div class="actions"><button class="primary" data-a="resume">Resume</button><button class="secondary" data-a="restart">Restart</button><button class="secondary" data-a="exit">Choose another route</button></div>`,
+       <div class="actions"><button class="primary" data-a="resume">Resume</button><button class="secondary" data-a="restart">Restart</button><button class="secondary" data-a="exit">Choose another route</button></div>
+       <p class="feedback-line">Something not right? <button type="button" class="text-link" data-a="feedback">Send feedback</button></p>`,
       (o) => o.addEventListener('click', (e) => {
         const a = e.target.closest('button')?.dataset.a;
         if (a === 'resume') this.resume();
+        if (a === 'feedback') openFeedback({ route: this.world.id, where: 'pause screen', seconds: Math.round(this.time), progress: `${Math.round((100 * this.nav.progress) / this.nav.length)}%` });
         if (a === 'restart' || a === 'exit') this.quitEvent(a === 'restart' ? 'restart' : 'menu');
         if (a === 'restart') this.onExit('restart');
         if (a === 'exit') this.onExit('menu');
@@ -655,7 +658,8 @@ export class Game {
          <p class="share-msg" role="status" aria-live="polite"></p>
        </div>
        ${list}
-       <div class="actions"><button class="primary" data-a="restart">Drive it again</button><button class="secondary" data-a="exit">Choose another route</button></div>`,
+       <div class="actions"><button class="primary" data-a="restart">Drive it again</button><button class="secondary" data-a="exit">Choose another route</button></div>
+       <p class="feedback-line">How was it? <button type="button" class="text-link" data-a="feedback">Send feedback</button></p>`,
       (o) => {
         const msg = o.querySelector('.share-msg'), nameIn = o.querySelector('[data-name]');
         const name = () => {
@@ -676,6 +680,7 @@ export class Game {
           const b = e.target.closest('button');
           const a = b?.dataset.a;
           if (a === 'restart' || a === 'exit') return this.onExit(a === 'restart' ? 'restart' : 'menu');
+          if (a === 'feedback') return openFeedback({ route: this.world.id, where: 'results screen', score, faults: faults.length });
           if (a === 'card') {
             b.disabled = true;
             msg.textContent = 'Making your score card…';

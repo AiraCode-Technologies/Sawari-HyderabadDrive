@@ -23,6 +23,7 @@
       try { document.documentElement.dataset.theme = localStorage.getItem('hyd-site-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
     </script>
     <title>Drive · Sawari</title>
+    <meta name="sawari-version" content="%SAWARI_VERSION%" />
     <link rel="icon" href="logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/src/style.css" />
     <script>

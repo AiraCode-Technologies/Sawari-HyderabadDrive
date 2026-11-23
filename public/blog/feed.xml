@@ -192,6 +192,14 @@
       <description>Sawari 1.11.0 adds privacy-respecting analytics, so we can see which routes are too hard, which phones struggle and which guides help, and improve Sawari.</description>
     </item>
     <item>
+      <title>Sawari 1.12.0: send us feedback from inside the game</title>
+      <link>https://sawari.airacode.online/blog/sawari-1-12-0-release-notes.html</link>
+      <guid isPermaLink="true">https://sawari.airacode.online/blog/sawari-1-12-0-release-notes.html</guid>
+      <pubDate>Mon, 23 Nov 2026 03:30:00 +0000</pubDate>
+      <category>Release notes</category>
+      <description>Sawari 1.12.0 adds a Send feedback form to the start page, pause and results screens and the website footer, so you can report bugs or ask for new routes.</description>
+    </item>
+    <item>
       <title>Sawari 1.8.0: a real engine note, navigation-style directions and smooth slopes</title>
       <link>https://sawari.airacode.online/blog/sawari-1-8-0-release-notes.html</link>
       <guid isPermaLink="true">https://sawari.airacode.online/blog/sawari-1-8-0-release-notes.html</guid>

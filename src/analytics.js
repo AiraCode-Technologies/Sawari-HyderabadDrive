@@ -15,6 +15,7 @@
 //   performance_low    route, device, fps, quality (still slow at the lowest resolution; once a drive)
 //   webgl_unsupported  route, device             (the device cannot show 3D at all)
 //   play_click         page, route, from_blog     (a link into the game; from_blog: from an article)
+//   feedback_sent      kind ('bug' | 'idea' | 'route' | 'other'), route
 //   drive_finish also carries fault_types ("speeding:2,indicator:1") and top_fault
 // Every event also goes to Microsoft Clarity (live site only) as a custom event, so its
 // session recordings can be filtered by it (for example, drives that were quit part-way).

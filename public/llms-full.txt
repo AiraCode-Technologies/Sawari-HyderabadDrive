@@ -11,7 +11,7 @@ Key facts:
 - Car: automatic gearbox with ABS; chase view or driver's seat; morning, midday, evening and night
 - Rules checked: speeding, keeping left, wrong way on one-way roads, leaving the road, red lights, collisions, speed breakers taken too fast, turns without an indicator
 - Sharing: a score card picture after each drive and a "challenge a friend" link with the score to beat
-- Languages: website in English, Hindi, Urdu and Telugu; blog (64 articles) in English
+- Languages: website in English, Hindi, Urdu and Telugu; blog (65 articles) in English
 - Data: map data © OpenStreetMap contributors (ODbL); terrain from open terrain tiles
 - Not affiliated with the Telangana Transport Department (RTA) or the traffic police
 
@@ -6381,6 +6381,37 @@ Version 1.11.0 helps us improve Sawari for you. The website and the simulator no
 ## Nothing else changes
 
 Driving, the routes, the score card and challenges all work as before. Take a drive (https://sawari.airacode.online/play.html).
+
+---
+
+# Sawari 1.12.0: send us feedback from inside the game
+
+URL: https://sawari.airacode.online/blog/sawari-1-12-0-release-notes.html
+Category: Release notes · Published 2026-11-23 · Updated 2026-11-23
+
+Version 1.12.0 makes it easy to tell us what you think. Found a bug, have an idea, or want a road of your own added? Send feedback straight from the game.
+
+## Where to find it
+
+- On the start page, below the options.
+
+- On the pause screen, if something goes wrong mid-drive.
+
+- On the results screen, after every drive.
+
+- In the website footer, under "Send feedback", in English, Hindi, Urdu and Telugu.
+
+## What to send
+
+Choose whether it is something broken, an idea, a route you want or something else, and write a few words. Your name and email are optional; leave an email if you would like a reply. The form also tells us which route you were on, the Sawari version, your kind of device and screen size, so we can reproduce problems. Nothing else is collected.
+
+## Also fixed
+
+The "See the routes" button at the end of every blog article now opens the routes page.
+
+## Try it
+
+Send us feedback (https://sawari.airacode.online/play.html?feedback=1), or take a drive (https://sawari.airacode.online/play.html) first.
 
 ---
 
