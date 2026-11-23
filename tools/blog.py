@@ -107,12 +107,12 @@ def load(root, route_ids):
 
 
 # ---------------------------------------------------------------- head
-ORG = {'@type': 'Organization', '@id': seo.SITE_URL + '/#org', 'name': 'Sawari', 'url': seo.SITE_URL + '/', 'logo': {'@type': 'ImageObject', 'url': seo.SITE_URL + '/icons/icon-512.png', 'width': 512, 'height': 512}}
+ORG = {'@type': 'Organization', '@id': seo.SITE_URL + '/#org', 'name': 'Sawari', 'url': seo.SITE_URL + '/', 'logo': {'@type': 'ImageObject', 'url': seo.SITE_URL + '/icons/icon-512.png', 'width': 512, 'height': 512}, 'parentOrganization': {'@id': seo.MAKER['@id']}}
 
 
 def head_block(title, desc, canonical, image, image_alt, ld, article=None):
     img = f'{seo.SITE_URL}/img/{image}.jpg'
-    graph = [ORG, {'@type': 'WebSite', '@id': seo.SITE_URL + '/#website', 'name': 'Sawari', 'url': seo.SITE_URL + '/', 'publisher': {'@id': seo.SITE_URL + '/#org'}}] + ld
+    graph = [ORG, seo.MAKER, {'@type': 'WebSite', '@id': seo.SITE_URL + '/#website', 'name': 'Sawari', 'url': seo.SITE_URL + '/', 'publisher': {'@id': seo.SITE_URL + '/#org'}}] + ld
     ld_json = json.dumps({'@context': 'https://schema.org', '@graph': graph}, ensure_ascii=False, indent=1).replace('</', '<\\/')
     art = ''
     if article:
@@ -229,7 +229,7 @@ def post_page(p, by_slug, posts, head, header, footer, cta):
         {'@type': 'BlogPosting', '@id': url + '#article', 'mainEntityOfPage': {'@id': url + '#page'}, 'headline': p['title'][:110],
          'description': p['description'], 'image': {'@type': 'ImageObject', 'url': f'{seo.SITE_URL}/img/{p["image"]}.jpg', 'width': 1600, 'height': 900, 'caption': p['imageAlt']},
          'datePublished': p['date'] + 'T09:00:00+05:30', 'dateModified': p['updated'] + 'T09:00:00+05:30',
-         'author': {'@type': 'Organization', 'name': 'The Sawari team', 'url': seo.SITE_URL + '/about.html'}, 'publisher': {'@id': seo.SITE_URL + '/#org'},
+         'author': {'@id': seo.MAKER['@id']}, 'publisher': {'@id': seo.SITE_URL + '/#org'},
          'articleSection': p['category'], 'keywords': ', '.join(p['keywords']), 'wordCount': p['words'], 'timeRequired': f'PT{p["minutes"]}M',
          'inLanguage': 'en-IN', 'isPartOf': {'@type': 'Blog', '@id': seo.SITE_URL + BLOG + '#blog', 'name': 'Sawari blog'},
          'about': [{'@type': 'Thing', 'name': k} for k in p['keywords'][:5]],
@@ -245,7 +245,7 @@ def post_page(p, by_slug, posts, head, header, footer, cta):
             <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="{BLOG}">Blog</a><span aria-hidden="true">/</span><a href="{BLOG}#{cat_slug}">{esc(p['category'])}</a></nav>
             <h1>{esc(p['title'], quote=False)}</h1>
             <p>{esc(p['description'], quote=False)}</p>
-            <div class="post-meta"><span>By the Sawari team</span><span aria-hidden="true">·</span><time datetime="{p['date']}">{nice_date(p['date'])}</time><span aria-hidden="true">·</span><span>{p['minutes']} min read</span></div>
+            <div class="post-meta"><span>By the Sawari team at <a href="https://airacode.online" target="_blank" rel="noopener">AiraCode Technologies</a></span><span aria-hidden="true">·</span><time datetime="{p['date']}">{nice_date(p['date'])}</time><span aria-hidden="true">·</span><span>{p['minutes']} min read</span></div>
           </div>
         </header>
         <div class="wrap post-layout">
@@ -310,7 +310,7 @@ def index_page(posts, head, header, footer, cta, page_hero):
          'isPartOf': {'@id': seo.SITE_URL + '/#website'}, 'mainEntity': {'@id': url + '#blog'}},
         {'@type': 'Blog', '@id': url + '#blog', 'name': 'Sawari blog', 'url': url, 'description': desc, 'inLanguage': 'en-IN', 'publisher': {'@id': seo.SITE_URL + '/#org'},
          'blogPost': [{'@type': 'BlogPosting', 'headline': p['title'][:110], 'url': post_url(p['slug']), 'datePublished': p['date'] + 'T09:00:00+05:30',
-                       'image': f'{seo.SITE_URL}/img/{p["image"]}.jpg', 'author': {'@type': 'Organization', 'name': 'The Sawari team'}} for p in posts]},
+                       'image': f'{seo.SITE_URL}/img/{p["image"]}.jpg', 'author': {'@id': seo.MAKER['@id']}} for p in posts]},
         crumbs_ld([('Home', seo.SITE_URL + '/'), ('Blog', url)]),
     ]
     hero = page_hero('Blog', 'Hyderabad driving guides and tips', f'{len(posts)} articles on driving in Hyderabad: route guides, getting your licence in Telangana, the RTA test and the road skills that keep you safe.')

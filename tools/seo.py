@@ -13,6 +13,13 @@ import re
 from datetime import date
 
 SITE_URL = os.environ.get('SITE_URL', 'https://sawari.airacode.online').rstrip('/')
+# who makes Sawari: AiraCode Technologies (named in structured data, the footer and llms.txt)
+MAKER = {
+    '@type': 'Organization', '@id': 'https://airacode.online/#org', 'name': 'AiraCode Technologies', 'alternateName': 'AIRACODE',
+    'url': 'https://www.airacode.online/', 'logo': 'https://www.airacode.online/logo-icon.png',
+    # its official profiles (from airacode.online): the same organisation elsewhere on the web
+    'sameAs': ['https://www.instagram.com/airacode_technologies/', 'https://github.com/AiraCode-Technologies'],
+}
 LANGS = ['en', 'hi', 'ur', 'te']
 DIR = {'en': 'ltr', 'hi': 'ltr', 'ur': 'rtl', 'te': 'ltr'}
 LOCALE = {'en': 'en_IN', 'hi': 'hi_IN', 'ur': 'ur_IN', 'te': 'te_IN'}
@@ -100,7 +107,8 @@ def head_block(slug, lang, extra_ld, preload=''):
     alts = '\n'.join(f'    <link rel="alternate" hreflang="{l}" href="{url(l, slug)}" />' for l in LANGS)
     og_alt = '\n'.join(f'    <meta property="og:locale:alternate" content="{LOCALE[l]}" />' for l in LANGS if l != lang)
     graph = [
-        {'@type': 'Organization', '@id': SITE_URL + '/#org', 'name': 'Sawari', 'url': SITE_URL + '/', 'logo': SITE_URL + '/icons/icon-512.png'},
+        {'@type': 'Organization', '@id': SITE_URL + '/#org', 'name': 'Sawari', 'url': SITE_URL + '/', 'logo': SITE_URL + '/icons/icon-512.png', 'parentOrganization': {'@id': MAKER['@id']}},
+        MAKER,
         {'@type': 'WebSite', '@id': SITE_URL + '/#website', 'name': 'Sawari', 'alternateName': 'Sawari · Drive Hyderabad', 'url': SITE_URL + '/',
          'publisher': {'@id': SITE_URL + '/#org'}, 'inLanguage': LANGS},
         {'@type': 'WebPage', '@id': url(lang, slug) + '#page', 'url': url(lang, slug), 'name': title, 'description': desc, 'inLanguage': lang,

@@ -149,6 +149,7 @@ def footer(base=''):
         <div class="footer-base">
           <span>© <span data-year>2026</span> Sawari · For practice only; it does not replace driving lessons.</span>
           <span>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a></span>
+          <span>A project by <a href="https://airacode.online" target="_blank" rel="noopener">AiraCode Technologies</a></span>
           <a class="version" href="/blog/#release-notes" title="Release notes"><span>Version</span> <bdi translate="no">%SAWARI_VERSION%</bdi></a>
         </div>
       </div>
@@ -555,7 +556,7 @@ def extra_ld(slug, lang):
             'url': seo.SITE_URL + '/play.html', 'description': seo.DESC['index'][lang],
             'applicationCategory': 'GameApplication', 'applicationSubCategory': 'Driving simulator',
             'operatingSystem': 'Any (runs in a web browser)', 'gamePlatform': 'Web browser', 'genre': ['Driving simulator', 'Simulation'],
-            'inLanguage': 'en', 'isAccessibleForFree': True, 'publisher': {'@id': seo.SITE_URL + '/#org'},
+            'inLanguage': 'en', 'isAccessibleForFree': True, 'publisher': {'@id': seo.SITE_URL + '/#org'}, 'creator': {'@id': seo.MAKER['@id']}, 'author': {'@id': seo.MAKER['@id']},
             'image': seo.SITE_URL + '/og-image.jpg',
             'screenshot': [f'{seo.SITE_URL}/img/{n}.webp' for n in ['hero', 'night', 'cockpit', 'charminar', 'hitec-city']],
             'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'INR', 'availability': 'https://schema.org/InStock'},
@@ -618,7 +619,11 @@ index = blog.index_page(posts, head, header, footer, cta, page_hero)
 print(f'wrote blog: index + {len(posts)} posts ({sum(p["words"] for p in posts):,} words) + feed.xml')
 
 (ROOT / 'public/sitemap.xml').write_text(seo.sitemap(blog.sitemap_rows(posts)), encoding='utf-8')
-(ROOT / 'public/robots.txt').write_text(seo.robots(), encoding='utf-8')
+import geo  # noqa: E402  (AI assistants: llms.txt, llms-full.txt, crawler rules)
+(ROOT / 'public/robots.txt').write_text(geo.robots(), encoding='utf-8')
+(ROOT / 'public/llms.txt').write_text(geo.llms_txt(posts, routes, total_km, list(blog.CATEGORIES)), encoding='utf-8')
+(ROOT / 'public/llms-full.txt').write_text(geo.llms_full(posts, routes, total_km, list(blog.CATEGORIES)), encoding='utf-8')
+print('wrote llms.txt and llms-full.txt for AI assistants')
 (ROOT / 'public/site.webmanifest').write_text(seo.manifest(), encoding='utf-8')
 # the old client-side dictionaries are no longer needed: every language is a real page now
 shutil.rmtree(ROOT / 'public/i18n', ignore_errors=True)

@@ -1,4 +1,71 @@
+# Search engines and AI assistants are welcome to read and cite Sawari.
+# A summary for AI tools: https://sawari.airacode.online/llms.txt
+
 User-agent: *
+Allow: /
+Disallow: /404.html
+
+User-agent: GPTBot
+Allow: /
+Disallow: /404.html
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /404.html
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /404.html
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /404.html
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /404.html
+
+User-agent: Claude-User
+Allow: /
+Disallow: /404.html
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /404.html
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /404.html
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /404.html
+
+User-agent: Applebot
+Allow: /
+Disallow: /404.html
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /404.html
+
+User-agent: Bingbot
+Allow: /
+Disallow: /404.html
+
+User-agent: CCBot
+Allow: /
+Disallow: /404.html
+
+User-agent: DuckAssistBot
+Allow: /
+Disallow: /404.html
+
+User-agent: meta-externalagent
+Allow: /
+Disallow: /404.html
+
+User-agent: Amazonbot
 Allow: /
 Disallow: /404.html
 

@@ -49,6 +49,14 @@ characters, or it links to a post or route that doesn't exist. To add a post, ad
 the build; the English home page shows three posts and each route on the routes page links to
 its guide.
 
+### AI assistants (GEO)
+
+The build also writes `public/llms.txt` (what Sawari is, with a link to every page and post) and
+`public/llms-full.txt` (the same plus the full text of every post), following llmstxt.org, from
+`tools/geo.py`; `robots.txt` welcomes the AI search and assistant crawlers by name. After a
+deploy that adds or changes pages, run `node tools/indexnow.mjs` to tell Bing (and through it
+ChatGPT search and Copilot) and the other IndexNow engines; its key file is in `public/`.
+
 ### Publishing and search engines
 
 The live site is https://sawari.airacode.online (deployed from `main`). Canonical links, the

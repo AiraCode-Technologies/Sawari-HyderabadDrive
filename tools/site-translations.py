@@ -8,6 +8,7 @@ writes public/i18n/{hi,ur,te}.json.
 
 OSM_A = '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">'
 TT_A = '<a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noopener">'
+AC_A = '<a href="https://airacode.online" target="_blank" rel="noopener">'
 
 T = {
     'Sawari · Practise driving on real Hyderabad roads': ('Sawari · हैदराबाद की असली सड़कों पर ड्राइविंग का अभ्यास', 'Sawari · حیدرآباد کی اصل سڑکوں پر ڈرائیونگ کی مشق', 'Sawari · హైదరాబాద్ అసలు రోడ్లపై డ్రైవింగ్ సాధన'),
@@ -152,6 +153,10 @@ T = {
         '© <span data-year=""></span> Sawari · केवल अभ्यास के लिए; यह ड्राइविंग सीखने की क्लास की जगह नहीं लेता।',
         '© <span data-year=""></span> Sawari · صرف مشق کے لیے؛ یہ ڈرائیونگ سیکھنے کی کلاسوں کی جگہ نہیں لیتا۔',
         '© <span data-year=""></span> Sawari · సాధన కోసం మాత్రమే; ఇది డ్రైవింగ్ క్లాసులకు ప్రత్యామ్నాయం కాదు.'),
+    f'A project by {AC_A}AiraCode Technologies</a>': (
+        f'{AC_A}AiraCode Technologies</a> का एक प्रोजेक्ट',
+        f'{AC_A}AiraCode Technologies</a> کا ایک پروجیکٹ',
+        f'{AC_A}AiraCode Technologies</a> ప్రాజెక్ట్'),
     f'Map data © {OSM_A}OpenStreetMap contributors</a>': (
         f'नक्शा डेटा © {OSM_A}OpenStreetMap योगदानकर्ता</a>',
         f'نقشہ ڈیٹا © {OSM_A}OpenStreetMap کے معاونین</a>',
