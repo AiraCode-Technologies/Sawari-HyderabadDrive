@@ -17,6 +17,25 @@ const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 const KINDS = { bug: 'Something is broken', idea: 'An idea', route: 'A route I want', other: 'Something else' };
 const ORANGE = '#f2a93b';
+const SAWARI_LOGO = 'https://sawari.airacode.online/icons/icon-192.png';
+const AIRACODE_LOGO = 'https://www.airacode.online/logo-icon.png';
+const brand = (sub) => `
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; margin: 0 0 20px 0;">
+        <tr>
+          <td style="padding: 0 12px 0 0; vertical-align: middle;"><img src="${SAWARI_LOGO}" width="48" height="48" alt="Sawari" style="display: block; width: 48px; height: 48px; border: 0; border-radius: 12px;" /></td>
+          <td style="vertical-align: middle;">
+            <div style="font-size: 20px; font-weight: 800; letter-spacing: 3px; color: #1e2530; line-height: 1.1;">SAWARI</div>
+            <div style="font-size: 12px; color: #6b7280; letter-spacing: 1px; margin-top: 3px;">${sub}</div>
+          </td>
+        </tr>
+      </table>`;
+const madeBy = (extra) => `
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; margin: 24px auto 0 auto;">
+        <tr>
+          <td style="padding: 0 8px 0 0; vertical-align: middle;"><a href="https://airacode.online"><img src="${AIRACODE_LOGO}" width="28" height="28" alt="AiraCode Technologies" style="display: block; width: 28px; height: 28px; border: 0;" /></a></td>
+          <td style="vertical-align: middle; font-size: 12px; color: #9ca3af;">A project by <a href="https://airacode.online" style="color: #6b7280; text-decoration: none; font-weight: 600;">AiraCode Technologies</a>${extra}</td>
+        </tr>
+      </table>`;
 
 async function send(key, mail, fallbackFrom) {
   const post = (m) =>
@@ -69,8 +88,9 @@ export default async function handler(request) {
   const row = (k, v, strong) => `<tr><td style="padding: 7px 0; color: #6b7280; width: 130px; font-weight: bold; vertical-align: top;">${esc(k)}:</td><td style="padding: 7px 0; color: #1e2530;${strong ? ' font-weight: 600;' : ''}">${v}</td></tr>`;
   const teamHtml = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #faf8f5; border-radius: 16px; border: 1px solid #ede9e0;">
+      ${brand('Feedback from the game')}
       <div style="border-bottom: 2px solid ${ORANGE}; padding-bottom: 12px; margin-bottom: 20px;">
-        <h2 style="color: #1e2530; margin: 0; font-size: 22px;">Sawari feedback: ${esc(KINDS[kind])}</h2>
+        <h2 style="color: #1e2530; margin: 0; font-size: 22px;">${esc(KINDS[kind])}</h2>
         <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 13px; font-family: monospace;">ID: ${id} | ${esc(when)}</p>
       </div>
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
@@ -85,13 +105,13 @@ export default async function handler(request) {
         <p style="margin: 0; color: #374151; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${esc(message)}</p>
       </div>
       <div style="font-size: 12px; color: #9ca3af; text-align: center; border-top: 1px solid #ede9e0; padding-top: 16px;">Sent from the Sawari feedback form · sawari.airacode.online</div>
+      ${madeBy('')}
     </div>`;
 
   const first = esc(name.split(/\s+/)[0] || 'there');
   const userHtml = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 28px; background: #faf8f5; border-radius: 16px; border: 1px solid #ede9e0; color: #1e2530;">
-      <h2 style="margin: 0 0 4px 0; font-size: 22px; font-weight: 800; letter-spacing: 3px;">SAWARI</h2>
-      <p style="margin: 0 0 24px 0; font-size: 13px; color: #6b7280;">Drive Hyderabad · by AiraCode Technologies</p>
+      ${brand('DRIVE HYDERABAD')}
       <p style="font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">Hi ${first},</p>
       <p style="font-size: 15px; line-height: 1.6; margin: 0 0 20px 0; color: #374151;">Thanks for your feedback on Sawari. It has reached the team, and we read every message.</p>
       <div style="background: #ffffff; border: 1px solid #ede9e0; border-radius: 12px; padding: 16px 18px; margin-bottom: 20px;">
@@ -103,6 +123,7 @@ export default async function handler(request) {
       <p style="margin: 24px 0 0 0; padding-top: 16px; border-top: 1px solid #ede9e0; font-size: 12px; color: #9ca3af; text-align: center;">
         <a href="https://sawari.airacode.online" style="color: #b86e05; text-decoration: none;">sawari.airacode.online</a> · <a href="https://airacode.online" style="color: #6b7280; text-decoration: none;">airacode.online</a>
       </p>
+      ${madeBy('')}
     </div>`;
 
   // 1. the team notification (this one must go through)

@@ -6409,6 +6409,8 @@ Choose whether it is something broken, an idea, a route you want or something el
 
 Added in 1.12.1: if you leave your email, you now get a confirmation with a copy of your message, and you can reply to it to add screenshots or more detail.
 
+Since 1.12.2 the confirmation carries the Sawari and AiraCode Technologies logos, so you know it is really from us.
+
 ## Also fixed
 
 The "See the routes" button at the end of every blog article now opens the routes page.
