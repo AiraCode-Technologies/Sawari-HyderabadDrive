@@ -45,8 +45,8 @@ Most visitors in India are on a phone, and phones currently get a "use a desktop
 - [x] Answer-first posts: FAQ hub (49 Q&As), glossary (60 terms), "is it hard", best time, parking, NRIs and visitors, self-drive rental, automatic cars, two-wheeler to car, Hyderabad vs Bengaluru, "What is Sawari?"
 - [x] Maker named in structured data: AiraCode Technologies, with its Instagram and GitHub
 - [ ] Run `node tools/indexnow.mjs` after every deploy that adds pages
-- [ ] Add the site to Bing Webmaster Tools (ChatGPT search and Copilot use Bing's index)
-- [ ] Ask ChatGPT, Perplexity and Gemini monthly: "free driving simulator Hyderabad", "practise driving Hyderabad online"; note whether Sawari is cited
+- [x] Added the site to Bing Webmaster Tools (ChatGPT search and Copilot use Bing's index)
+- [ ] Every few weeks, ask the AI engines the questions below and note the results
 
 
 - [ ] Vote on the next route (ORR, airport expressway, Tank Bund at Ganesh, Ameerpet)
@@ -55,5 +55,39 @@ Most visitors in India are on a phone, and phones currently get a "use a desktop
 - [ ] Night challenge
 
 ## 7. Measure it
-- [ ] Analytics events: drive started, route finished, share clicked, phone screen shown
+- [x] Google Tag Manager (GTM-M5SGHS7J) and Microsoft Clarity (zi340db2jg, heatmaps and recordings) on every page, live site only; events in `src/analytics.js`: drive_start, drive_finish (with fault types), drive_quit, route_loaded, performance_low, webgl_unsupported, share_card, challenge_panel, challenge_share, challenge_opened, site_share, play_click
+- [ ] In Tag Manager: a GA4 tag and a custom-event trigger for those events (see src/analytics.js)
 - [ ] One monthly target (for example 1,000 finished drives)
+
+## Checking the AI engines
+
+Ask in a new chat, logged out or in a private window, so earlier chats don't steer the answer.
+Use the same questions each time so the results can be compared. Engines: ChatGPT (with web
+search on), Perplexity, Gemini, Microsoft Copilot, and Google's AI answers at the top of search.
+
+**1. Does it recommend Sawari unprompted?** (most important; Sawari not named)
+1. Is there a free online driving simulator for Indian roads?
+2. How can I practise driving in Hyderabad before driving for real?
+3. Is there a driving game set in Hyderabad?
+4. What's a good driving simulator for left-hand traffic that works in a browser or on my phone?
+
+**2. Does it use our guides as a source?** (look for sawari.airacode.online in the sources)
+5. How do I check and pay an e-challan in Hyderabad?
+6. What is the best time to drive in Hyderabad to avoid traffic?
+7. Is driving in Hyderabad hard for a beginner?
+8. What does "free left" mean in Hyderabad traffic?
+9. Can an NRI drive in Hyderabad with a foreign licence?
+
+**3. Does it describe Sawari correctly?**
+10. What is Sawari driving simulator?
+11. Who makes Sawari, the Hyderabad driving simulator?
+12. Does Sawari work on mobile?
+
+**Note each time:** mentioned or cited (yes/no), facts right (free, five routes, works on phones,
+made by AiraCode Technologies), and who is named instead. New sites usually take a few weeks
+to appear; questions 10-12 tend to work first, group 1 last. If a fact about Sawari comes back
+wrong, state it more clearly in the "What is Sawari?" post and `llms.txt` (tools/geo.py).
+
+| Date | Engine | Q1-4 recommended | Q5-9 cited | Q10-12 correct | Named instead |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |

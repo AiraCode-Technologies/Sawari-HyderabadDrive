@@ -150,6 +150,14 @@ if (shareBox) {
       return ok;
     }
   };
+  // usage events for Google Tag Manager (live site only): which share button was used
+  shareBox.addEventListener('click', (e) => {
+    const el = e.target.closest('.share-btn, .share-copy');
+    if (el) {
+      (window.dataLayer = window.dataLayer || []).push({ event: 'site_share', method: el.classList.contains('share-copy') ? 'copy' : el.classList[1] });
+      window.clarity?.('event', 'site_share');
+    }
+  });
   shareBox.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-share]');
     if (!b) return;
@@ -167,3 +175,12 @@ if (shareBox) {
 // ---------- blog: the table of contents starts folded on narrow screens ----------
 const toc = document.querySelector('.toc details');
 if (toc && matchMedia('(max-width: 960px)').matches) toc.open = false;
+
+// ---------- usage event: a link into the game, from which page (e.g. which blog article) ----------
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href*="/play.html"], a[href^="play.html"]');
+  if (!a) return;
+  const route = new URL(a.href, location.href).searchParams.get('route') || 'none';
+  (window.dataLayer = window.dataLayer || []).push({ event: 'play_click', page: location.pathname, route, from_blog: location.pathname.startsWith('/blog/') });
+  window.clarity?.('event', 'play_click');
+});

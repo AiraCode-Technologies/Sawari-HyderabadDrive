@@ -315,6 +315,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://sawari.airacode.online/blog/sawari-1-11-0-release-notes.html</loc>
+    <lastmod>2026-11-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://sawari.airacode.online/blog/sawari-1-8-0-release-notes.html</loc>
     <lastmod>2026-11-20</lastmod>
     <changefreq>monthly</changefreq>

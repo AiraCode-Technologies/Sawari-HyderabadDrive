@@ -11,7 +11,7 @@ Key facts:
 - Car: automatic gearbox with ABS; chase view or driver's seat; morning, midday, evening and night
 - Rules checked: speeding, keeping left, wrong way on one-way roads, leaving the road, red lights, collisions, speed breakers taken too fast, turns without an indicator
 - Sharing: a score card picture after each drive and a "challenge a friend" link with the score to beat
-- Languages: website in English, Hindi, Urdu and Telugu; blog (63 articles) in English
+- Languages: website in English, Hindi, Urdu and Telugu; blog (64 articles) in English
 - Data: map data © OpenStreetMap contributors (ODbL); terrain from open terrain tiles
 - Not affiliated with the Telangana Transport Department (RTA) or the traffic police
 
@@ -6350,6 +6350,37 @@ Sawari is made by AiraCode Technologies (https://airacode.online), and the websi
 ## Easier to find
 
 The site now gives search engines and AI assistants a clear summary of what Sawari is and what each guide covers, so the answers are easier to find wherever you search.
+
+---
+
+# Sawari 1.11.0: learning what helps you drive better
+
+URL: https://sawari.airacode.online/blog/sawari-1-11-0-release-notes.html
+Category: Release notes · Published 2026-11-23 · Updated 2026-11-23
+
+Version 1.11.0 helps us improve Sawari for you. The website and the simulator now count how drives go, so we can see where people get stuck and fix it.
+
+## What we learn
+
+- Which routes people finish and where they give up, so we can find the parts that are too hard or badly explained.
+
+- How long each route takes to load and whether a phone or computer struggles to keep up, so we can make Sawari smoother on more devices.
+
+- Which mistakes are most common, which helps us choose what to write about in the blog.
+
+- Which guides lead people to try a drive, and how scores and challenges get shared.
+
+## What stays private
+
+- Your settings and your best scores are still saved only in your browser, not on our servers.
+
+- No account, no sign-up, and nothing you type, such as the name on your score card, is collected.
+
+- We use Google Analytics and Microsoft Clarity to count visits and drives and to see how pages are used. The About and FAQ page says so too.
+
+## Nothing else changes
+
+Driving, the routes, the score card and challenges all work as before. Take a drive (https://sawari.airacode.online/play.html).
 
 ---
 

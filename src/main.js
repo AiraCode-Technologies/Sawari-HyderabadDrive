@@ -1,5 +1,6 @@
 import { Game } from './game.js';
 import { readChallenge, fmt } from './share.js';
+import { track } from './analytics.js';
 
 const app = document.getElementById('app');
 const COLORS = ['#c8202a', '#f1f1ee', '#1f4f9a', '#a9aeb4', '#202326', '#d9822b'];
@@ -50,6 +51,7 @@ if (challenge) {
   if (['morning', 'noon', 'evening', 'night'].includes(params.get('time'))) settings.time = params.get('time');
   if (['off', 'low', 'medium', 'high', 'dense'].includes(params.get('traffic'))) settings.traffic = params.get('traffic');
   settings.challenge = challenge;
+  track('challenge_opened', { route: challenge.route, challenger_score: challenge.score });
 }
 let index = null;
 let game = null;
@@ -211,6 +213,16 @@ async function loadWorld(id) {
   return JSON.parse(cache.get(id));
 }
 
+// can this browser draw 3D at all?
+function webgl() {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+  } catch {
+    return false;
+  }
+}
+
 let starting = false;
 async function play(id) {
   if (starting) return; // a double tap on Start driving starts one drive, not two
@@ -223,6 +235,11 @@ async function play(id) {
   const meta = index.routes.find((r) => r.id === id);
   const l = loading(`Building ${meta ? meta.name : 'route'}…`);
   try {
+    const t0 = performance.now();
+    if (!webgl()) {
+      track('webgl_unsupported', { route: id, device: TOUCH ? 'touch' : 'keyboard' });
+      throw new Error('this browser or device cannot show 3D graphics (WebGL is off or not supported)');
+    }
     const world = await loadWorld(id);
     await new Promise((r) => setTimeout(r, 30)); // let the loading screen paint
     game = new Game(app, world, settings, (action) => {
@@ -232,6 +249,8 @@ async function play(id) {
       else menu();
     });
     game.start();
+    track('route_loaded', { route: id, load_ms: Math.round(performance.now() - t0), device: TOUCH ? 'touch' : 'keyboard' });
+    track('drive_start', { route: id, time_of_day: settings.time, traffic: settings.traffic, device: TOUCH ? 'touch' : 'keyboard', challenge: settings.challenge?.route === id });
     if (import.meta.env.DEV) window.__game = game; // handle for automated browser tests
   } catch (err) {
     console.error(err);

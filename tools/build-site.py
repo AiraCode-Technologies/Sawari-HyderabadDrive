@@ -58,13 +58,32 @@ WATCH = {
     'banjara-hills': ['A steady 37 m climb from Masab Tank', 'Heavy traffic at every junction', 'Buses and autos stopping without warning'],
 }
 
+# Google Tag Manager and Microsoft Clarity on every page (live site only); see src/analytics.js
+GTM_HEAD = r"""    <script>
+      // Google Tag Manager (GTM-M5SGHS7J), live site only; usage events: src/analytics.js
+      window.dataLayer = window.dataLayer || [];
+      if (!/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname)) {
+        (function (w, d, s, l, i) { w[l] = w[l] || []; w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' }); var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f); })(window, document, 'script', 'dataLayer', 'GTM-M5SGHS7J');
+      }
+    </script>
+"""
+GTM_HEAD += r"""    <script>
+      // Microsoft Clarity (zi340db2jg): heatmaps and session recordings, live site only
+      if (!/^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname)) {
+        (function (c, l, a, r, i, t, y) { c[a] = c[a] || function () { (c[a].q = c[a].q || []).push(arguments); }; t = l.createElement(r); t.async = 1; t.src = 'https://www.clarity.ms/tag/' + i; y = l.getElementsByTagName(r)[0]; y.parentNode.insertBefore(t, y); })(window, document, 'clarity', 'script', 'zi340db2jg');
+      }
+    </script>
+"""
+GTM_BODY = """    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M5SGHS7J" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+"""
+
 def head(slug):
     return f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!--SEO-->
+{GTM_HEAD}<!--SEO-->
     <meta name="theme-color" content="#0b1117" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)" />
     <script>
@@ -84,7 +103,7 @@ def head(slug):
     </script>
   </head>
   <body>
-"""
+{GTM_BODY}"""
 
 def header(current, base=''):
     links = '\n'.join(f'          <a href="{link(href, base)}"{" aria-current=\"page\"" if href == current else ""}>{label}</a>' for href, label in PAGES)
@@ -454,7 +473,7 @@ faqs = [
     ('Are the buildings exact copies of the real ones?', 'No. Building outlines, heights where mapped, shop names and places of worship come from OpenStreetMap. Facades, stalls, hoardings, most street lamps and some filler buildings are generated to look typical of each area, so treat them as realistic rather than exact.'),
     ('Why left-hand traffic and a right-hand-drive car?', 'Because that is how India drives. You sit on the right and keep to the left of the road.'),
     ('It runs slowly on my computer. What can I do?', 'Choose Graphics → Fast in the menu and lower the traffic level. The game also lowers its resolution automatically when it detects slow frames.'),
-    ('Does it save my progress?', 'Your settings and your best score on each route are saved in this browser only. Nothing is sent anywhere.'),
+    ('Does it save my progress?', 'Your settings and your best score on each route are saved in this browser only, not on our servers. The site uses analytics to count visits and drives, so we can see what people use.'),
 ]
 faq_html = '\n'.join(f'            <details><summary>{q}</summary><p>{a}</p></details>' for q, a in faqs)
 about_page = head('about') + header('about.html') + page_hero('About &amp; FAQ', 'A practice simulator for Hyderabad roads', 'Sawari lets you practise the roads you will actually drive: real layouts, local traffic and the rules that matter. Then it tells you how you did.') + f"""

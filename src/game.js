@@ -7,6 +7,7 @@ import { CarPhysics } from './car/physics.js';
 import { Input } from './input.js';
 import { TouchControls } from './touch.js';
 import { scoreCard, shareCard, shareLink, challengeLink, verdict, socialRow, copyText } from './share.js';
+import { track } from './analytics.js';
 import { CameraRig } from './cameraRig.js';
 import { Navigator, TURN_TEXT } from './nav.js';
 import { createRouteBand, createSteeringGuide } from './guide.js';
@@ -166,7 +167,10 @@ export class Game {
       this.audio.quiet(true);
       if ('speechSynthesis' in window) speechSynthesis.cancel();
     };
-    this.onLeave = () => this.audio.stop();
+    this.onLeave = () => {
+      this.quitEvent('closed');
+      this.audio.stop();
+    };
     document.addEventListener('visibilitychange', this.onHide);
     addEventListener('pagehide', this.onLeave);
     this.onResize = () => this.resize();
@@ -214,6 +218,10 @@ export class Game {
     let next = this.ratio;
     if (avg > 0.024 && this.ratio > floor) next = Math.max(floor, this.ratio - 0.15);
     else if (avg < 0.0175 && this.ratio < this.maxRatio) next = Math.min(this.maxRatio, this.ratio + 0.1);
+    if (!this.perfLowSent && avg > 0.034 && this.ratio <= floor + 1e-3 && this.state === 'driving') {
+      this.perfLowSent = true;
+      track('performance_low', { route: this.world.id, device: this.settings.touch ? 'touch' : 'keyboard', fps: Math.round(1 / avg), quality: this.settings.quality });
+    }
     if (Math.abs(next - this.ratio) > 1e-3) {
       this.ratio = next;
       this.renderer.setPixelRatio(next);
@@ -507,6 +515,7 @@ export class Game {
       (o) => o.addEventListener('click', (e) => {
         const a = e.target.closest('button')?.dataset.a;
         if (a === 'resume') this.resume();
+        if (a === 'restart' || a === 'exit') this.quitEvent(a === 'restart' ? 'restart' : 'menu');
         if (a === 'restart') this.onExit('restart');
         if (a === 'exit') this.onExit('menu');
       }),
@@ -556,6 +565,16 @@ export class Game {
     this.helpOpen = true;
   }
 
+  // a drive left before the destination (from the pause screen, or the page closing)
+  quitEvent(how) {
+    if (this.state === 'finished' || this.quitSent) return;
+    this.quitSent = true;
+    track('drive_quit', {
+      route: this.world.id, how, seconds: Math.round(this.time || 0),
+      progress_pct: Math.round((100 * (this.nav?.progress || 0)) / (this.nav?.length || 1)), faults: this.rules?.faults.length || 0,
+    });
+  }
+
   finish() {
     if (this.state === 'finished') return;
     this.state = 'finished';
@@ -603,6 +622,15 @@ export class Game {
     // a challenge from a friend's link, for this route
     const ch = this.settings.challenge?.route === this.world.id ? this.settings.challenge : null;
     const result = verdict(ch, score, this.time);
+    const kinds = {};
+    for (const f of faults) kinds[f.key] = (kinds[f.key] || 0) + 1;
+    track('drive_finish', {
+      route: this.world.id, score, seconds: Math.round(this.time), faults: faults.length,
+      // e.g. "speeding:2,indicator:1" (GA4 text parameters stop at 100 characters: plenty here)
+      fault_types: Object.entries(kinds).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}:${n}`).join(',') || 'none',
+      top_fault: Object.entries(kinds).sort((a, b) => b[1] - a[1])[0]?.[0] || 'none',
+      challenge_result: result ? (result.won ? 'won' : 'lost') : undefined,
+    });
     let myName = '';
     try {
       myName = localStorage.getItem('sawari-name') || '';
@@ -654,6 +682,7 @@ export class Game {
             const n = name();
             const blob = await scoreCard({ shot, route: this.world.name, area: this.world.area, score, stars, secs: this.time, km: this.rules.distance / 1000, faults: faults.length, name: n, result });
             const how = await shareCard(blob, `${words()} ${link(n)}`);
+            track('share_card', { route: this.world.id, score, method: how });
             msg.textContent = {
               shared: 'Shared. Your friends can tap the link to take you on.',
               cancelled: '',
@@ -668,6 +697,7 @@ export class Game {
             const panel = o.querySelector('.share-panel');
             const opening = panel.hidden;
             if (opening) {
+              track('challenge_panel', { route: this.world.id, score });
               const n = name();
               panel.innerHTML = `<p class="share-hint">Send ${n ? 'your' : 'the'} challenge to a friend:</p>${socialRow(words(), link(n))}`;
             }
@@ -676,6 +706,8 @@ export class Game {
             msg.textContent = '';
           }
           const s = e.target.closest('[data-share]')?.dataset.share;
+          const app = e.target.closest('a.sb');
+          if (app || s) track('challenge_share', { route: this.world.id, score, method: app ? app.classList[1] : s });
           if (s) {
             const n = name(), url = link(n);
             if (s === 'copy') msg.textContent = (await copyText(url)) ? 'Challenge link copied: paste it in a chat.' : `Copy this link: ${url}`;
