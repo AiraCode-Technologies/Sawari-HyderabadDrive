@@ -11,7 +11,7 @@ Key facts:
 - Car: automatic gearbox with ABS; chase view or driver's seat; morning, midday, evening and night
 - Rules checked: speeding, keeping left, wrong way on one-way roads, leaving the road, red lights, collisions, speed breakers taken too fast, turns without an indicator
 - Sharing: a score card picture after each drive and a "challenge a friend" link with the score to beat
-- Languages: website in English, Hindi, Urdu and Telugu; blog (53 articles) in English
+- Languages: website in English, Hindi, Urdu and Telugu; blog (63 articles) in English
 - Data: map data © OpenStreetMap contributors (ODbL); terrain from open terrain tiles
 - Not affiliated with the Telangana Transport Department (RTA) or the traffic police
 
@@ -583,6 +583,251 @@ Yes. Sawari has a free Tank Bund Road route in your browser on a phone, tablet, 
 
 ---
 
+# Car insurance basics in India: third-party, own damage, add-ons, no claim bonus and claims
+
+URL: https://sawari.airacode.online/blog/car-insurance-basics-india.html
+Category: Learning to drive · Published 2026-11-23 · Updated 2026-11-23
+
+In India, third-party car insurance is compulsory by law under the Motor Vehicles Act, and it pays for harm you cause to other people and their property. A comprehensive policy adds own damage cover for your own car, and add-ons such as zero depreciation and roadside assistance extend it further.
+
+This is a plain guide to how car insurance works in India, written for new drivers and first-time car owners, as of November 2026. We do not quote premiums or recommend any insurer. Prices depend on your car, city, age and claim history, and the policy wording, not a summary like this, decides what is covered. The insurance regulator, IRDAI (https://irdai.gov.in), publishes the rules insurers must follow.
+
+## Is car insurance mandatory in India?
+
+Yes, third-party insurance is mandatory for every motor vehicle used in a public place. Section 146 of the Motor Vehicles Act, 1988 makes it an offence to drive, or let someone drive, a vehicle without at least third-party cover. Driving uninsured can lead to a fine and other penalties, and leaves you personally liable for any harm you cause.
+
+- **New cars** come with long-term third-party cover. Following a Supreme Court order, new cars sold from 1 September 2018 must have three years of third-party cover, and new two-wheelers five years.
+
+- **Own damage cover is optional by law,** although banks and finance companies usually insist on it for a car bought on a loan.
+
+- **Your policy is on the vehicle record.** Police can check whether a car is insured against its registration number. Our Hyderabad e-challan guide (https://sawari.airacode.online/blog/hyderabad-e-challan-guide.html) explains how challans reach you.
+
+## What are third-party, own damage and comprehensive cover?
+
+They are three building blocks: third-party covers others, own damage covers your car, and comprehensive is the two together.
+
+| Type | What it covers | Who needs it |
+|---|---|---|
+| Third-party (liability) | Injury or death of other people, and damage to their property, caused by your car | Everyone, by law |
+| Standalone own damage | Damage to your own car from accidents, theft, fire, floods and other listed risks | Owners who already have a separate third-party policy, such as a new car's long-term cover |
+| Comprehensive | Third-party and own damage in one policy | Most owners who want their own car protected |
+
+Standalone own damage policies have been available since 2019, so the owner of a new car with three-year third-party cover can renew just the own damage part each year. Policies also include compulsory personal accident cover for the owner-driver, unless you already have equivalent cover. Every policy has **exclusions**: claims are commonly refused for driving without a valid licence, drink driving, normal wear and tear and mechanical breakdown. Read that section before you buy.
+
+Your licence matters to your insurance. A claim can be refused if the driver had no valid licence at the time, and there is no grace period after a licence expires. See our guide to driving licence renewal in Telangana (https://sawari.airacode.online/blog/driving-licence-renewal-telangana.html).
+
+## Which add-ons are worth knowing about?
+
+Add-ons are optional extras on a comprehensive or own damage policy, each for an extra premium. The common ones:
+
+- **Zero depreciation (nil depreciation).** A normal claim deducts depreciation on replaced parts such as plastic, rubber and fibre, so you pay part of the bill. This add-on removes most of that deduction. It is popular for newer cars, and insurers usually limit it by car age and number of claims.
+
+- **Roadside assistance.** Help if you break down: towing, a flat battery, a flat tyre, fuel delivery or a locked-out car. Useful on long highway drives.
+
+- **Engine protection.** Covers engine damage from water entering the engine or oil leaks, which a standard policy often excludes. Worth thinking about in a city where underpasses flood in the monsoon.
+
+- **Return to invoice.** If the car is stolen or written off, pays the gap between the insured value and the original invoice price.
+
+- **NCB protection.** Lets you make a limited number of claims without losing your no claim bonus.
+
+- **Consumables.** Pays for items such as engine oil, nuts and bolts and coolant used in a repair.
+
+Choose add-ons for how and where you drive rather than buying all of them.
+
+## How does the no claim bonus work?
+
+The no claim bonus (NCB) is a discount on the own damage premium for every claim-free year. It does not apply to the third-party part. The standard steps are:
+
+| Claim-free years in a row | NCB on own damage premium |
+|---|---|
+| 1 | 20% |
+| 2 | 25% |
+| 3 | 35% |
+| 4 | 45% |
+| 5 or more | 50% |
+
+- **A claim resets it,** usually to zero at the next renewal, unless you have NCB protection.
+
+- **It belongs to you, not the car.** When you sell a car and buy another, ask the insurer to transfer the NCB to the new policy.
+
+- **Renew on time.** If your policy stays lapsed for more than 90 days, the NCB is generally lost, and driving even one day without insurance is an offence.
+
+- **Small damage:** for a minor scrape, compare the repair bill with the NCB you would lose before claiming.
+
+## How do you make a car insurance claim?
+
+Tell your insurer as soon as possible, follow its steps, and keep records of everything. A typical own damage claim works like this:
+
+- **Make the scene safe first.** Get help for anyone hurt and move out of traffic if you can. Our guide on what to do after a car accident in Hyderabad (https://sawari.airacode.online/blog/what-to-do-after-car-accident-hyderabad.html) covers the first few minutes.
+
+- **Take photos** of the damage, the scene, number plates and any documents exchanged.
+
+- **Inform the insurer** through its helpline or app, and note the claim number.
+
+- **Report to the police** when someone is injured or killed, when another party's property is involved, or when the car is stolen. The insurer will ask for the FIR or report.
+
+- **Survey.** The insurer appoints a surveyor to assess the damage. Under IRDAI rules from 2024, surveyors must be appointed quickly, and claims are to be decided within set time limits after the survey report.
+
+- **Repair.** At a network garage, a cashless claim means the insurer pays the garage directly, minus deductibles and depreciation. Elsewhere you pay and claim reimbursement.
+
+Claims against another driver for injury or death are a separate legal process, usually through the Motor Accident Claims Tribunal, and the third-party insurer handles them. If you are unhappy with how a claim is handled, complain to the insurer first, then use IRDAI's Bima Bharosa grievance system or the Insurance Ombudsman (https://www.cioins.co.in).
+
+## Which documents should you carry?
+
+Carry your driving licence, registration certificate, insurance certificate and pollution under control (PUC) certificate, either as paper or in the official apps.
+
+- **DigiLocker and mParivahan count.** Under the Central Motor Vehicles Rules, as amended in 2018, and a Ministry of Road Transport and Highways advisory, documents in these two apps are treated as equal to the originals. Police can also verify your insurance against the vehicle record.
+
+- **A photo or PDF in your gallery or email** does not have the same legal standing, so add your documents to DigiLocker or mParivahan.
+
+- **Keep the insurer's helpline and your policy number** saved in your phone, and in the car.
+
+Our Hyderabad traffic rules guide (https://sawari.airacode.online/blog/hyderabad-traffic-rules-guide.html) covers the documents police check most often.
+
+## Can safer driving keep insurance simpler?
+
+Yes, in the most practical way: fewer claims mean you keep your no claim bonus and avoid the paperwork. Most small city claims come from scrapes in tight lanes, misjudged gaps, parking knocks and rear-end bumps in slow traffic.
+
+Sawari, a free browser driving simulator on five real Hyderabad routes, lets new drivers practise those situations on a phone, tablet, laptop or PC without risking a real car. The debrief lists every fault, from following too closely to drifting out of lane. It is practice only and has nothing to do with insurance cover, but calm habits built there carry over to the road.
+
+## Frequently asked questions
+
+**Is car insurance mandatory in India?**
+Yes. Section 146 of the Motor Vehicles Act, 1988 makes third-party insurance compulsory for every motor vehicle used in a public place. Own damage cover for your own car is optional, though lenders usually require it on a financed car.
+
+**What is the difference between third-party and comprehensive insurance?**
+Third-party insurance pays for injury, death or property damage you cause to others. A comprehensive policy adds own damage cover, which pays for damage to your own car from accidents, theft, fire and natural disasters, subject to the policy terms.
+
+**What is a no claim bonus in car insurance?**
+A no claim bonus is a discount on the own damage part of your premium for each claim-free year, rising in steps from 20 percent up to 50 percent after five claim-free years. It belongs to you, not the car, so you can carry it to a new car or insurer, but it is generally lost if your policy stays lapsed for more than 90 days.
+
+**Is a digital insurance copy valid at a police check?**
+Yes. The Ministry of Road Transport and Highways treats documents in the DigiLocker and mParivahan apps as equal to the originals, and police can verify your policy against the vehicle record. A photo of the policy in your phone gallery does not have the same standing.
+
+---
+
+# Car maintenance checklist for India: weekly and monthly checks, monsoon prep and your PUC certificate
+
+URL: https://sawari.airacode.online/blog/car-maintenance-checklist-puc.html
+Category: Learning to drive · Published 2026-11-23 · Updated 2026-11-23
+
+A simple car maintenance routine is a quick weekly walk-round for tyres, lights and leaks, a monthly check of tyre pressures, fluids, wipers and brakes, and the servicing your owner's manual sets out. On top of that, every car in India must carry a valid Pollution Under Control (PUC) certificate, and from November 2026 its validity depends on the car's emission standard and age.
+
+You do not need to be a mechanic to look after a car. Most problems that leave people stranded on a Hyderabad flyover, such as a soft tyre, a dead bulb or an overheated engine, show warning signs that a few minutes of checking would catch. Always follow your owner's manual first; this is a general checklist.
+
+## What should you check every week?
+
+Every week, walk round the car before you drive, look at the tyres, test the lights and glance underneath for leaks.
+
+- **Tyres:** look for one that seems lower than the others, cuts, bulges on the sidewall, or nails in the tread.
+
+- **Lights:** headlights (low and high beam), indicators front and back, hazard lights, brake lights and number-plate light. Ask someone to stand behind the car while you press the brake, or check the reflection in a glass door.
+
+- **Glass and mirrors:** clean, with no cracks spreading across the windscreen.
+
+- **Leaks:** fresh drips under the car where it was parked. Clear water under the front on a hot day is usually just the air conditioner.
+
+- **Warning lights:** when you start the car, the dashboard lamps should come on briefly and go out. Any that stay on need attention.
+
+## What should you check every month?
+
+Once a month, check tyre pressures and tread, the main fluid levels, the wipers and how the brakes feel.
+
+| Check | How | What to look for |
+|---|---|---|
+| Tyre pressure | With a gauge or at a fuel station air machine, tyres cold | Match the pressures on the door-frame sticker or in the manual, including the spare |
+| Tyre tread | Look at the tread wear indicator bars in the grooves | Replace tyres when the tread is level with the bars, or if wear is uneven |
+| Engine oil | Dipstick, engine off and cool, car on level ground | Level between the marks; top up with the grade in the manual |
+| Coolant | Expansion tank markings, engine cold | Between minimum and maximum; never open a hot radiator cap |
+| Brake fluid | Reservoir markings | A falling level can mean worn pads or a leak; get it checked |
+| Washer fluid | Reservoir | Keep it full, especially before the dusty summer and the monsoon |
+| Wipers | Run them on a wet windscreen | Streaks, juddering or split rubber mean new blades |
+| Brakes | Feel while driving | Squealing, grinding, a soft pedal or the car pulling to one side |
+| Battery | Look at the terminals; notice slow starting | White or green crust on the terminals, or the engine turning over slowly |
+
+Electric cars have no engine oil or exhaust, but tyres, brakes, lights, wipers, coolant and washer fluid still need checking. See our guide to electric cars in Hyderabad (https://sawari.airacode.online/blog/electric-cars-in-hyderabad.html).
+
+Beyond these checks, get the car serviced at the intervals in the owner's manual, by distance or by time, whichever comes first. Hyderabad's stop-start traffic and summer heat are hard on brakes, clutches and cooling systems, so do not stretch service intervals.
+
+## How should you prepare a car for the monsoon?
+
+Before the rains, make sure you can see, stop and grip: wipers, lights, tyres and brakes matter most.
+
+- **Fit new wiper blades** if the old ones have been baked by the summer sun.
+
+- **Check tyre tread.** Worn tyres cannot clear water and lose grip on wet roads.
+
+- **Test all lights**, including fog lamps if fitted, and clean the lenses.
+
+- **Have the brakes inspected** if they have not been looked at recently.
+
+- **Check the demister and the air conditioner**, which clear a misted windscreen quickly.
+
+- **Clear the drains** below the windscreen and in the sunroof, if you have one, so water does not leak into the cabin.
+
+- **Keep a torch, an umbrella and a phone charger** in the car.
+
+Do not drive through deep water at underpasses or low junctions. Water drawn into the engine can wreck it. Our monsoon driving guide (https://sawari.airacode.online/blog/monsoon-driving-hyderabad.html) covers driving in the rain itself.
+
+## What is a PUC certificate, and how long is it valid?
+
+A PUC certificate shows that your vehicle's exhaust emissions were tested and found within the permitted limits. Every motor vehicle on the road must have a valid one under Rule 115 of the Central Motor Vehicles Rules, 1989.
+
+The validity periods were revised by the Central Motor Vehicles (Sixteenth Amendment) Rules, 2026, reported by All India Radio and the motoring press on 19 November 2026. Under the new schedule:
+
+| Vehicle | Age from first registration | PUC validity |
+|---|---|---|
+| BS-VI, private (non-transport) | Up to 6 years | 3 years |
+| BS-VI, private (non-transport) | Over 6, up to 10 years | 1 year |
+| BS-VI, private (non-transport) | Over 10 years | 6 months |
+| BS-VI, transport (taxis, goods vehicles) | Up to 6 years | 2 years |
+| BS-VI, transport | Over 6, up to 10 years | 1 year |
+| BS-VI, transport | Over 10 years | 6 months |
+| BS-IV | Any | 6 months |
+| BS-I, BS-II and BS-III | Any | 3 months |
+
+Two details matter if you already have a certificate:
+
+- A certificate issued before the change keeps the validity printed on it. The new periods apply from your first renewal.
+
+- If you renew within ten days before expiry, the new certificate runs from the old expiry date, so you do not lose days by renewing early.
+
+Before this change, the rule was one year for BS-IV and BS-VI vehicles and six months for others, and a new vehicle did not need its first test until a year after registration. Your car's emission standard is shown on the registration certificate and in the owner's manual; most cars sold in India since April 2020 are BS-VI. Because the rules have only just changed, check the date printed on your certificate rather than relying on memory.
+
+## Where do you get a PUC certificate, and can you carry it digitally?
+
+You get one at an authorised PUC testing centre, often at a fuel station, and you can usually check it online and show it digitally.
+
+- Drive to an authorised PUC centre. The Parivahan PUC portal (https://puc.parivahan.gov.in/puc/) lists registered centres.
+
+- The operator tests the exhaust with an approved analyser while the engine runs. It takes a few minutes.
+
+- You pay the fee and receive a printed certificate with a unique number, your vehicle number and the expiry date.
+
+A Ministry of Road Transport and Highways advisory of August 2018 told states to accept documents shown through DigiLocker or mParivahan as legally equal to the originals. Whether your PUC appears in those apps depends on your state's records, so if it does not, keep the printed certificate in the car with your other papers. The Telangana Transport Department (https://transport.telangana.gov.in) is the authority for local questions.
+
+Driving without a valid certificate can lead to a fine, often issued as a camera or roadside e-challan. Our Hyderabad e-challan guide (https://sawari.airacode.online/blog/hyderabad-e-challan-guide.html) explains how to check and pay them.
+
+## Does Sawari help with car care?
+
+No. Sawari is a free browser driving simulator on five real Hyderabad routes, with an automatic car. It runs on a phone with an on-screen steering wheel, a tablet, a laptop or a PC, and it checks your driving, such as keep-left, indicators, signals and speed breakers. It does not model tyre wear, breakdowns or weather, so it cannot replace looking after a real car. Use it to practise the roads; use this checklist for the car. You can start on Necklace Road (https://sawari.airacode.online/play.html?route=necklace-road).
+
+## Frequently asked questions
+
+**How long is a PUC certificate valid in India?**
+Under the Central Motor Vehicles (Sixteenth Amendment) Rules, 2026, reported on 19 November 2026, it depends on the emission standard and age. A private BS-VI car up to six years old gets three years, six to ten years gets one year and over ten years six months; BS-IV vehicles get six months and BS-I to BS-III three months.
+
+**Where can I get a PUC certificate in Hyderabad?**
+At any authorised PUC testing centre. Many are at fuel stations, and the Parivahan PUC portal has a list of registered centres. The test takes a few minutes and the certificate is issued straight away.
+
+**Can I show a digital PUC certificate?**
+A 2018 Ministry of Road Transport and Highways advisory says documents shown through DigiLocker or mParivahan are legally equivalent to originals. If your PUC status is not available there, carry the printed certificate.
+
+**How often should I check my tyre pressure?**
+At least once a month and before any long trip, with the tyres cold. Use the pressures on the sticker inside the driver's door frame or in the owner's manual, not the maximum printed on the tyre.
+
+---
+
 # Driving in Hyderabad for NRIs and visitors: licences, permits, rentals and what feels different
 
 URL: https://sawari.airacode.online/blog/driving-in-hyderabad-for-nris-and-visitors.html
@@ -701,6 +946,133 @@ Yes. An Indian licence that is still valid works in India wherever you live. If 
 
 **Is it hard for a foreigner to drive in Hyderabad?**
 It is demanding at first. Traffic keeps to the left, two-wheelers fill every gap, lane discipline is loose and U-turns replace many right turns. Most visitors find it manageable after a few calm drives at quiet times.
+
+---
+
+# Driving licence renewal in Telangana: validity, renewing online, duplicates, address change and the IDP
+
+URL: https://sawari.airacode.online/blog/driving-licence-renewal-telangana.html
+Category: Learning to drive · Published 2026-11-23 · Updated 2026-11-23
+
+In Telangana you renew a driving licence on the national Parivahan Sarathi portal, and since May 2026 most renewals can be done online with Aadhaar authentication, without visiting the RTA office. Apply any time from one year before your licence expires; there is no grace period, so do not drive on an expired licence.
+
+This guide explains how long a licence is valid, when and how to renew, and how to get a duplicate licence, change your address or apply for an international driving permit, as of November 2026. We have left out fees, because they change; the Sarathi portal shows the exact amount before you pay. If you do not have a licence yet, start with our guide to getting a driving licence in Hyderabad (https://sawari.airacode.online/blog/how-to-get-driving-licence-hyderabad.html).
+
+## How long is a driving licence valid?
+
+A private licence for cars and two-wheelers is valid until a set age or for a set number of years, depending on how old you are when it is issued or renewed. The rule is in Section 14 of the Motor Vehicles Act, 1988, as amended.
+
+| Your age when the licence is issued or renewed | How long it is valid |
+|---|---|
+| Under 30 | Until you turn 40 |
+| 30 to under 50 | Ten years |
+| 50 to under 55 | Until you turn 60 |
+| 55 or older | Five years |
+| Transport vehicle licence (any age) | Five years (three years for vehicles carrying hazardous goods) |
+
+A learner's licence is valid for six months. The expiry date is printed on your licence card and shown in the DigiLocker and mParivahan apps, which is the quickest way to check. In mid-2026 there were reports that the Centre was looking at longer validity, but as of November 2026 the rule above still applies.
+
+## When should you renew, and is there a grace period?
+
+Renew in the year before your licence expires, because there is no longer any grace period after expiry. Since the Motor Vehicles (Amendment) Act, 2019 came into force:
+
+- **You can apply up to one year before expiry.**
+
+- **The old 30-day grace period is gone.** Once the date passes, you are driving without a valid licence, which is an offence and can cause problems with an insurance claim.
+
+- **You can still renew within one year after expiry,** although a late fee may apply.
+
+- **After more than a year,** the law allows the authority to require you to pass the test of competence again.
+
+Put the expiry date in your phone calendar with a reminder eleven months ahead. It is the simplest way to never drive on an expired licence.
+
+## How do you renew a driving licence online in Telangana?
+
+Use the Driving Licence services on the Sarathi portal, choose Telangana, and pick renewal. Telangana completed its move to Sarathi across all RTA offices in 2025, and in May 2026 the Transport Department made 17 licence services available in faceless mode with Aadhaar-based authentication, including renewal, duplicate licences, replacement and changes to photo, signature and date of birth.
+
+- Open sarathi.parivahan.gov.in (https://sarathi.parivahan.gov.in), go to the driving licence services and select Telangana.
+
+- Choose the renewal service and enter your licence number and date of birth.
+
+- Complete Aadhaar authentication with the OTP sent to your Aadhaar-linked mobile number.
+
+- Check the details, upload what the form asks for and pay the fee online.
+
+- Keep the application number. The renewed licence is updated in DigiLocker and mParivahan, and the card is usually posted to the address on record.
+
+If the portal asks you to visit the RTA, for example for biometrics or a test, it lets you book a slot. The Telangana Transport Department (https://transport.telangana.gov.in) site lists the RTA offices and current notices.
+
+### Documents, in general terms
+
+- Your current or expired driving licence.
+
+- Aadhaar for authentication, with your current mobile number linked.
+
+- A recent photo and signature, if the form asks you to upload them.
+
+- A medical certificate in Form 1A from a registered doctor if you are 40 or older, or if you hold a transport licence.
+
+Apply only on the official Sarathi portal or at the RTA office. Agents and look-alike websites that charge extra for "fast renewal" are common, and they may misuse your Aadhaar details.
+
+## How do you get a duplicate licence or change the address?
+
+Both are online services on Sarathi, under the same Telangana driving licence services.
+
+### Duplicate licence
+
+If your licence card is lost, stolen or damaged, apply for a duplicate on Sarathi. It is one of the faceless services in Telangana. For a lost or stolen card, keep a copy of a police complaint or the declaration the form asks for. Until the duplicate arrives, the digital licence in DigiLocker or mParivahan is accepted at checks, because the Ministry of Road Transport and Highways treats documents in those two apps as equal to the originals.
+
+### Change of address
+
+If you have moved, apply for a change of address on the licence through Sarathi with proof of your new address. Your vehicle's registration certificate is a separate record, so update the address on the RC too, through the vehicle services on Parivahan. If you have moved to Hyderabad from another state, the RTA has asked people to update their licence details through the Parivahan portal; our guide for NRIs and visitors driving in Hyderabad (https://sawari.airacode.online/blog/driving-in-hyderabad-for-nris-and-visitors.html) covers licences from elsewhere.
+
+## How do you get an international driving permit in Hyderabad?
+
+Apply to the Telangana RTA through Sarathi using Form 4A, if you hold a valid Indian licence and are travelling abroad. Key points:
+
+- **Who it is for:** residents with a valid Indian licence who want to drive in another country for a short stay. It translates your Indian licence; it is not a licence on its own, so carry both.
+
+- **Validity:** generally one year from issue, and not beyond the expiry of your Indian licence. Renew your Indian licence first if it is close to expiry.
+
+- **What you usually need:** your licence, passport, visa or travel details where asked, photos and, in some cases, a medical certificate.
+
+- **Visit:** unlike renewal, the permit is not in Telangana's faceless list, so expect to visit the RTA office for verification.
+
+- **Check the destination:** some countries do not recognise the permit, or require a local licence after a period of residence. Check with that country's embassy.
+
+## Key facts at a glance
+
+- **Portal:** Parivahan Sarathi, Telangana selected.
+
+- **Renewal window:** one year before expiry to one year after; no grace period for driving.
+
+- **Faceless services:** 17 licence services online with Aadhaar since May 2026, including renewal and duplicates.
+
+- **Over 40:** a Form 1A medical certificate is generally needed.
+
+- **Digital copies:** licences in DigiLocker or mParivahan are valid at checks; a photo in your gallery is not.
+
+- **IDP:** Form 4A, generally valid for one year, visit the RTA.
+
+## Should you brush up before you renew?
+
+A renewal does not normally need a new test, but if your licence has been expired for more than a year, or you have not driven in a long time, it helps to refresh your road sense first. Our Telangana RTA driving test tips (https://sawari.airacode.online/blog/telangana-rta-driving-test-tips.html) list what examiners watch for.
+
+Sawari, a free browser driving simulator on five real Hyderabad routes, is a low-pressure way to get back into city habits on a phone, tablet, laptop or PC: indicating, lane discipline, U-turn openings and signals, with a debrief that lists every fault. It is practice only and does not replace lessons, a real car or the RTA test.
+
+## Frequently asked questions
+
+**How long is a driving licence valid in India?**
+Under Section 14 of the Motor Vehicles Act, a private (non-transport) licence issued before age 30 is valid until you turn 40, one issued between 30 and 50 is valid for ten years, one issued between 50 and 55 runs until 60, and one issued at 55 or older is valid for five years. A transport licence is valid for five years.
+
+**Is there a grace period after my driving licence expires?**
+No. The old 30-day grace period was removed by the 2019 amendment, so you cannot legally drive on an expired licence. You can apply to renew from one year before expiry up to one year after it; after that, you may have to pass the driving test again.
+
+**Can I renew my driving licence online in Telangana?**
+Yes. Telangana licence services moved to the national Sarathi portal in 2025, and since May 2026 renewal is one of 17 licence services offered in faceless mode with Aadhaar authentication, so many people can renew without visiting the RTA office.
+
+**How do I get an international driving permit in Hyderabad?**
+Apply to the Telangana RTA through the Sarathi portal using Form 4A, with your valid Indian licence, passport, visa or ticket where asked, and photos. It is generally valid for one year and cannot outlast your Indian licence.
 
 ---
 
@@ -933,6 +1305,147 @@ No. Use your right foot for both the accelerator and the brake, and keep your le
 
 **Should I shift to neutral at traffic signals in an automatic?**
 For a normal stop at a signal, stay in D with your foot firmly on the brake. For a long wait you can select N or P with the handbrake on, but never shift to neutral while moving or rolling.
+
+---
+
+# How to park a car: reverse bay parking, parallel parking, angle parking and slopes
+
+URL: https://sawari.airacode.online/blog/how-to-park-a-car.html
+Category: Learning to drive · Published 2026-11-23 · Updated 2026-11-23
+
+To park a car well, go slowly, use reference points on the car to judge where its corners are, and look all round before and during every movement. Reversing into a bay is usually safer than driving in forwards, parallel parking is a set sequence of steering moves, and on a slope you turn the wheels, apply the handbrake and leave the car in gear or in Park.
+
+Parking is the manoeuvre that makes new drivers most anxious, especially with people watching. The good news is that it is a routine, not a talent. This guide gives the steps for the common types, assuming a car with the driver on the right and parking on the left, as in India. Practise in an empty car park with an instructor or a licensed driver beside you.
+
+## What are the basics of parking any car?
+
+Slow speed, all-round observation and reference points are the three things that make every kind of parking easier.
+
+- **Go very slowly.** In a manual, use the clutch at the bite point; in an automatic, let the car creep on the brake. Slow speed gives you time to correct.
+
+- **Look all round** before you start and keep looking while you move: mirrors, over both shoulders and through the rear window. Pedestrians and two-wheelers move into car parks without warning.
+
+- **Signal** to show others what you are doing.
+
+- **Stop and correct.** If it is going wrong, stop, pull forward and try again. Nobody is scored on parking in one go in real life.
+
+- **Get out and look** while you are learning, to link what you saw from the seat with where the car really is.
+
+### Using reference points without mirrors or cameras
+
+A reference point is a part of the car that lines up with something outside, such as a bay line or the kerb, when the car is in the right place. Every car is different, so find your own with cones or chalk lines in an empty space:
+
+- Pull up until a line on the ground meets a point on the bonnet or the bottom corner of the windscreen, then get out and check where the bumper is. That view becomes your "front bumper on the line" reference.
+
+- Do the same for the left side: drive along a line until it appears to meet a point on the dashboard. That is your "left wheels on the line" view, useful for getting close to the kerb.
+
+- Looking back over your left shoulder, notice where a line or the kerb appears in the rear side window when the rear wheel is level with it.
+
+Mirrors and parking cameras are a help, not a replacement. Learn the reference points first and you can park any car, including an old one with none of the gadgets.
+
+## How do you reverse into a parking bay?
+
+Drive past the bay, stop when your car is two or three bays beyond it, then reverse slowly in while steering towards it and straighten up as the car lines up with the bay.
+
+- **Position.** Drive slowly along the row about one to one-and-a-half metres from the parked cars or bay ends. Signal towards the bay.
+
+- **Stop** when your rear bumper has passed the bay and the bay's far line is roughly level with your shoulder, or about two bay lines past the space. Adjust for your car.
+
+- **Observe.** Check all round, especially behind and on the side away from the bay, where your front will swing out.
+
+- **Reverse slowly and steer fully towards the bay.** Watch the nearest bay line in your mirror or over your shoulder as the car swings round.
+
+- **Straighten up** when the car is parallel with the bay lines, by turning the wheel back the same amount you turned it.
+
+- **Reverse straight back** until the front is inside the bay. Stop before the rear wheels reach the kerb or the end line.
+
+- **Secure the car:** handbrake on, gear in first or reverse (manual) or Park (automatic), engine off.
+
+If you are crooked, drive forward a little to straighten, then reverse again. Small corrections at walking pace are better than one big swing.
+
+## How do you parallel park?
+
+Parallel parking is a repeatable sequence: line up with the car in front, reverse until your rear wheels are level with its bumper, steer in at an angle, then steer the other way to bring the front in.
+
+You need a space roughly one-and-a-half times your car's length while you are learning.
+
+- **Signal left** and stop alongside the car in front of the space, level with it or slightly ahead, about half a metre to a metre away.
+
+- **Check all round**, especially for traffic behind and two-wheelers on your left.
+
+- **Reverse slowly and straight** until your rear wheels are level with the other car's rear bumper.
+
+- **Steer fully left** and keep reversing slowly until your car is at about 45 degrees to the kerb. A useful check: the kerb appears in the left mirror or the left rear window at the corner.
+
+- **Straighten the wheel** and reverse in a straight line until your front bumper clears the rear of the car in front.
+
+- **Steer fully right** and keep reversing slowly. The front swings in towards the kerb.
+
+- **Straighten up** as the car becomes parallel with the kerb, then move forward or back to leave room for the cars on both sides.
+
+Check the parking is legal before you start: the Motor Vehicles (Driving) Regulations, 2017 list places where you must not park, including footpaths, pedestrian crossings, near junctions and bus stops, in front of gates and where a continuous yellow line runs along the kerb. Our Hyderabad parking guide (https://sawari.airacode.online/blog/hyderabad-parking-guide.html) covers where to park in the city.
+
+## How do you angle park?
+
+Angle parking is the easiest: approach so the car can turn into the slanted bay in one smooth movement, and steer in once your mirror passes the near line.
+
+- Drive along the row in the direction the bays slant, keeping a little away from the parked cars to give yourself room to turn.
+
+- Signal and slow to walking pace.
+
+- Start turning when your front is roughly level with the first line of the bay, or your mirror is just past it.
+
+- Steer into the bay, then straighten up when the car is aligned with the lines.
+
+- Stop before the kerb or wheel stop, then secure the car.
+
+When leaving, reverse out very slowly, because you cannot see along the row until the back of the car is out. Stop and look often.
+
+## How do you park safely on a slope?
+
+Turn the front wheels so the car would roll into the kerb or off the road, apply the handbrake firmly and leave the car in gear or in Park.
+
+| Situation | Front wheels | Manual gearbox |
+|---|---|---|
+| Downhill, with a kerb | Turned left, towards the kerb | Reverse gear |
+| Uphill, with a kerb | Turned right, away from the kerb, so the tyre rests against it if the car rolls back | First gear |
+| Uphill or downhill, no kerb | Turned left, towards the edge of the road | First uphill, reverse downhill |
+
+- Stop close to the left edge and keep the footbrake pressed.
+
+- Turn the wheels as in the table, then let the car roll gently until the tyre touches the kerb, if there is one.
+
+- Apply the handbrake firmly.
+
+- In a manual, select the gear in the table before switching off. In an automatic, apply the handbrake first, then select Park, so the car's weight sits on the brake rather than the gearbox.
+
+Hyderabad has more slopes than people expect, for example the climb on Banjara Hills Road No. 1. Our guide to driving an automatic in India (https://sawari.airacode.online/blog/how-to-drive-automatic-car-india.html) explains Park and the handbrake on an automatic.
+
+## Is parking part of the RTA driving test?
+
+Parking-type manoeuvres often are, but the details vary by office and change over time, so check with your driving school or the RTA.
+
+Some Telangana RTA offices use test tracks with markers, and manoeuvres such as reversing or parking in a marked space may be included. We do not list a format here, because we cannot confirm one that applies everywhere. Ask your instructor what your office tests and practise exactly that. Our Telangana RTA driving test tips (https://sawari.airacode.online/blog/telangana-rta-driving-test-tips.html) cover the rest of the test, and the Telangana Transport Department (https://transport.telangana.gov.in) has the official information.
+
+## Can you practise parking in Sawari?
+
+No. Sawari, a free browser driving simulator on five real Hyderabad routes, does not simulate parking manoeuvres, parking bays or reversing into spaces, and it has no mirrors. It is built for driving the roads: keep-left, indicators, signals and speed breakers, with a debrief of your faults at the end. It runs on a phone with an on-screen steering wheel, a tablet, a laptop or a PC, and the car is an automatic.
+
+Learn parking in a real car with cones in an empty space. Use Sawari for the drive to get there, for example Banjara Hills Road No. 1 (https://sawari.airacode.online/play.html?route=banjara-hills). It is practice only.
+
+## Frequently asked questions
+
+**Is it better to reverse into a parking space or drive in forwards?**
+Reversing in is usually safer, because you drive out forwards with a clear view of passing cars and people. You reverse into the space at low speed with a good view of the bay lines, rather than reversing blind into a busy lane later.
+
+**How do I parallel park step by step?**
+Stop alongside the car in front of the space, about half a metre to a metre away. Reverse slowly until your rear wheels are level with its back bumper, steer fully left until the car is at about 45 degrees, straighten up, then steer fully right as your front clears its bumper, and straighten up close to the kerb.
+
+**Which way should I turn my wheels when parking on a hill?**
+In India, where you park on the left: facing downhill, turn the front wheels left towards the kerb. Facing uphill with a kerb, turn them right, away from the kerb, so the tyre rests against it if the car rolls back. With no kerb, turn them left towards the road edge either way. Always apply the handbrake.
+
+**Does Sawari let you practise parking?**
+No. Sawari simulates driving real Hyderabad routes with traffic, signals and speed breakers, but it does not include parking manoeuvres, reverse parking or parking bays. Parking is best learnt in a real car in an empty space with an instructor.
 
 ---
 
@@ -1953,6 +2466,399 @@ Rules and office practice on this can change, so check with the Telangana Transp
 
 **Does practising on a driving simulator help with the RTA test?**
 It can help with habits such as indicating, keeping left and stopping at the line, but it cannot teach clutch control or the feel of a real car. Use it alongside lessons with a licensed instructor, not instead of them.
+
+---
+
+# Defensive driving tips for India: the habits that keep you out of trouble
+
+URL: https://sawari.airacode.online/blog/defensive-driving-tips-india.html
+Category: Road skills · Published 2026-11-23 · Updated 2026-11-23
+
+Defensive driving in India comes down to a few habits: keep a buffer of space around your car, stay at least three seconds behind the vehicle ahead, scan far ahead and to the sides, assume others will make mistakes, and slow down for the conditions. In mixed traffic the space keeps getting filled, so the skill is rebuilding it calmly, again and again.
+
+Most crashes are not caused by one dramatic error. They happen when a small mistake by one road user meets a driver with no time or space to react. Defensive driving is about always leaving yourself that time and space. This guide adapts the standard habits to Indian roads, with Hyderabad examples.
+
+## What is the space cushion, and how do you keep one in Indian traffic?
+
+The space cushion is a buffer of empty road around your car, in front, behind and to the sides, that gives you somewhere to go if something goes wrong.
+
+In a city full of scooters and autos you will never have a perfect empty box around you, and that is fine. The habit is to notice when the cushion has gone and quietly rebuild it:
+
+- **In front:** this is the space you control best. Ease off when someone cuts in, rather than closing up to stop them.
+
+- **To the sides:** avoid sitting right beside a bus or truck, or level with a car in the next lane for long periods. Drop back or move ahead so you have an escape route.
+
+- **Behind:** you cannot control a tailgater, but you can give yourself a bigger gap in front so that you never have to brake hard.
+
+- **At a stop:** stop where you can still see the rear tyres of the car in front touching the road. That leaves room to steer round it if it breaks down or rolls back.
+
+## How big a gap should you leave to the vehicle ahead?
+
+Leave at least a two-second gap in good conditions, and three seconds or more in traffic, rain or at night; this is the most important single defensive habit.
+
+The Motor Vehicles (Driving) Regulations, 2017 say a driver must keep enough distance from the vehicle ahead to stop safely if it slows or stops suddenly, and must increase that distance in rain and other bad weather. The regulations do not give a figure, so drivers use a time-based rule of thumb. The current regulations are listed on the Ministry of Road Transport and Highways legislation page (https://morth.gov.in/en/Motor-Vehicle-Legislation).
+
+- Pick a fixed point ahead, such as a lamp post, a metro pillar or a road sign.
+
+- When the rear of the vehicle in front passes it, start counting: "one thousand and one, one thousand and two, one thousand and three".
+
+- If your front bumper reaches the point before you finish, drop back.
+
+A time gap works at any speed because the distance grows as you go faster. Someone will often slip into the gap you leave. Let them, and drop back again; arriving one car-length later costs you nothing.
+
+| Situation | Suggested minimum gap |
+|---|---|
+| Dry road, good visibility, light traffic | 2 seconds |
+| Normal city traffic | 3 seconds |
+| Behind a bus, truck or auto that may stop suddenly | 3 seconds or more, and stay out of its blind spot |
+| Rain, wet roads, night or a new driver | 4 seconds or more |
+
+These are common driving-school guidelines, not legal limits.
+
+## Where should you be looking?
+
+Look far ahead, not at the bumper in front of you, and keep your eyes moving across the whole scene every few seconds.
+
+- **Look 10 to 15 seconds ahead.** Watch the brake lights two or three vehicles in front, the signal at the next junction and the traffic building up near a U-turn opening. You will slow early and smoothly instead of braking late.
+
+- **Scan the edges.** Pedestrians stepping off the footpath, a scooter leaving a side lane, a parked car's door, a dog, an auto pulling out from the kerb. In Hyderabad most surprises come from the left edge.
+
+- **Check your mirrors** every five to eight seconds, and always before you slow down, change lanes or turn. Our guide to indicators and lane discipline (https://sawari.airacode.online/blog/indicators-and-lane-discipline.html) explains the mirror, signal, move routine.
+
+- **Do not stare.** Fixing your eyes on one hazard means you miss the next one.
+
+## Why should you assume other road users will make mistakes?
+
+Because some of them will, and if you have already planned for it, their mistake does not become your crash.
+
+This is not about blaming others. It is about reading what might happen and having an answer ready. Some patterns worth expecting on Indian roads:
+
+- An auto or bus will stop, or pull out, without signalling.
+
+- A two-wheeler will pass on your left as you turn left.
+
+- A vehicle will come the wrong way along the edge of a divided road to reach a nearby U-turn.
+
+- A pedestrian will cross between stationary cars in a jam.
+
+- Someone will jump an amber or red light at a junction.
+
+When you see a likely hazard, take your foot off the accelerator and rest it over the brake. This "covering the brake" cuts your reaction time without slowing you much. Our guide to sharing the road with autos, buses and two-wheelers (https://sawari.airacode.online/blog/sharing-the-road-autos-buses-two-wheelers.html) goes deeper into each type of road user.
+
+Make yourself predictable too: indicate early, change lanes gradually and avoid sudden braking unless you have to. The Driving Regulations also tell drivers not to brake suddenly without a compelling reason when someone is following.
+
+## How do you choose a safe speed for the conditions?
+
+The speed limit is the maximum, not the target; a safe speed is the one at which you can stop within the distance you can see to be clear.
+
+- **Busy streets and markets:** crawl. People and vehicles can appear from anywhere.
+
+- **Rain:** slow down well before the water. Wet roads lengthen stopping distances and water hides potholes. See our monsoon driving guide (https://sawari.airacode.online/blog/monsoon-driving-hyderabad.html).
+
+- **Night:** drive at a speed that lets you stop within the reach of your headlights, and watch for unlit vehicles and dark clothing.
+
+- **Speed breakers:** many are poorly marked, so slow down where they are likely, such as near schools, hospitals and junctions.
+
+Speed limits vary by road and are posted on signs; our guide to speed breakers and speed limits in Hyderabad (https://sawari.airacode.online/blog/speed-breakers-speed-limits-hyderabad.html) covers them.
+
+## How do you stay safe at junctions and when you are tired?
+
+Junctions are where paths cross, so slow down, cover the brake and check every direction even on a green light; and never drive when you are drowsy.
+
+### Junctions
+
+- Get into the right lane early, before the junction, not in it.
+
+- On a fresh green, look left and right before moving off. Red-light runners are most common in the first seconds after the change.
+
+- When turning left, check the mirror and the blind spot for two-wheelers squeezing through on your left.
+
+- At unsignalled junctions, edge forward slowly until you can see, and give way when in doubt.
+
+### Fatigue
+
+Tiredness slows reactions in much the same way as alcohol, and a few seconds of microsleep at highway speed is enough to cross into another lane. Warning signs include yawning, heavy eyelids, missing an exit and drifting in your lane.
+
+- Plan a break every two hours or so on long drives, and share the driving if you can.
+
+- Avoid driving in the hours when you would normally be asleep.
+
+- If you feel drowsy, stop somewhere safe and rest. Opening the window or turning up the music does not fix it.
+
+## Can you practise defensive habits in a simulator?
+
+You can practise the scanning, signalling and junction habits, though not the feel of real braking. Sawari is a free browser driving simulator on five real Hyderabad routes, with an automatic car and traffic that keeps left. It runs on a phone with an on-screen steering wheel, a tablet, a laptop or a PC.
+
+It checks keep-left, indicators, signals and speed breakers, and the debrief at the end lists every fault, including collisions. It has no mirrors and no weather, so it cannot train mirror checks or wet-road gaps. It is practice only. Try Cyber Towers to Jubilee Hills (https://sawari.airacode.online/play.html?route=hitec-city) in heavy traffic and see how many junctions you get through with a clean record.
+
+Never use a hand-held phone while driving. The Driving Regulations prohibit it, and it destroys every habit on this page.
+
+## Frequently asked questions
+
+**What is defensive driving?**
+Defensive driving means driving so that you can avoid a crash even when other road users make mistakes. In practice it is a set of habits: keeping space around your car, looking well ahead, expecting the unexpected and adjusting your speed to the conditions.
+
+**What is the three-second rule in driving?**
+Pick a fixed point such as a pole. When the vehicle ahead passes it, count three seconds; if you reach the point before you finish, you are too close. It is a rule of thumb, not a legal figure, and you should allow more in rain, at night or behind trucks and buses.
+
+**Is defensive driving possible in Indian traffic?**
+Yes, though it looks different from a textbook. Gaps get filled by two-wheelers, so the aim is not a perfect empty space but a buffer you keep rebuilding, plus a constant habit of scanning and covering the brake when something might move into your path.
+
+**Is there a law about following distance in India?**
+Yes. The Motor Vehicles (Driving) Regulations, 2017 require drivers to keep enough distance from the vehicle ahead to stop safely if it slows or stops suddenly, and to increase that distance in bad weather. The law does not set a number of seconds or metres.
+
+---
+
+# How to overtake safely in India: the rules and the technique
+
+URL: https://sawari.airacode.online/blog/how-to-overtake-safely-india.html
+Category: Road skills · Published 2026-11-23 · Updated 2026-11-23
+
+To overtake safely in India, pass on the right, only where you can see the road ahead is clear, never across a solid centre line, on a bend, at a junction or near a pedestrian crossing, and indicate before you pull out and before you move back left. If you have any doubt, do not overtake.
+
+Overtaking is one of the riskiest manoeuvres in driving, because for a few seconds you may be on the wrong side of the road. This guide sets out what the law says, based on the Motor Vehicles (Driving) Regulations, 2017, and then the technique, with notes for two-lane highways and trucks.
+
+## Which side should you overtake on in India?
+
+On the right. India drives on the left, so the normal rule is to overtake on the right of the vehicle you are passing.
+
+The Driving Regulations allow passing on the left only in a few situations:
+
+- on a road with two or more marked lanes in your direction, where you can pass safely within your lane;
+
+- when the driver ahead has signalled and is turning right or making a U-turn;
+
+- when passing a stationary vehicle, as long as it is safe.
+
+On multi-lane city roads such as those in Hyderabad, traffic often moves at different speeds in different lanes, and that is not the same as weaving left and right around one car to get ahead. Keep to your lane and change lanes only with a signal and a clear mirror. Our guide to indicators and lane discipline (https://sawari.airacode.online/blog/indicators-and-lane-discipline.html) covers lane changes.
+
+## When is overtaking illegal?
+
+Overtaking is not allowed whenever the road ahead is not clearly visible and free, and in a list of specific places set out in Regulation 14 of the Driving Regulations.
+
+| Do not overtake | Why |
+|---|---|
+| When the traffic situation ahead is not clear | You cannot judge whether you can complete the pass |
+| Where a sign prohibits overtaking | A mandatory sign; ignoring it is an offence |
+| Across a continuous single or double solid centre line | Solid lines mark places where crossing is unsafe |
+| On a bend or corner, or where an obstruction blocks your view | Oncoming traffic can appear with no warning |
+| At junctions, intersections and pedestrian crossings | Vehicles turn and people cross in your path |
+| Where the road narrows or the number of lanes reduces | There may not be room to move back in |
+| On a narrow culvert | No space to escape |
+| In a school, hospital or construction zone indicated by signs | Children, patients and workers on or near the road |
+| If it would get in the way of oncoming traffic | You must never force oncoming vehicles to brake or swerve |
+
+The regulations also say you must not exceed the speed limit while overtaking. You can find them on the Ministry of Road Transport and Highways legislation page (https://morth.gov.in/en/Motor-Vehicle-Legislation), listed as G.S.R. 634(E), 23 June 2017.
+
+### Solid and broken centre lines
+
+A broken centre line means you may cross it to overtake when it is safe. A continuous solid line, white or yellow, single or double, means you must not cross it to overtake. The regulations also tell drivers not to drive over a solid longitudinal line or a painted traffic island except to get round an obstruction.
+
+## How do you overtake safely, step by step?
+
+Use a clear, unhurried routine every time: decide, check, signal, pass briskly, and move back only when you have left a safe gap.
+
+- **Ask whether you need to.** If the vehicle ahead is only a little slower, or a turn-off is close, stay behind.
+
+- **Hang back.** Keep a good following gap. Sitting close behind a truck hides the road ahead and leaves you no room.
+
+- **Look ahead.** Move slightly right within your lane to see past the vehicle. Check for oncoming traffic, junctions, bends, crossings, signs and solid lines.
+
+- **Check mirrors and blind spot.** Make sure nobody is already overtaking you, and look for a two-wheeler on your right.
+
+- **Signal right.** Indicate in good time. On open roads outside built-up areas, the regulations say you may give a short horn note or a brief headlight flash to warn the driver ahead.
+
+- **Pass briskly.** Accelerate firmly but within the speed limit. Do not hang alongside the vehicle.
+
+- **Signal left and move back** once you can see the whole front of the vehicle you passed in your interior mirror. Do not cut in.
+
+- **Cancel the indicator** and settle back to your normal speed.
+
+If a vehicle appears ahead while you are passing and you are not sure you will make it, abort: ease off, signal left and drop back behind the vehicle you were passing.
+
+## How do you overtake trucks on a two-lane highway?
+
+With more space and more time than you think you need, because trucks are long, block your view and move around in the wind and on uneven roads.
+
+- **Drop well back first.** From further back you can see past the truck and you are visible in its mirrors.
+
+- **Do not trust a truck's right indicator as a signal to pass.** Drivers sometimes use it to mean "go ahead", but it may simply mean the truck is turning right. The Driving Regulations tell drivers not to use the right indicator to invite others to overtake, so treat a blinking right indicator as a turn.
+
+- **Allow for length.** A loaded truck, or two trucks close together, can take far longer to pass than a car.
+
+- **Watch for a second vehicle overtaking from the other direction** at the same moment. On busy state highways this is common.
+
+- **Be extra wary at dusk and at night**, when it is hard to judge the speed of oncoming headlights.
+
+Divided highways and expressways are much safer for overtaking, because there is no oncoming traffic in your carriageway. Even there, slow trucks usually keep left and you pass on the right. If you are planning a long trip, our guides to driving Hyderabad to Vijayawada (https://sawari.airacode.online/blog/hyderabad-to-vijayawada-drive.html) and the Outer Ring Road (https://sawari.airacode.online/blog/hyderabad-outer-ring-road-guide.html) cover the roads.
+
+## What should you do when someone is overtaking you?
+
+Keep left, hold your speed or ease off a little, and let them move back in front of you.
+
+The Driving Regulations say the driver of a vehicle being overtaken must not increase speed or prevent the overtaking vehicle from returning to the left side. In practice:
+
+- Stay towards the left of your lane.
+
+- Do not speed up or race the vehicle beside you, even if it irritates you.
+
+- If the overtaking driver has misjudged an oncoming vehicle, slow down to give them a gap to move into.
+
+- Do not start an overtake of your own while you are being overtaken.
+
+The same thinking applies in town when someone cuts in: drop back and rebuild your gap. Our guide to defensive driving in India (https://sawari.airacode.online/blog/defensive-driving-tips-india.html) covers that habit.
+
+## Does Sawari let you practise overtaking?
+
+Only in a limited way. Sawari is a free browser driving simulator on five real Hyderabad city routes, with an automatic car and traffic that keeps left. It runs on a phone with an on-screen steering wheel, a tablet, a laptop or a PC. The debrief lists faults such as a missing indicator, drifting right of the centre line, red lights and collisions, which helps with signalling and lane discipline when you pass slower traffic on city roads.
+
+It has no mirrors and no highway routes, so it cannot teach you to judge oncoming traffic on a two-lane road. It is practice only. Try Banjara Hills Road No. 1 (https://sawari.airacode.online/play.html?route=banjara-hills) with heavy traffic to practise changing lanes around buses and autos.
+
+## Frequently asked questions
+
+**Is overtaking from the left allowed in India?**
+Generally no; you should overtake on the right. The Motor Vehicles (Driving) Regulations, 2017 allow passing on the left only in limited cases, such as on a multi-lane road with marked lanes, when the vehicle ahead has signalled and is turning right or making a U-turn, or when passing a stationary vehicle safely.
+
+**Can you overtake across a solid white or yellow centre line?**
+No. The Driving Regulations prohibit overtaking by crossing a continuous single or double solid centre line. A broken line means you may cross it when it is safe and clear.
+
+**Where is overtaking not allowed?**
+Overtaking is prohibited where the road ahead is not clear, where signs prohibit it, across a solid centre line, on bends and corners or where your view is blocked, at junctions and pedestrian crossings, where the road narrows, on narrow culverts and in signed school, hospital or construction zones.
+
+**What should you do when someone is overtaking you?**
+Keep left, hold a steady speed or ease off slightly, and do not speed up or block the overtaking vehicle from moving back in. The Driving Regulations specifically say the driver being overtaken must not increase speed.
+
+---
+
+# What to do after a car accident in Hyderabad: a step-by-step guide
+
+URL: https://sawari.airacode.online/blog/what-to-do-after-car-accident-hyderabad.html
+Category: Road skills · Published 2026-11-23 · Updated 2026-11-23
+
+After a car accident in Hyderabad, first make the scene safe and switch on your hazard lights, then call 112 if anyone is hurt or the road is blocked. Help the injured without moving them unless they are in danger, report the accident to the police, take photos, swap details and tell your insurer as soon as you can.
+
+Accidents are frightening, and it is easy to forget what to do. This guide gives the steps in order, along with what the law says about helping victims, as of November 2026. It is general information, not legal advice; if your accident is serious, speak to the police and, if needed, a lawyer.
+
+## What should you do in the first few minutes?
+
+Stop, make yourself and the scene safe, and check whether anyone is hurt; everything else can wait.
+
+- **Stop the car.** Do not drive away from an accident you are involved in, even a minor one.
+
+- **Switch on the hazard lights** and, if you have one, place a warning triangle well behind the car.
+
+- **Switch off the engine** and apply the handbrake. If there is a smell of fuel, keep everyone away from the car and do not smoke.
+
+- **Get out on the safe side**, away from moving traffic, and stand behind a barrier or on the footpath. On a flyover or the Outer Ring Road, traffic is fast, so do not stand between vehicles.
+
+- **Check for injuries**, in your car first and then in the other vehicles. Look for pedestrians and two-wheeler riders who may have been thrown clear.
+
+- **Move the cars only if** nobody is hurt, the damage is minor and the cars are blocking traffic. Take photos first.
+
+Stay calm and polite. Arguments after an accident can escalate quickly, especially if a crowd gathers. If you feel unsafe, stay in your locked car and call 112.
+
+## Which emergency number should you call in Telangana?
+
+Call 112. It is Telangana's single emergency number for police, ambulance and fire, and it works from any phone.
+
+Telangana Police moved its emergency response to 112 under the national Emergency Response Support System, and launched an upgraded 112 platform at the Telangana Integrated Command and Control Centre in Hyderabad in August 2026, replacing the old practice of calling Dial 100 for the police. The 108 ambulance service continues to run in Telangana, so you can also call 108 for an ambulance.
+
+| Number | What it is for |
+|---|---|
+| 112 | All emergencies: police, ambulance and fire |
+| 108 | Emergency ambulance |
+
+When you call, give the exact location: the road name, the nearest landmark, flyover or metro station, and which direction you were travelling. Say how many people are hurt and whether anyone is trapped or unconscious.
+
+## How can you help the injured, and are you protected?
+
+Help as far as you safely can and get medical help fast; the law protects people who help accident victims in good faith.
+
+### Basic help
+
+- **Do not move an injured person** unless they are in immediate danger, such as from fire or traffic. Moving someone with a neck or back injury can make it worse.
+
+- **Talk to them** and keep them calm and warm.
+
+- **Press firmly on heavy bleeding** with a clean cloth.
+
+- **Do not give food or water** to a seriously injured person.
+
+- **Do not remove a rider's helmet** unless they cannot breathe.
+
+### Good Samaritan protection
+
+Section 134A, added to the Motor Vehicles Act in 2019, says a Good Samaritan, someone who helps in good faith and voluntarily, without expecting a reward, is not liable in any civil or criminal action for injury or death of the victim caused by their negligence in giving emergency help. The Ministry of Road Transport and Highways then notified rules for Good Samaritans on 29 September 2020 (G.S.R. 594(E) (https://morth.nic.in/sites/default/files/notifications_document/GSR%20594%28E%29%2029th%20September%202020%20Good%20Samaritan.pdf)). Under them:
+
+- no police officer or other person can force you to give your name, address or other personal details;
+
+- if you only informed the police or took the victim to hospital, you cannot be put through further requirements by the police or the hospital;
+
+- hospitals must display a charter of Good Samaritans' rights, and give you an acknowledgement if you ask for one;
+
+- being a witness is voluntary.
+
+The government's Rah-Veer scheme (https://morth.nic.in/sites/default/files/Scheme-Guidelines-on-RahVeer.pdf) also rewards a Good Samaritan who saves the life of a victim of a serious road accident with Rs 25,000. In addition, a central scheme, now called PM RAHAT, provides eligible accident victims with cashless treatment of up to Rs 1.5 lakh for seven days at designated hospitals; calling 112 can link the victim to one.
+
+These protections are for bystanders. If you are the driver involved, the law still requires you to stop, try to get medical help for anyone injured and report the accident.
+
+## When do you need to report the accident to the police?
+
+If anyone is injured or killed, the accident must be reported to the police; for damage only, a report is often still wise.
+
+Under Section 134 of the Motor Vehicles Act, a driver involved in an accident in which someone is injured, or third-party property is damaged, must take reasonable steps to get medical attention for the injured, give the police the information they ask for and report the accident at the nearest police station if no officer is present. Not doing so is an offence.
+
+In practice, police who attend will note the details, and in an injury case a First Information Report (FIR) is usually registered at the police station that covers the area. Ask for the FIR number or a copy, because your insurer and any compensation claim will need it. In Hyderabad, the city is policed by the Hyderabad, Cyberabad and Rachakonda commissionerates; the Hyderabad Traffic Police (https://www.htp.gov.in) site has contact details.
+
+For a small scrape with nobody hurt, the drivers often agree to settle it themselves. That is your choice, but it means you cannot easily claim on insurance later if the other driver changes their mind, so think before you skip the police.
+
+## What evidence should you collect?
+
+Photos, details and names, collected calmly at the scene, make everything that follows easier.
+
+- **Photos** of both cars from several angles, the damage up close, number plates, the road layout, signals, skid marks and any road signs, before the cars are moved if possible.
+
+- **The other driver's details:** name, phone number, vehicle number, and their insurer and policy number if they will share it.
+
+- **Witnesses:** names and phone numbers of anyone who saw it and is willing to help.
+
+- **Dashcam footage**, if you have a dashcam. Save the clip before it is recorded over.
+
+- **Notes:** the time, place and what happened, written down while you remember it.
+
+Do not admit fault or sign anything at the scene beyond what the police ask for. Stick to the facts.
+
+## How do you make an insurance claim?
+
+Tell your insurer as soon as you can, follow its process, and do not start repairs until it says so.
+
+- Call your insurer's claim helpline or use its app, and get a claim number.
+
+- Keep the documents it asks for ready. These usually include your policy, registration certificate, driving licence and, for injury or theft cases, the FIR.
+
+- Let the insurer's surveyor inspect the damage, usually at a network garage for cashless repair.
+
+- If another vehicle was involved and someone was injured, a third-party claim goes through the Motor Accidents Claims Tribunal, so inform your insurer straight away.
+
+Our guide to car insurance basics in India (https://sawari.airacode.online/blog/car-insurance-basics-india.html) explains third-party and comprehensive cover. Most accidents can be avoided with a bigger gap and earlier braking; see our defensive driving tips (https://sawari.airacode.online/blog/defensive-driving-tips-india.html).
+
+## Can a simulator help you avoid accidents?
+
+It can help you build the habits that prevent many of them. Sawari is a free browser driving simulator on five real Hyderabad routes, and its debrief lists every fault, including collisions, red lights, missed indicators and speed breakers taken too fast. It runs on a phone with an on-screen steering wheel, a tablet, a laptop or a PC. It does not simulate crashes or what to do after them, and it is practice only. Try Tank Bund Road (https://sawari.airacode.online/play.html?route=tank-bund) at night with traffic on.
+
+## Frequently asked questions
+
+**What number do I call after an accident in Hyderabad?**
+Call 112, Telangana's single emergency number, which connects to police, ambulance and fire services. The 108 ambulance service also continues to operate in Telangana. Both are free to call from any phone.
+
+**Will I get into trouble for helping an accident victim?**
+No. Section 134A of the Motor Vehicles Act protects Good Samaritans who help in good faith from civil and criminal liability, and the 2020 Good Samaritan rules say you cannot be forced to give your name or address and need not stay at the hospital if you only brought the victim in.
+
+**Do I need to file an FIR for a minor car accident?**
+If anyone is injured or killed, the accident must be reported to the police. For minor damage only, many people settle between themselves, but your insurer may ask for a police report before it pays a claim, so check your policy before deciding.
+
+**How soon should I inform my insurance company after an accident?**
+As soon as you reasonably can, ideally the same day. Policies set their own notice periods and documents, so read yours, and do not get the car repaired before the insurer has had a chance to inspect it unless it tells you to go ahead.
 
 ---
 
@@ -3110,6 +4016,137 @@ SRDP is the Strategic Road Development Plan, a programme to build flyovers, unde
 
 ---
 
+# Hyderabad e-challan guide: how to check, pay and dispute a traffic challan
+
+URL: https://sawari.airacode.online/blog/hyderabad-e-challan-guide.html
+Category: Hyderabad roads · Published 2026-11-23 · Updated 2026-11-23
+
+An e-challan is a traffic fine issued electronically against a vehicle's registration number, usually from a camera photo, and in Hyderabad you check, pay or dispute it on the official Telangana Police e-challan site, echallan.tspolice.gov.in. Search by your vehicle number, check the photo, and either pay online or raise a grievance if it is wrong.
+
+This guide covers how challans are raised in Hyderabad, Cyberabad and the other Telangana police areas, how to look them up, how to pay, what happens if you ignore them and how to dispute a wrong one, as of November 2026. We have left out fine amounts on purpose: they are set by law and change, and the e-challan site shows the exact amount for each challan.
+
+## What is an e-challan?
+
+An e-challan is an electronic notice of a traffic offence, linked to the vehicle's registration number and sent to the registered owner. It replaces the old paper challan written at the roadside, although officers can still issue challans on the spot.
+
+Each challan records the date, time and place, the offence, the amount and, for camera challans, a photo of the vehicle. Hyderabad Traffic Police, Cyberabad, Rachakonda (Malkajgiri) and the other commissionerates in Telangana all feed into the same integrated e-challan system, so one search shows challans from across the state.
+
+### Key facts
+
+- **Official site:** echallan.tspolice.gov.in (https://echallan.tspolice.gov.in), the Telangana Police integrated e-challan system.
+
+- **Who it is issued to:** the registered owner of the vehicle, whoever was driving.
+
+- **How to search:** vehicle number, driving licence number, challan number or mobile number.
+
+- **How to pay:** UPI, debit card, credit card or net banking on the official site.
+
+- **Disputes:** a grievance option on the same site, with reasons such as "Not my vehicle", "Wrong challan" and "Double challan".
+
+- **Official SMS:** the site says genuine e-challan messages come only from a sender header starting "ECHALN".
+
+## How do cameras and police issue e-challans?
+
+Most challans in Hyderabad now come from cameras, not from an officer stopping you. There are three main sources.
+
+- **Junction and roadside cameras.** Cameras at signals and along main roads capture offences such as jumping a red light, crossing the stop line, riding without a helmet and driving on the wrong side.
+
+- **Officers with handheld cameras.** Traffic police photograph offences such as wrong parking, a rider without a helmet, triple riding or a phone in hand, and the photo becomes a challan.
+
+- **Spot challans.** At checkpoints an officer issues a challan with a handheld device, and you can pay there or later. The official site notes a small user charge on spot challans.
+
+Because the challan follows the number plate, a dirty, bent or non-standard plate can lead to wrong readings, and a car sold without transferring the RC can keep collecting challans in the old owner's name. Our guide to TG number plates (https://sawari.airacode.online/blog/telangana-tg-number-plates-explained.html) explains the plate format, and our Hyderabad traffic rules guide (https://sawari.airacode.online/blog/hyderabad-traffic-rules-guide.html) covers the offences cameras catch most often.
+
+## How do you check an e-challan by vehicle number?
+
+Go to the official e-challan site, enter your vehicle number and the captcha, and it lists every pending challan against that vehicle. Step by step:
+
+- Open echallan.tspolice.gov.in (https://echallan.tspolice.gov.in) in your browser. Type the address yourself rather than tapping a link in a message.
+
+- Choose the vehicle number search and enter the registration number in full, for example TG 09 followed by the series and number. Both older TS and newer TG plates are searched by their own number.
+
+- Enter the captcha and submit.
+
+- Read each challan: date, time, place, offence and amount. Open the photo and check that the vehicle and number plate really are yours.
+
+The same site lets you search by licence number, challan number or mobile number, look up payment receipts and check the penalty points on a driving licence. The national Parivahan e-challan site (https://echallan.parivahan.gov.in) also shows challans for many states.
+
+Check your vehicle every month or two, and always before you sell it or buy a used one. A challan you never knew about is much easier to deal with early.
+
+## How do you pay an e-challan, and what if you do not?
+
+Pay on the official e-challan site by UPI, debit card, credit card or net banking. Select the challans you want to clear, pay, and note the transaction reference number shown at the end. You can download a receipt later from the payment receipt search.
+
+- **If money is debited but the challan still shows as pending,** the site advises waiting 24 hours. If it is still not updated, contact the helpdesk for your commissionerate with the reference number. The site says failed payments are generally refunded within seven working days.
+
+- **Use only official channels.** Telangana Police warn about fake e-challan websites and apps that copy the real one. Never pay through a link that arrives by SMS, WhatsApp or email.
+
+- **Helplines.** As of November 2026 the official site lists helpdesk numbers for each commissionerate, including Hyderabad on 040-27852721 and 040-27852772.
+
+A message saying "your challan is pending, pay now or face court action" with a link is a common scam. Check the challan yourself on the official site before paying anything.
+
+### What happens if you do not pay?
+
+Unpaid challans do not go away, and recent national rules make ignoring them more costly. In January 2026 the Ministry of Road Transport and Highways amended the Central Motor Vehicles Rules on challans and licences. As widely reported, the changes include:
+
+- **A window to act.** A set period, reported as 45 days from issue, to either pay the challan or contest it online with evidence. A challan you neither pay nor contest is treated as accepted.
+
+- **Blocked services.** A vehicle with unpaid challans can be flagged on the national portal, which stops services such as transfer of ownership, change of address and other RTA applications, apart from paying road tax.
+
+- **Licence disqualification.** The Central Motor Vehicles (Third Amendment) Rules, 2026 (G.S.R. 48(E), 21 January 2026) let the licensing authority disqualify a driver for five or more offences within one year, counted from 1 January 2026.
+
+Police can also stop vehicles with many pending challans during special drives. If you are unsure which rules apply to your challan, the official site and the Ministry of Road Transport and Highways (https://morth.gov.in) publish the current position.
+
+## How do you dispute a wrong e-challan?
+
+Raise a grievance on the official e-challan site with evidence, as soon as you notice the mistake. Wrong challans usually come from a misread or fake number plate, a vehicle you have already sold, a duplicate of an earlier challan, or a photo that does not show the offence.
+
+- **Find and open the challan** on the official site and look carefully at the photo.
+
+- **Select the grievance option** and choose the reason that fits: not my vehicle, wrong challan or double challan.
+
+- **Add clear remarks**, for example "The photo shows a white hatchback; my vehicle is a grey sedan" or "Vehicle sold on this date; RC transferred".
+
+- **Keep your evidence ready:** RC, a photo of your own number plate, the sale and transfer papers, or proof of where the vehicle was at that time.
+
+- **Note the reference** and watch for the SMS update on the outcome.
+
+If someone is using your number on another vehicle, the site has a separate **fake number plate** complaint, and a **sold out vehicle** option for vehicles you no longer own. Do not simply pay a challan you believe is wrong; once paid, it is treated as settled.
+
+## Have there been challan discount schemes?
+
+Yes, but only as one-off schemes, and none was running as of November 2026. Treat this as history, not a promise of another:
+
+| When | What happened |
+|---|---|
+| March to April 2022 | A one-time discount on pending challans, started on 1 March 2022 and extended into mid-April 2022. |
+| 26 December 2023 to 15 February 2024 | A government order gave discounts on pending challans, with different rates by vehicle type. It was extended twice and ended on 15 February 2024. |
+| December 2024 | A viral message claimed a new discount; Hyderabad Traffic Police said it was fake. |
+
+Fake discount messages appear regularly, and they are often a lure to a payment link. A genuine scheme is announced by Telangana Police and the state government and shows on the official site itself.
+
+## Can you practise the habits that avoid challans?
+
+The best way to deal with challans is not to collect them. Most camera challans come from a few habits: stopping behind the stop line, not jumping an amber light, keeping to your lane and parking only where it is allowed. Our Hyderabad parking guide (https://sawari.airacode.online/blog/hyderabad-parking-guide.html) covers the last one.
+
+Sawari, a free browser driving simulator on five real Hyderabad routes, scores those same habits. It runs on a phone, tablet, laptop or PC, and the debrief at the end lists every red light, missed indicator and lane fault. It is practice only and cannot tell you about real challans, but a calm run through the signals on the HITEC City route (https://sawari.airacode.online/play.html?route=hitec-city) is a good rehearsal for the cameras.
+
+## Frequently asked questions
+
+**How do I check my e-challan in Hyderabad?**
+Open the official Telangana Police e-challan site at echallan.tspolice.gov.in, enter your vehicle registration number and the captcha, and it lists every pending challan with the date, place, offence and photo. You can also search by licence, challan or mobile number.
+
+**How do I pay a Telangana e-challan online?**
+Select the challans on the official e-challan site and pay by UPI, debit card, credit card or net banking, then note the transaction reference number. If money is debited but the challan still shows as pending, the site advises waiting 24 hours before raising it with the helpdesk.
+
+**What if I get a wrong e-challan?**
+Use the grievance option on the official e-challan site, select the challan, choose a reason such as not my vehicle or wrong challan, and add remarks. Keep evidence such as your RC, photos of your own number plate and proof of where the vehicle was, and note the reference you are given.
+
+**Is there a discount on pending challans in Telangana now?**
+As of November 2026 we found no current discount scheme. Telangana ran one-off discounts in 2022 and from December 2023 to February 2024, and police have repeatedly called later discount messages fake, so trust only official police announcements.
+
+---
+
 # Hyderabad parking guide: malls, the Old City, HITEC City, metro stations and street parking
 
 URL: https://sawari.airacode.online/blog/hyderabad-parking-guide.html
@@ -3237,6 +4274,268 @@ Some stations have parking, mostly at or near the ends of the lines such as Miya
 
 **What happens if my car is towed in Hyderabad?**
 Traffic police tow vehicles parked in no-parking zones or where they block traffic, and you will normally pay a towing charge and a fine to get it back. Contact the local traffic police station or the Hyderabad Traffic Police helpline to find where it was taken.
+
+---
+
+# Hyderabad to Bengaluru by road: the NH 44 drive via Kurnool and Anantapur
+
+URL: https://sawari.airacode.online/blog/hyderabad-to-bengaluru-drive.html
+Category: Hyderabad roads · Published 2026-11-23 · Updated 2026-11-23
+
+Hyderabad to Bengaluru by road is roughly 560 to 610 km on National Highway 44, and the drive usually takes nine to eleven hours with short stops. The route runs south past Jadcherla to Kurnool, through Gooty and Anantapur in Andhra Pradesh, and into Karnataka past Bagepalli, Chikkaballapur and Devanahalli.
+
+It is one of the longest drives people regularly make from Hyderabad, and most of it is a four-lane divided highway. This guide covers the route, tolls, stops, the cautions that matter most on a trip this long, and the alternatives, as of November 2026. We have left out toll rates, which NHAI revises, and give distances and times as ranges because they depend on where you start and finish.
+
+## How far is it and how long does it take?
+
+Expect about 560 to 610 km and nine to eleven hours door to door, including short breaks. Starting near Shamshabad and ending in north Bengaluru is at the short end; starting in west Hyderabad and ending in south Bengaluru adds an hour or more of city driving.
+
+| Key fact | Detail |
+|---|---|
+| Highway | NH 44, mostly four lanes with a central median |
+| Distance | About 560 to 610 km, city to city |
+| Typical time | About 9 to 11 hours with short stops |
+| States | Telangana, Andhra Pradesh, Karnataka |
+| Halfway area | Roughly between Kurnool and Anantapur |
+| Tolls | Several plazas, all on FASTag |
+
+## What is the route via Kurnool and Anantapur?
+
+Stay on NH 44 the whole way. The main places, in order:
+
+- **Shamshabad**, past the airport. If you live near the ORR, join NH 44 at the Shamshabad interchange to avoid the city; see our Outer Ring Road guide (https://sawari.airacode.online/blog/hyderabad-outer-ring-road-guide.html).
+
+- **Shadnagar and Jadcherla**, the first stretch through Telangana.
+
+- **The Krishna river crossing** and the approach to the state border.
+
+- **Kurnool**, across the Tungabhadra in Andhra Pradesh, a little over a third of the way and the first big city.
+
+- **Dhone and Gooty**, through dry, open country.
+
+- **Anantapur**, the other large city on the route.
+
+- **Penukonda**, then the Karnataka border near Kodikonda.
+
+- **Bagepalli and Chikkaballapur**, where the road climbs gently towards the Bengaluru plateau.
+
+- **Devanahalli**, past Kempegowda International Airport, then into the city via Hebbal.
+
+The last stretch from the airport into Bengaluru is often slow, especially on weekday evenings. Our comparison of Hyderabad and Bengaluru traffic (https://sawari.airacode.online/blog/hyderabad-vs-bengaluru-traffic.html) explains why.
+
+## What should you know about tolls and FASTag?
+
+There are several toll plazas between the two cities, all on FASTag, so check your balance before you leave.
+
+- **Without FASTag you pay more.** Since 15 November 2025, a vehicle without a valid FASTag pays 1.25 times the toll by UPI and twice the toll in cash on national highways.
+
+- **Annual pass.** The NHAI FASTag annual pass for private cars covers one year or 200 toll crossings on national highways, whichever comes first. On a route with this many plazas, a return trip uses a lot of crossings, so check whether it suits you on NHAI (https://nhai.gov.in)'s channels.
+
+- **Toll queues** are longest around long weekends and festivals, and at the plazas nearest each city.
+
+## Where should you stop?
+
+Plan two or three real breaks, not just fuel stops, because ten hours at the wheel is tiring. In general terms:
+
+- **Around Jadcherla** for an early breakfast or tea if you leave before dawn.
+
+- **Kurnool** for a proper meal and a rest, since it is a large city with plenty of choice just off the highway.
+
+- **Anantapur** for a second meal or a long break.
+
+- **Fuel stations** along the whole route, many with toilets and food courts. Fill up before the long, emptier stretches between towns.
+
+Carry water, especially in summer, when the Rayalaseema stretch around Kurnool and Anantapur gets very hot. Check tyre pressures, coolant and the spare before you set off.
+
+## Is it safe to drive NH 44, especially at night?
+
+You can drive it at night, but daytime is safer and less tiring. NH 44 carries heavy lorry and sleeper-bus traffic after dark, and night adds hazards you do not see by day:
+
+- **Unlit vehicles.** Tractors, carts and some two-wheelers run without proper lights, and broken-down lorries are often parked on the carriageway with little warning.
+
+- **People and animals.** Villagers cross at junctions and cattle wander onto the road, especially near towns.
+
+- **Glare.** Oncoming high beams across the median dazzle you; look towards the left edge of your lane, not at the lights.
+
+- **Tiredness.** The straight stretches through Rayalaseema invite microsleep, most of all between about 2 and 5 am.
+
+Night crashes here can be severe. In October 2025 a Hyderabad to Bengaluru sleeper bus caught fire after hitting a motorcycle on NH 44 near Kurnool, and around 20 people died. It is a reminder to keep a long gap, slow down for anything unclear in your headlights and never drive while drowsy.
+
+If you must drive at night, share the driving, stop every two hours, keep to the posted speed limits and use dipped headlights when other vehicles approach. Everyone, front and back, should wear a seat belt.
+
+Our night driving tips (https://sawari.airacode.online/blog/night-driving-hyderabad-tips.html) cover headlights, glare and tiredness in more detail.
+
+### Habits for the whole drive
+
+By day or night, drive it as a fast divided highway that still has local traffic:
+
+- **Keep left and overtake on the right,** with your indicator on, and move back left once you are well past.
+
+- **Expect wrong-side traffic** near median openings and villages, mainly two-wheelers and tractors.
+
+- **Slow down through towns and junctions,** and well before toll plazas.
+
+- **Follow the posted speed limits,** which change between states and stretches.
+
+- **Watch for works.** NHAI has plans to upgrade parts of NH 44 between the two cities, including bypasses and underpasses around Kurnool, and wider sections near Bengaluru. As of November 2026 several were at the planning or tender stage, so expect diversions in the coming years.
+
+Leaving Hyderabad early, around dawn, usually gets you through Kurnool by mid-morning and into Bengaluru before the evening rush.
+
+## What are the alternatives to driving?
+
+If you do not need a car at the other end, other options are often less tiring:
+
+- **Flights** are the quickest, with many daily flights between the two airports.
+
+- **Train.** The Kacheguda to Yesvantpur Vande Bharat Express, running since September 2023 via Mahbubnagar, Kurnool City and Anantapur, takes a little over eight hours. Many overnight trains also run.
+
+- **Bus.** Government and private sleeper buses run overnight.
+
+- **Split the drive.** An overnight stop in Kurnool or Anantapur turns one long day into two easy ones.
+
+For shorter trips, see our Hyderabad to Vijayawada guide (https://sawari.airacode.online/blog/hyderabad-to-vijayawada-drive.html) and our list of weekend road trips from Hyderabad (https://sawari.airacode.online/blog/weekend-road-trips-from-hyderabad.html).
+
+## Can you practise for the drive?
+
+Only the city part. Sawari, a free browser driving simulator, has five real Hyderabad city routes and no highways, so it cannot show you NH 44. It does train the habits that matter at both ends of the trip: lane discipline, indicating, judging gaps and driving in heavy mixed traffic, including at night. It runs on a phone, tablet, laptop or PC and is practice only. Try the HITEC City to Jubilee Hills route (https://sawari.airacode.online/play.html?route=hitec-city) at night to rehearse busy junctions under street lights.
+
+## Frequently asked questions
+
+**How long does it take to drive from Hyderabad to Bengaluru?**
+Usually about nine to eleven hours for roughly 560 to 610 km, including short stops. The open highway is quick; most of the variation comes from leaving Hyderabad, entering Bengaluru and how long you stop.
+
+**Which highway goes from Hyderabad to Bengaluru?**
+National Highway 44, the north-south highway, runs from Hyderabad past Shamshabad and Jadcherla, through Kurnool, Gooty and Anantapur in Andhra Pradesh, and on through Bagepalli, Chikkaballapur and Devanahalli into Bengaluru.
+
+**Is it safe to drive from Hyderabad to Bengaluru at night?**
+It is possible, but daytime is safer. At night the highway carries many lorries and sleeper buses, and you meet unlit vehicles, pedestrians and animals, while tiredness builds on the long straight stretches. If you must drive at night, share the driving and stop every two hours.
+
+**What are the alternatives to driving from Hyderabad to Bengaluru?**
+Flights are the fastest. By rail, the Kacheguda to Yesvantpur Vande Bharat Express via Kurnool and Anantapur takes a little over eight hours, and many overnight trains and buses also run between the two cities.
+
+---
+
+# Hyderabad to Vijayawada by road: the NH 65 drive, tolls, stops and safety
+
+URL: https://sawari.airacode.online/blog/hyderabad-to-vijayawada-drive.html
+Category: Hyderabad roads · Published 2026-11-23 · Updated 2026-11-23
+
+Hyderabad to Vijayawada by road is roughly 270 to 280 km on National Highway 65, and the drive usually takes four and a half to six hours. It is a four-lane divided highway through Choutuppal, Suryapet, Kodad, Jaggayyapeta and Nandigama, with three FASTag toll plazas on the way.
+
+This guide covers the route, the towns, tolls, stops, the safety points that matter on this highway and when to go, as of November 2026. We have left out toll rates, because NHAI revises them; the FASTag app and the toll plaza boards show the current amount. Distances and times are ranges, because they depend on where in each city you start and finish.
+
+## How far is it and how long does the drive take?
+
+Expect about 270 to 280 km and four and a half to six hours of driving, plus your stops. The biggest variable is getting out of Hyderabad: from the western suburbs you cross most of the city, while from LB Nagar or the ORR you are almost on the highway already.
+
+| Key fact | Detail |
+|---|---|
+| Highway | NH 65, four lanes with a central median |
+| Distance | About 270 to 280 km, city to city |
+| Typical driving time | About 4.5 to 6 hours, more at festival times |
+| Main toll plazas | Pantangi, Korlapahad, Chillakallu |
+| Payment | FASTag; without one you pay more |
+| State border | Telangana to Andhra Pradesh, after Kodad |
+
+## What is the route from Hyderabad to Vijayawada?
+
+Leave Hyderabad on the Vijayawada highway through LB Nagar and Hayathnagar, cross the Outer Ring Road near Pedda Amberpet, and stay on NH 65 all the way. In order, the main places are:
+
+- **LB Nagar and Hayathnagar**, the slow, busy eastern edge of the city.
+
+- **Pedda Amberpet**, where the highway meets the ORR. Joining from the ORR here avoids the city if you live near another ORR exit; see our Outer Ring Road guide (https://sawari.airacode.online/blog/hyderabad-outer-ring-road-guide.html).
+
+- **Choutuppal**, with the Pantangi toll plaza, the first major toll.
+
+- **Narketpally**, where roads branch off towards Nalgonda, followed by the Korlapahad toll plaza.
+
+- **Suryapet**, roughly the halfway point.
+
+- **Kodad**, the last large town in Telangana.
+
+- **Jaggayyapeta** in Andhra Pradesh, with the Chillakallu toll plaza.
+
+- **Nandigama and Kanchikacherla**, then **Ibrahimpatnam** and into Vijayawada across the approach to the city.
+
+Navigation apps sometimes suggest a detour through Bhongir or Khammam when NH 65 is jammed. These are slower two-lane roads in places, so use them only if the main highway is badly blocked.
+
+## What should you know about tolls and FASTag?
+
+All three main toll plazas take FASTag, and you should not travel without a working one. GMR built the four-lane highway and collected tolls from 2012 until mid-2024, when NHAI took over toll collection.
+
+- **Without FASTag you pay more.** Since 15 November 2025, under the National Highways Fee rules, a vehicle without a valid FASTag pays 1.25 times the toll if it pays by UPI and twice the toll in cash.
+
+- **Annual pass.** NHAI sells a FASTag annual pass for private cars, valid for one year or 200 toll crossings on national highways, whichever comes first. If you drive this highway often, compare it with paying per trip on the NHAI (https://nhai.gov.in) or Rajmargyatra channels.
+
+- **Before you leave,** check your FASTag balance and that the tag is active and linked to the right vehicle.
+
+## Where can you stop for food and fuel?
+
+There are plenty of stops, and you rarely go long without a fuel station. In general terms:
+
+- **Dhabas and highway restaurants** line the stretch around Choutuppal, Narketpally and Suryapet, with Telangana and Andhra meals, tiffin in the morning and tea at all hours.
+
+- **Fuel stations** are frequent, and many have clean toilets and space to park. Larger ones near the towns are usually better lit at night.
+
+- **Towns** such as Suryapet and Kodad have more choice if you want to leave the highway, but turning across the median into a town adds time.
+
+- **A good rhythm** is a short break every two hours. Suryapet, near the halfway mark, is a natural place for a longer stop.
+
+Park well clear of the carriageway when you stop, and do not pull up on the shoulder for tea at a roadside stall. Lorries and buses use the shoulder too.
+
+## How do you drive NH 65 safely?
+
+Treat it as a fast highway with village traffic mixed in. The road is divided, but it passes many villages and junctions where people cross, and accidents on this highway are a frequent concern.
+
+- **Keep left and overtake on the right.** Slow lorries often sit in the right lane; do not undertake them on the left at speed.
+
+- **Watch for wrong-side traffic.** Two-wheelers, tractors and even cars sometimes come the wrong way on your side to reach a median opening.
+
+- **Slow down at junctions and villages.** Pedestrians, cattle and two-wheelers cross at median openings, especially near towns.
+
+- **Follow the posted speed limits,** which change along the route, and slow down well before toll plazas, where queues build fast.
+
+- **Keep a long gap** behind lorries and buses so you can see past them and stop in time.
+
+- **Take breaks and do not drive tired.** Microsleep on a straight, familiar highway is a real risk, especially after lunch and late at night.
+
+- **Expect works zones.** NHAI plans to widen most of NH 65 between the two cities to six lanes with service roads. As of November 2026 bids had been invited and work was expected to start in early 2027, so diversions are likely for some years.
+
+Wear seat belts in every seat, front and back. If you break down, get everyone out on the side away from traffic and behind the barrier if there is one, and put the hazard lights and warning triangle on.
+
+Our posts on night driving (https://sawari.airacode.online/blog/night-driving-hyderabad-tips.html) and monsoon driving (https://sawari.airacode.online/blog/monsoon-driving-hyderabad.html) cover the conditions that make this highway harder.
+
+## When is the best time to drive?
+
+Early morning on a weekday is usually best: leave Hyderabad around dawn, clear the eastern suburbs before the morning rush and reach Vijayawada by late morning.
+
+- **Avoid Sankranti weekends if you can.** In January, huge numbers of people drive home to Andhra Pradesh. In January 2026 the Pantangi toll plaza handled over one lakh vehicles in a day, with delays of two to three hours reported at the toll booths, and the return journey a few days later was just as slow.
+
+- **Long weekends and festivals** such as Dasara bring similar, smaller peaks. Leaving a day early or very early in the morning helps.
+
+- **Avoid late-night driving** if you can. Lorries dominate the highway at night, and tiredness catches up with you.
+
+- **Monsoon** brings heavy rain and poor visibility; slow down and increase your gap.
+
+For other trips out of the city, see our list of weekend road trips from Hyderabad (https://sawari.airacode.online/blog/weekend-road-trips-from-hyderabad.html).
+
+## Can you practise for the drive?
+
+Partly. Sawari, a free browser driving simulator, has five real Hyderabad city routes, not highways, so it will not show you NH 65. What it does help with is the city part of the trip and the habits that carry over: lane discipline, indicating before every lane change, judging gaps and keeping calm around buses and two-wheelers. It runs on a phone, tablet, laptop or PC, and it is practice only. A run on Tank Bund Road (https://sawari.airacode.online/play.html?route=tank-bund) in heavy traffic is a fair warm-up for leaving the city.
+
+## Frequently asked questions
+
+**How long does it take to drive from Hyderabad to Vijayawada?**
+Usually about four and a half to six hours for roughly 270 to 280 km, depending on where you start in Hyderabad, traffic leaving the city and how long you stop. At festival times such as Sankranti it can take much longer.
+
+**Which highway connects Hyderabad and Vijayawada?**
+National Highway 65, a four-lane divided highway that runs from Hyderabad through Choutuppal, Suryapet and Kodad in Telangana and Jaggayyapeta and Nandigama in Andhra Pradesh to Vijayawada.
+
+**How many toll plazas are there between Hyderabad and Vijayawada?**
+There are three main toll plazas on NH 65: Pantangi near Choutuppal, Korlapahad between Narketpally and Suryapet and Chillakallu near Jaggayyapeta. NHAI took over toll collection in 2024, and payment is by FASTag.
+
+**Is the Hyderabad to Vijayawada highway being widened?**
+Yes. NHAI plans to widen most of NH 65 between the two cities to six lanes with service roads. As of November 2026 bids had been invited and work was expected to start in early 2027, so expect works zones over the next few years.
 
 ---
 
@@ -5019,6 +6318,30 @@ Version 1.10.0 is about answers. Eleven new guides cover the questions people as
 - Hyderabad and Bengaluru traffic compared (https://sawari.airacode.online/blog/hyderabad-vs-bengaluru-traffic.html)
 
 - What is Sawari? The key facts (https://sawari.airacode.online/blog/what-is-sawari.html)
+
+## Ten more guides
+
+Added in 1.10.1:
+
+- Hyderabad e-challans: how to check, pay or dispute one (https://sawari.airacode.online/blog/hyderabad-e-challan-guide.html)
+
+- Renewing a driving licence in Telangana (https://sawari.airacode.online/blog/driving-licence-renewal-telangana.html)
+
+- Car insurance basics for new drivers (https://sawari.airacode.online/blog/car-insurance-basics-india.html)
+
+- What to do after a car accident in Hyderabad (https://sawari.airacode.online/blog/what-to-do-after-car-accident-hyderabad.html)
+
+- Hyderabad to Vijayawada by road (https://sawari.airacode.online/blog/hyderabad-to-vijayawada-drive.html)
+
+- Hyderabad to Bengaluru by road (https://sawari.airacode.online/blog/hyderabad-to-bengaluru-drive.html)
+
+- Defensive driving in Indian traffic (https://sawari.airacode.online/blog/defensive-driving-tips-india.html)
+
+- How to overtake safely (https://sawari.airacode.online/blog/how-to-overtake-safely-india.html)
+
+- How to park a car: reverse, parallel and on a slope (https://sawari.airacode.online/blog/how-to-park-a-car.html)
+
+- A car maintenance checklist and the PUC certificate (https://sawari.airacode.online/blog/car-maintenance-checklist-puc.html)
 
 ## Made by AiraCode Technologies
 
