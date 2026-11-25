@@ -49,7 +49,8 @@ export function buildTransit(world, group, quality, T, index) {
           if (s2 < 6 || s2 > len - 6 || s2 - lastS < MIN_GAP) continue;
           const q = sampleAlong(pts, s2);
           const g = T.at(q.x, q.y);
-          if (q.h - g > 4 && !onRoad(q.x, q.y, g)) { spot = { ...q, g, s: s2 }; break; }
+          // clear of every road on the ground and of any flyover deck the pier would pass through
+          if (q.h - g > 4 && !onRoad(q.x, q.y, g) && !index.blocksRoad(q.x, q.y, 1.5, g - 2, q.h - 1.5)) { spot = { ...q, g, s: s2 }; break; }
         }
         if (!spot) continue;
         lastS = spot.s;
@@ -98,7 +99,7 @@ export function buildTransit(world, group, quality, T, index) {
       at(0, off + out * 0.4, s.h + 3.7, new THREE.BoxGeometry(4.6, 0.25, Math.min(36, L - 4)), '#7b8a93'); // shelter roof
       for (let along = -16; along <= 16; along += 8) {
         at(along, off + out * 1.6, s.h + 2.3, new THREE.BoxGeometry(0.22, 2.8, 0.22), '#55606a');
-        index.ring(s.x + fx * along + rx * (off + out * 1.6), s.y + fy * along + ry * (off + out * 1.6), 0.3, s.h + 3.7, 'post');
+        index.ring(s.x + fx * along + rx * (off + out * 1.6), s.y + fy * along + ry * (off + out * 1.6), 0.3, s.h + 3.7, 'post', 6, s.h - 0.5); // on the platform: not in the road below
       }
       for (const along of [-L / 3, L / 3]) for (const w of [-0.9, 0.9]) at(along + w, off, s.h + 1.9, new THREE.BoxGeometry(0.12, 2, 0.12), '#3a3f44'); // name board legs
     });

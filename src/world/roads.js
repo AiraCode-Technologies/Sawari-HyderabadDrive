@@ -3,9 +3,11 @@ import { Geo, UP, c3, P, sampleAlong, polyLen } from './geo.js';
 import { KERB, ROAD_TOP, rankOf, footpathWidth } from './roadIndex.js';
 import { asphaltTexture, paverTexture, TEX_GAIN } from './textures.js';
 import { hash01, mulberry, addTiled } from '../util.js';
+import { footpathRoads, placeZebras } from './footpaths.js';
 
-// Left edge normals of a polyline ribbon with mitred joins.
-function offsets(pts) {
+// Left edge normals of a polyline ribbon with mitred joins (pedestrians.js walks the
+// footpaths along the same edges).
+export function offsets(pts) {
   const n = pts.length;
   const out = [];
   for (let i = 0; i < n; i++) {
@@ -88,6 +90,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
     return t > 0.02 && t < 0.98 && Math.abs((x - a.x) * dy - (y - a.y) * dx) / Math.sqrt(l2) < 25;
   };
   roadLayers(world.roads);
+  for (const r of world.roads) delete r.fpk; // recorded afresh below (a second drive rebuilds the world)
   world.roads.forEach((r, ri) => {
     const pts = r.p;
     if (pts.length < 2) return;
@@ -212,12 +215,16 @@ export function buildRoads(world, group, quality, T, index, junctions) {
                 for (const l of [hw + 0.05, hw + sw * 0.25, hw + sw * 0.5, hw + sw * 0.75, hw + sw]) {
                   const q = at(t, l);
                   if (index.onOtherCarriageway(q[0], q[1], q[2], ri, 0.5)) ok = false;
+                  // nor over a road running below (a raised road beside a lower one)
+                  else if (l > hw + 0.1 && index.carriagewayAt(q[0], q[1], q[2], 0.3, -8, -1.5, ri)) ok = false;
                 }
               keep.push(ok);
             }
             for (let k = 1; k <= n; k++) {
               if (!keep[k]) continue;
               const t0 = (k - 1) / n, t1 = k / n;
+              // the pieces drawn, for the pedestrians (footpaths.js): metres along the road
+              ((r.fpk ||= { 1: [], [-1]: [] })[s]).push([cum[i - 1] + segLen * t0, cum[i - 1] + segLen * t1]);
               const v0 = (cum[i - 1] + segLen * t0) / 2, v1 = (cum[i - 1] + segLen * t1) / 2;
               const i0 = at(t0, hw), i1 = at(t1, hw), s0 = at(t0, hw + 0.2), s1 = at(t1, hw + 0.2), o0 = at(t0, hw + sw), o1 = at(t1, hw + sw);
               const lo = top - 0.02, hi = top + KERB;
@@ -248,6 +255,9 @@ export function buildRoads(world, group, quality, T, index, junctions) {
           const ax = a[0] + oa.nx * hw * s, ay = a[1] + oa.ny * hw * s, bx = c[0] + oc.nx * hw * s, by = c[1] + oc.ny * hw * s;
           // where another carriageway runs on (a ramp splitting off or joining), no parapet
           if (index.onOtherCarriageway((ax + bx) / 2, (ay + by) / 2, (a[2] + c[2]) / 2, ri, -0.3)) continue;
+          // nor where the edge stands over a road running beside or beneath the ramp: no
+          // embankment wall across that road's lanes
+          if (index.blocksRoad((ax + bx) / 2, (ay + by) / 2, 0.3, Math.min(a[2], c[2]) - 9, Math.min(a[2], c[2]) - 0.25, ri)) continue;
           const out = [oa.nx * s, 0, -oa.ny * s];
           const base0 = r.b ? a[2] - 1.1 : gAt(ax, ay) - 0.5, base1 = r.b ? c[2] - 1.1 : gAt(bx, by) - 0.5;
           concrete.quad(P(ax, ay, base0), P(bx, by, base1), P(bx, by, c[2] + 0.95), P(ax, ay, a[2] + 0.95), cConcDark, null, out);
@@ -302,7 +312,8 @@ export function buildRoads(world, group, quality, T, index, junctions) {
         const q = sampleAlong(pts, s);
         const gh = gAt(q.x, q.y);
         if (inMainSpan(q.x, q.y)) continue;
-        if (q.h - gh > 2.5) {
+        // never standing in a road beneath (a pillar there is left out; the span is longer)
+        if (q.h - gh > 2.5 && !index.blocksRoad(q.x, q.y, 1.3, gh - 2.5, q.h - 2, ri)) {
           pillars.push({ ...q, gh });
           index.ring(q.x, q.y, 1.0, q.h - 1.2, 'post');
         }
@@ -352,7 +363,7 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       for (let s = 0; s < len - 4; s += 4) {
         if (mAt(s) <= 0 || mAt(s + 4) <= 0) continue;
         const q0 = sampleAlong(pts, s), q1 = sampleAlong(pts, s + 4);
-        index.addWall(q0.x + Math.cos(q0.dir) * hw, q0.y - Math.sin(q0.dir) * hw, q1.x + Math.cos(q1.dir) * hw, q1.y - Math.sin(q1.dir) * hw, q0.h + 0.35, 'median');
+        index.addWall(q0.x + Math.cos(q0.dir) * hw, q0.y - Math.sin(q0.dir) * hw, q1.x + Math.cos(q1.dir) * hw, q1.y - Math.sin(q1.dir) * hw, q0.h + 0.35, 'median', Math.min(q0.h, q1.h) - 0.6); // a kerb, not a wall to the road below a deck
       }
     }
 
@@ -394,24 +405,28 @@ export function buildRoads(world, group, quality, T, index, junctions) {
     }
     return seen.size;
   };
-  // zebra crossings and stop lines before signals
+  // footpaths as drawn above, and where the zebra crossings go (footpaths.js)
+  world.footpaths = footpathRoads(world, { at: gAt });
+  placeZebras(world, index, world.footpaths);
+  // zebra crossings and stop lines before signals (placed by footpaths.js: 4 to 7 m back
+  // from the signal, or further back where a side road's mouth takes the footpath away)
   for (const s of world.signals) {
-    for (const dir of uniqueDirs(s.dirs)) {
-      const fx = Math.sin(dir), fy = Math.cos(dir), rx = Math.cos(dir), ry = -Math.sin(dir);
-      const h = s.h + ROAD_TOP + 0.05;
-      const i = s.ws ? s.dirs.indexOf(dir) : -1;
-      const w = i >= 0 ? s.ws[i] : s.w;
+    for (const z of (s.zebras || []).concat(s.paintOnly || [])) {
+      const dir = z.dir, fx = Math.sin(dir), fy = Math.cos(dir), rx = Math.cos(dir), ry = -Math.sin(dir);
+      const h = z.h + ROAD_TOP + 0.05;
+      const w = z.w;
       for (let k = -w / 2 + 0.5; k < w / 2 - 0.4; k += 1.1) {
-        const x0 = s.x - fx * 7 + rx * k, y0 = s.y - fy * 7 + ry * k;
-        if (roadsAt(x0 + fx * 1.5 + rx * 0.27, y0 + fy * 1.5 + ry * 0.27, s.h) >= 2) continue; // inside the junction box
+        const x0 = z.x - fx * 1.5 + rx * k, y0 = z.y - fy * 1.5 + ry * k;
+        if (roadsAt(x0 + fx * 1.5 + rx * 0.27, y0 + fy * 1.5 + ry * 0.27, z.h) >= 2) continue; // inside the junction box
         marks.quad(
           P(x0, y0, h), P(x0 + rx * 0.55, y0 + ry * 0.55, h),
           P(x0 + rx * 0.55 + fx * 3, y0 + ry * 0.55 + fy * 3, h), P(x0 + fx * 3, y0 + fy * 3, h), cWhite, null, UP);
       }
-      // stop line across the approaching (left-hand) lanes
-      const sx = s.x - fx * 8.6, sy = s.y - fy * 8.6;
+      // stop line across the approaching (left-hand) lanes, 1.6 m before the stripes
+      if (!s.zebras.includes(z)) continue; // the far half of a divided road: traffic leaves the junction there
+      const sx = z.x - fx * 3.1, sy = z.y - fy * 3.1;
       const l0 = -w / 2 + 0.3, l1 = -0.15;
-      if (roadsAt(sx + rx * (l0 + l1) / 2, sy + ry * (l0 + l1) / 2, s.h) < 2)
+      if (roadsAt(sx + rx * (l0 + l1) / 2, sy + ry * (l0 + l1) / 2, z.h) < 2)
       marks.quad(
         P(sx + rx * l0, sy + ry * l0, h), P(sx + rx * l1, sy + ry * l1, h),
         P(sx + rx * l1 - fx * 0.4, sy + ry * l1 - fy * 0.4, h), P(sx + rx * l0 - fx * 0.4, sy + ry * l0 - fy * 0.4, h), cWhite, null, UP);
@@ -481,14 +496,23 @@ export function buildRoads(world, group, quality, T, index, junctions) {
       // a road running through the middle at the same level: not an island at all
       const through = index.carriagewayAt(cx, cy, h, 0.5, -1.5, 1.5);
       if (through && !world.roads[through.ri].rb) continue;
+      // nor may it reach onto an approach road that cuts in close to the centre
+      let rIsl = ri;
+      for (const sg of index.grid.query(cx, cy, ri + 1)) {
+        if (world.roads[sg.ri].rb || Math.abs((sg.ah + sg.bh) / 2 - h) > 1.5) continue;
+        const ex = sg.bx - sg.ax, ey = sg.by - sg.ay, l2 = ex * ex + ey * ey || 1e-9;
+        const t = Math.max(0, Math.min(1, ((cx - sg.ax) * ex + (cy - sg.ay) * ey) / l2));
+        rIsl = Math.min(rIsl, Math.hypot(cx - sg.ax - ex * t, cy - sg.ay - ey * t) - sg.w / 2 - 0.6);
+      }
+      if (rIsl < 1.5) continue;
       const seg = 24;
       for (let k = 0; k < seg; k++) {
         const a0 = (k / seg) * Math.PI * 2, a1 = ((k + 1) / seg) * Math.PI * 2;
-        const x0 = cx + Math.cos(a0) * ri, y0 = cy + Math.sin(a0) * ri, x1 = cx + Math.cos(a1) * ri, y1 = cy + Math.sin(a1) * ri;
+        const x0 = cx + Math.cos(a0) * rIsl, y0 = cy + Math.sin(a0) * rIsl, x1 = cx + Math.cos(a1) * rIsl, y1 = cy + Math.sin(a1) * rIsl;
         median.quad(P(cx, cy, h + KERB + 0.05), P(cx, cy, h + KERB + 0.05), P(x1, y1, h + KERB), P(x0, y0, h + KERB), cGrass, null, UP);
         kerb.quad(P(x0, y0, h - 0.02), P(x1, y1, h - 0.02), P(x1, y1, h + KERB), P(x0, y0, h + KERB), cIslandKerb, null, [Math.cos((a0 + a1) / 2), 0, -Math.sin((a0 + a1) / 2)]);
       }
-      index.ring(cx, cy, ri, h + KERB, 'post', 16);
+      index.ring(cx, cy, rIsl, h + KERB, 'post', 16);
     }
   }
 

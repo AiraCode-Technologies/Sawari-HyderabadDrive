@@ -940,6 +940,51 @@ function buildRoute(def) {
     console.log(`   slopes smoothed: worst change of grade between 4 m steps ${(worstBefore * 100).toFixed(1)}% -> ${(worstAfter * 100).toFixed(1)}%`);
   }
 
+  // ---- one height at every shared point ----
+  // Roads that meet share a point, and must share its height to the centimetre or the car
+  // feels a step there. Decks span straight between their ends while ramps and ground roads
+  // follow the land, so where a deck meets a ramp (Khairatabad flyover) the two could sit
+  // 30 cm apart. Every shared point takes one height (a deck's own, if a deck runs through
+  // it, as decks are rigid; else the average), and each other road eases into it with a
+  // smooth S-curve over up to 40 m, stopping short of its next shared point.
+  {
+    let worst = 0, fixedPts = 0;
+    for (const [k, inc] of nodeRoads) {
+      if (inc.length < 2) continue;
+      const hs = inc.map(([ri, i]) => roads[ri].h[i]);
+      const spread = Math.max(...hs) - Math.min(...hs);
+      if (spread < 0.005) continue;
+      worst = Math.max(worst, spread);
+      fixedPts++;
+      const rigid = inc.filter(([ri]) => roads[ri].bridge);
+      const use = rigid.length ? rigid : inc;
+      const target = use.reduce((a, [ri, i]) => a + roads[ri].h[i], 0) / use.length;
+      for (const [ri, i] of inc) {
+        const r = roads[ri], d0 = target - r.h[i];
+        if (Math.abs(d0) < 1e-4) continue;
+        r.h[i] += d0;
+        r.lh[i] += d0;
+        for (const dir of [1, -1]) {
+          // how far this road runs before its next shared point (that one must not move)
+          let L = Math.max(12, Math.min(40, Math.abs(d0) / 0.01)), s = 0;
+          for (let j = i + dir; j >= 0 && j < r.pts.length; j += dir) {
+            s += dist(r.pts[j - dir], r.pts[j]);
+            if ((nodeRoads.get(r.keys[j])?.length || 0) > 1) { L = Math.min(L, s); break; }
+          }
+          s = 0;
+          for (let j = i + dir; j >= 0 && j < r.pts.length; j += dir) {
+            s += dist(r.pts[j - dir], r.pts[j]);
+            if (s >= L) break;
+            const w = 0.5 * (1 + Math.cos((Math.PI * s) / L));
+            r.h[j] += d0 * w;
+            r.lh[j] += d0 * w;
+          }
+        }
+      }
+    }
+    if (fixedPts) console.log(`   ${fixedPts} shared points given one height (worst step was ${(worst * 100).toFixed(0)} cm)`);
+  }
+
   // road heights may also have changed since routing (long decks raised clear of the ground)
   edges.forEach((e, k) => { routeH[k + 1] = roads[e.ri].h[e.ib]; routeL[k + 1] = roads[e.ri].lh[e.ib]; });
   routeH[0] = roads[edges[0].ri].h[edges[0].ia];

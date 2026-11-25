@@ -6,7 +6,15 @@
     <atom:link href="https://sawari.airacode.online/blog/feed.xml" rel="self" type="application/rss+xml" />
     <description>Route guides, licence help and road skills for driving in Hyderabad.</description>
     <language>en-in</language>
-    <lastBuildDate>Mon, 23 Nov 2026 03:30:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 24 Nov 2026 03:30:00 +0000</lastBuildDate>
+    <item>
+      <title>Sawari 1.13.0: busier roads, zebra crossings and cleaner junctions</title>
+      <link>https://sawari.airacode.online/blog/sawari-1-13-0-release-notes.html</link>
+      <guid isPermaLink="true">https://sawari.airacode.online/blog/sawari-1-13-0-release-notes.html</guid>
+      <pubDate>Tue, 24 Nov 2026 03:30:00 +0000</pubDate>
+      <category>Release notes</category>
+      <description>Sawari 1.13.0 adds 50% more traffic at every level, people who cross only on zebra crossings at a red, and junctions with no poles or parked cars in the way.</description>
+    </item>
     <item>
       <title>Car insurance basics in India: third-party, own damage, add-ons, no claim bonus and claims</title>
       <link>https://sawari.airacode.online/blog/car-insurance-basics-india.html</link>

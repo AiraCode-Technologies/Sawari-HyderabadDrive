@@ -11,7 +11,7 @@ Key facts:
 - Car: automatic gearbox with ABS; chase view or driver's seat; morning, midday, evening and night
 - Rules checked: speeding, keeping left, wrong way on one-way roads, leaving the road, red lights, collisions, speed breakers taken too fast, turns without an indicator
 - Sharing: a score card picture after each drive and a "challenge a friend" link with the score to beat
-- Languages: website in English, Hindi, Urdu and Telugu; blog (65 articles) in English
+- Languages: website in English, Hindi, Urdu and Telugu; blog (66 articles) in English
 - Data: map data © OpenStreetMap contributors (ODbL); terrain from open terrain tiles
 - Not affiliated with the Telangana Transport Department (RTA) or the traffic police
 
@@ -3621,7 +3621,7 @@ Respect no-horn zones, which are signed near hospitals and some schools. And tre
 
 ## Practising mixed traffic in Sawari
 
-In Sawari (https://sawari.airacode.online/play.html) you can set the traffic from None to Dense. At Dense there are about 80 vehicles around you, and the mix is drawn from what you see on Hyderabad roads: hatchbacks, sedans, SUVs, autos, mini trucks, buses and a large share of scooters and motorbikes. The features page (https://sawari.airacode.online/features.html) lists the details.
+In Sawari (https://sawari.airacode.online/play.html) you can set the traffic from None to Dense. At Dense there are about 120 vehicles around you, and the mix is drawn from what you see on Hyderabad roads: hatchbacks, sedans, SUVs, autos, mini trucks, buses and a large share of scooters and motorbikes. The features page (https://sawari.airacode.online/features.html) lists the details.
 
 The two-wheelers filter past slower vehicles on their right, so you will have bikes coming up beside you in queues. The AI drivers keep a following gap, stop at red lights, give way where their paths cross, slow for speed breakers and stop for people stepping across side-road mouths. Now and then one of them has a moment of inattention and there is a real collision ahead, which is a fair test of whether you left enough room. Larger vehicles like buses and lorries keep to the bigger roads.
 
@@ -6283,6 +6283,61 @@ Yes. OpenStreetMap data is available under the Open Database Licence, which lets
 
 **Why does the map have gaps in some areas?**
 OpenStreetMap is mapped by volunteers, and coverage varies from street to street. Where buildings or other details are missing, Sawari fills in plausible ones, and the about page lists what is estimated.
+
+---
+
+# Sawari 1.13.0: busier roads, zebra crossings and cleaner junctions
+
+URL: https://sawari.airacode.online/blog/sawari-1-13-0-release-notes.html
+Category: Release notes · Published 2026-11-24 · Updated 2026-11-24
+
+Version 1.13.0 makes the roads busier and the streets tidier. There is more traffic at every level, people use the zebra crossings, and every junction on every route has been checked so nothing stands where you turn.
+
+## More traffic
+
+Every traffic level now has half as many vehicles again:
+
+- Light: 21 vehicles around you (was 14).
+
+- Normal: 42 (was 28).
+
+- Busy: 72 (was 48).
+
+- Dense: about 120 (was 80).
+
+Phones still start on Normal. Dense now runs about as smoothly as the old Dense did.
+
+## People on the footpaths and zebra crossings
+
+People now walk only on the raised footpaths, exactly where they are drawn. They no longer walk across the mouth of a side road, through a junction or on the grass beside a lane without a footpath.
+
+They cross the road only on the zebra crossings at signals. They wait at the kerb until the traffic there has a red long enough to get across, and step out only when no car is coming at them. Vehicles wait for anyone still on the crossing. If you run the red, you may meet someone halfway across.
+
+Where a side road's mouth took the footpath away, the crossing and its stop line now sit a few metres further back, where both footpaths run. That is how real crossings are placed, so people step from kerb to kerb.
+
+## Junctions checked one by one
+
+We drove the car through every place two roads meet on all five routes, both ways, about 5,000 junctions and 15,000 test drives. Then we fixed what got in the way:
+
+- No street lights, hoardings, stalls, bus shelters, boulders or parked vehicles stand on any road, including roads under a flyover or beside a ramp, where the old check could miss them.
+
+- The corners of junction mouths are kept clear of lamp posts, stalls and parked cars, so you can turn without clipping one.
+
+- Flyover pillars and metro piers never stand in a road below.
+
+- Lamps on bridge parapets, medians and metro platforms no longer act as invisible posts for cars on the road underneath.
+
+- Ramp embankments no longer reach into the road beside them, and roundabout islands no longer overlap an approach road.
+
+- The 28 cm step where the Khairatabad flyover ramp meets the deck is gone. Every point where two roads meet now has one height.
+
+## Pulling away with the wheel turned
+
+If you stopped at a junction with the wheel already turned, gentle throttle (a gamepad trigger, for example) could leave the car stuck in place. It now rolls away round the turn as a real car does.
+
+## Try it
+
+Drive HITEC City in dense traffic (https://sawari.airacode.online/play.html?route=hitec-city&traffic=dense) and watch the crossings at the signals, or choose any route (https://sawari.airacode.online/play.html).
 
 ---
 

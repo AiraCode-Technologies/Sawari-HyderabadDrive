@@ -1,7 +1,15 @@
 import * as THREE from 'three';
 import { mulberry } from './util.js';
+import { footpathRoads, walkable, edge } from './world/footpaths.js';
+import { redLeft } from './signals.js';
+import { roadTop } from './world/roads.js';
+import { KERB } from './world/roadIndex.js';
 
-// People walking along the footpaths. Each body part is one InstancedMesh, so a
+// People walking along the footpaths, and across the road only on the zebra crossings at
+// signals, while the traffic there has a red. They walk exactly on the paving the road
+// builder draws (roads.js): the same edges, and only the pieces of footpath it keeps, so
+// nobody walks across a side road's mouth, a junction or the grass beside a lane with no
+// footpath. Each body part is one InstancedMesh, so a
 // whole crowd costs a handful of draw calls. Outfits follow what is common on
 // Hyderabad streets; the mix shifts with the area (more burqas, kurtas and lungis
 // in the Old City, more office wear in HITEC City).
@@ -37,17 +45,20 @@ export class Pedestrians {
     this.mix = MIX[world.style] || MIX.central;
     this.people = [];
     this.nextId = 1;
-    // footpath-bearing roads at ground level
-    this.paths = world.roads
-      .filter((r) => (RANK[r.k] || 0) >= 2 && (world.sf ? !(r.u && r.u.some((v) => v)) : r.p.every((q) => q[2] - terrain.at(q[0], q[1]) < 0.8)))
-      .map((r) => {
-        const cum = [0];
-        for (let i = 1; i < r.p.length; i++) cum.push(cum[i - 1] + Math.hypot(r.p[i][0] - r.p[i - 1][0], r.p[i][1] - r.p[i - 1][1]));
-        const xs = r.p.map((q) => q[0]), ys = r.p.map((q) => q[1]);
-        const sw = (RANK[r.k] || 2) >= 3 ? 2.4 : 1.4;
-        return { r, cum, len: cum[cum.length - 1], off: r.w / 2 + sw * 0.55, sw, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys), busy: (RANK[r.k] || 2) >= 3 ? 2 : 1 };
-      })
-      .filter((p) => p.len > 15);
+    // roads with a raised footpath (tertiary and up), at ground level: footpaths.js, which the
+    // world builder has already run (it places the zebra crossings from them)
+    this.paths = world.footpaths || footpathRoads(world, terrain);
+    for (const p of this.paths) p.cross = [];
+    // the zebra crossings people can use: footpath at both ends (a and b, see footpaths.js),
+    // over one carriageway or, on a divided road, over both with the median between
+    this.crossings = [];
+    for (const sig of world.signals || []) for (const z of sig.zebras || []) {
+      if (!z.a || !this.paths.includes(z.a.p) || !this.paths.includes(z.b.p)) continue;
+      const c = { sig, dir: z.dir, a: z.a, b: z.b, median: !!z.median, x: z.x, y: z.y };
+      this.crossings.push(c);
+      z.a.p.cross.push(c);
+      if (z.b.p !== z.a.p) z.b.p.cross.push(c);
+    }
     this.near = [];
     this.nearAt = -1e9;
     // temples, mosques and churches draw people who linger outside
@@ -115,39 +126,44 @@ export class Pedestrians {
     this.near = this.paths.filter((p) => p.maxX > px - R && p.minX < px + R && p.maxY > py - R && p.minY < py + R);
   }
 
-  // Stretches of a footpath nobody walks: where it runs over another road's carriageway
-  // (parallel roads, slip roads) for 12 m or more, or under a deck too low to walk under.
-  // Short crossings of side-road mouths stay walkable. Worked out once per footpath side.
-  noWalk(p, side) {
-    p.no ||= {};
-    if (p.no[side]) return p.no[side];
-    const out = [];
-    const idx = this.index;
-    if (idx) {
-      const ri = this.world.roads.indexOf(p.r);
-      let runStart = null, overhead = false;
-      const close = (end) => {
-        if (runStart !== null && (end - runStart >= 12 || overhead)) out.push([runStart - 1.5, end + 1.5]);
-        runStart = null;
-        overhead = false;
-      };
-      for (let s = 0; s <= p.len; s += 2) {
-        const q = this.at(p, s, side);
-        const on = idx.carriagewayAt(q.x, q.y, q.h, 0.2, -1.2, 1.2, ri);
-        const low = idx.carriagewayAt(q.x, q.y, q.h, 0.6, 1.2, 4.5, -1);
-        if (on || low) {
-          if (runStart === null) runStart = s;
-          if (low) overhead = true;
-        } else close(s);
-      }
-      close(p.len);
-    }
-    return (p.no[side] = out);
+  edge(p, i, t, l, side) {
+    return edge(p, i, t, l, side);
   }
 
-  blocked(p, side, s) {
-    for (const [a, b] of this.noWalk(p, side)) if (s >= a && s <= b) return true;
-    return false;
+  walkable(p, side) {
+    return walkable(this.index, p, side);
+  }
+
+  // true when s (give or take `margin`) is not on a stretch of footpath that exists
+  blocked(p, side, s, margin = 0) {
+    for (const [a, b] of this.walkable(p, side)) if (s >= a + margin && s <= b - margin) return false;
+    return true;
+  }
+
+  // The walk across: from the footpath to the kerb, over the stripes, up onto the other side.
+  // Over a divided road: to the median's kerb, across the median, over the other carriageway.
+  crossPath(c, from, to) {
+    const kerb = (e, side = e.side) => this.at(e.p, e.s, side, -(e.p.mid - e.p.hw) + 0.15); // on the kerbstone
+    const pts = [this.at(from.p, from.s, from.side), kerb(from)];
+    if (c.median) pts.push(kerb(from, -1), kerb(to, -1)); // the median edges of the two carriageways
+    pts.push(kerb(to), this.at(to.p, to.s, to.side));
+    return pts;
+  }
+
+  // safe to step out: the approach has a red long enough to get across (and has been red a
+  // moment, so the traffic has stopped), and nothing is moving towards the stripes close by
+  safeToCross(c, t, cars, walkTime) {
+    const left = redLeft(c.sig, c.dir, t);
+    if (left < walkTime + 2 || left > 18) return false;
+    for (const v of cars) {
+      const dx = c.x - v.x, dy = c.y - v.y;
+      if (Math.abs(dx) > 30 || Math.abs(dy) > 30 || Math.abs(v.v) < 0.8) continue;
+      const d = Math.hypot(dx, dy);
+      const hd = (v.visHeading ?? v.heading ?? 0) + (v.v < 0 ? Math.PI : 0);
+      const toward = dx * Math.sin(hd) + dy * Math.cos(hd);
+      if (d < 9 || (toward > 0 && d / Math.abs(v.v) < 4)) return false;
+    }
+    return true;
   }
 
   // a footpath spot right outside a place of worship near the player
@@ -178,10 +194,10 @@ export class Pedestrians {
       if (g) {
         const outfit = this.pickOutfit();
         const s0 = g.s + (this.rand() - 0.5) * 14;
-        if (this.blocked(g.p, g.side, s0)) return;
+        if (this.blocked(g.p, g.side, s0, 0.8)) return;
         const pos = this.at(g.p, s0, g.side);
         if (Math.hypot(pos.x - px, pos.y - py) > (initial ? 10 : 50) && !this.people.some((m) => Math.abs(m.x - pos.x) < 0.9 && Math.abs(m.y - pos.y) < 0.9)) {
-          this.people.push({ id: this.nextId++, dodge: 0, p: g.p, s: s0, side: g.side, dir: this.rand() < 0.5 ? 1 : -1, speed: 0.45 + this.rand() * 0.3, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, wait: this.rand() * 4, lateral: (this.rand() - 0.5) * 1.2, anchor: g.s });
+          this.people.push({ id: this.nextId++, dodge: 0, p: g.p, s: s0, side: g.side, dir: this.rand() < 0.5 ? 1 : -1, speed: 0.45 + this.rand() * 0.3, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, wait: this.rand() * 4, lateral: (this.rand() - 0.5) * g.p.half * 1.6, anchor: g.s });
           return;
         }
       }
@@ -192,18 +208,19 @@ export class Pedestrians {
       if (p.busy < 2 && this.rand() < 0.5) continue; // busier footpaths on main roads
       const s = this.rand() * p.len;
       const side = this.rand() < 0.5 ? -1 : 1;
-      if (this.blocked(p, side, s)) continue;
+      if (this.blocked(p, side, s, 0.8)) continue;
       const pos = this.at(p, s, side);
       if (this.people.some((m) => Math.abs(m.x - pos.x) < 0.9 && Math.abs(m.y - pos.y) < 0.9)) continue;
       const d = Math.hypot(pos.x - px, pos.y - py);
       if (d < (initial ? 12 : 70) || d > 160) continue;
       const outfit = this.pickOutfit();
-      this.people.push({ id: this.nextId++, dodge: 0, p, s, side, dir: this.rand() < 0.5 ? 1 : -1, speed: (outfit === 'school' ? 1.25 : 1.05) + this.rand() * 0.4, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, heading: 0, wait: 0, lateral: (this.rand() - 0.5) * 0.6 });
+      this.people.push({ id: this.nextId++, dodge: 0, p, s, side, dir: this.rand() < 0.5 ? 1 : -1, speed: (outfit === 'school' ? 1.25 : 1.05) + this.rand() * 0.4, phase: this.rand() * 6.28, look: this.look(outfit), x: pos.x, y: pos.y, h: pos.h, heading: 0, wait: 0, lateral: (this.rand() - 0.5) * Math.min(0.6, p.half) });
       return;
     }
   }
 
-  // position on a footpath: s metres along the road, on one side
+  // position on a footpath: s metres along the road, on one side, `lateral` metres from the
+  // middle of the paving (+ towards the buildings)
   at(p, s, side, lateral = 0) {
     const r = p.r, cum = p.cum;
     s = Math.max(0, Math.min(p.len, s));
@@ -212,9 +229,12 @@ export class Pedestrians {
     const a = r.p[i - 1], b = r.p[i];
     const t = (s - cum[i - 1]) / ((cum[i] - cum[i - 1]) || 1);
     const dir = Math.atan2(b[0] - a[0], b[1] - a[1]);
-    const off = (p.off + lateral) * side;
-    const x = a[0] + (b[0] - a[0]) * t + Math.cos(dir) * off, y = a[1] + (b[1] - a[1]) * t - Math.sin(dir) * off;
-    return { x, y, h: a[2] + (b[2] - a[2]) * t + 0.04, dir, nx: Math.cos(dir) * side, ny: -Math.sin(dir) * side };
+    const q = this.edge(p, i, t, p.mid + lateral, side);
+    // the top of the paving, exactly as roads.js lays it
+    p.top ??= roadTop(p.r, p.ri) + KERB;
+    const oa = p.off[i - 1], oc = p.off[i];
+    const nx = (oa.nx + (oc.nx - oa.nx) * t) * side, ny = (oa.ny + (oc.ny - oa.ny) * t) * side, nl = Math.hypot(nx, ny) || 1;
+    return { x: q.x, y: q.y, h: q.h + p.top, road: q.h, dir, nx: nx / nl, ny: ny / nl };
   }
 
   update(dt, player, t, vehicles = []) {
@@ -231,6 +251,7 @@ export class Pedestrians {
     const cars = vehicles.concat(me);
     const P = this.people;
     for (const m of P) {
+      if (m.cross) { this.crossing(m, dt, t, cars); this.hitByPlayer(m, player, pf, t, events); continue; }
       m.hold = Math.max(0, (m.hold || 0) - dt);
       m.knocked = Math.max(0, (m.knocked || 0) - dt);
       const avoid = m.wait > 0 ? { speedF: 0 } : this.avoid(m, P, cars, dt);
@@ -250,6 +271,18 @@ export class Pedestrians {
         }
       } else if (m.hold <= 0) {
         const step = m.dir * m.speed * avoid.speedF * dt;
+        // a zebra crossing here: some people cross (and wait for the red), the rest walk on
+        const here = (e) => e.p === m.p && e.side === m.side && Math.abs(e.s - m.s) < 0.35;
+        const zc = m.anchor === undefined && !(m.crossCool > t) && m.p.cross.find((c) => here(c.a) || here(c.b));
+        if (zc) {
+          m.crossCool = t + 12;
+          if (this.rand() < 0.55) {
+            const from = here(zc.a) ? zc.a : zc.b, to = from === zc.a ? zc.b : zc.a;
+            m.cross = { c: zc, to, pts: this.crossPath(zc, from, to), k: 1, u: 0, go: false, waitT: 0 };
+            m.s = from.s;
+            continue;
+          }
+        }
         if (this.blocked(m.p, m.side, m.s + step + m.dir * 0.6)) m.dir = -m.dir; // the footpath ends here
         else m.s += step;
         if (m.anchor !== undefined) {
@@ -265,9 +298,9 @@ export class Pedestrians {
       }
       // knocked by a vehicle: stumble back towards the buildings
       if (m.shove) { m.dodge += m.shove; m.shove = 0; }
-      // stay on the footpath, however much they step aside
-      const sw = m.p.sw || 1.4;
-      const lat = Math.max(-0.55 * sw + 0.25, Math.min(0.45 * sw - 0.18, m.lateral + m.dodge));
+      // stay on the paving, however much they step aside
+      const half = m.p.half;
+      const lat = Math.max(-half, Math.min(half, m.lateral + m.dodge));
       m.dodge = lat - m.lateral;
       const pos = this.at(m.p, m.s, m.side, lat);
       m.nx = pos.nx;
@@ -279,23 +312,82 @@ export class Pedestrians {
       const k = Math.min(1, dt * 8);
       m.x = m.x === undefined ? pos.x : m.x + (pos.x - m.x) * k;
       m.y = m.y === undefined ? pos.y : m.y + (pos.y - m.y) * k;
-      // stand on the raised footpath, stepping down where it stops at side roads
-      const hh = this.index ? this.index.standAt(m.x, m.y) : pos.h;
-      m.h = m.hs === undefined ? hh : m.h + (hh - m.h) * Math.min(1, dt * 10);
+      // on the paving of their own footpath
+      m.h = m.hs === undefined ? pos.h : m.h + (pos.h - m.h) * Math.min(1, dt * 10);
       m.hs = true;
-      // the player's car reaching a pedestrian (on a footpath or a crossing)
-      for (const o of [1.3, 0, -1.3]) {
-        const cx = player.x + pf.x * o, cy = player.y + pf.y * o;
-        if (Math.hypot(m.x - cx, m.y - cy) < 1.15 && Math.abs(m.h - player.h) < 1.5 && Math.abs(player.v) > 0.8) {
-          if (!(m.hitT > t)) events.push({ type: 'collision', what: 'pedestrian', speed: Math.abs(player.v) * 3 });
-          m.hitT = t + 1;
+      this.hitByPlayer(m, player, pf, t, events);
+    }
+    this.draw();
+    return events;
+  }
+
+  // the player's car reaching a pedestrian (on a footpath or a crossing)
+  hitByPlayer(m, player, pf, t, events) {
+    for (const o of [1.3, 0, -1.3]) {
+      const cx = player.x + pf.x * o, cy = player.y + pf.y * o;
+      if (Math.hypot(m.x - cx, m.y - cy) < 1.15 && Math.abs(m.h - player.h) < 1.5 && Math.abs(player.v) > 0.8) {
+        if (!(m.hitT > t)) events.push({ type: 'collision', what: 'pedestrian', speed: Math.abs(player.v) * 3 });
+        m.hitT = t + 1;
+        if (!m.cross) {
           m.wait = 4;
           m.dodge += 0.08; // step away towards the buildings
         }
       }
     }
-    this.draw();
-    return events;
+  }
+
+  // Someone at a zebra crossing: waits at the kerb for the red, then walks across on the
+  // stripes without stopping (traffic yields to them, see traffic.js) and carries on along
+  // the footpath on the far side.
+  crossing(m, dt, t, cars) {
+    const X = m.cross, pts = X.pts;
+    if (!X.go) {
+      X.waitT += dt;
+      let len = 0;
+      for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+      if (this.safeToCross(X.c, t, cars, len / m.speed)) X.go = true;
+      else if (X.waitT > 50) { m.cross = null; return; } // given up waiting: walk on
+      m.still = true;
+      const want = Math.atan2(pts[2].x - pts[1].x, pts[2].y - pts[1].y); // facing across
+      m.heading = m.heading === undefined ? want : m.heading + Math.atan2(Math.sin(want - m.heading), Math.cos(want - m.heading)) * Math.min(1, dt * 4);
+    } else {
+      m.still = false;
+      let d = m.speed * 1.1 * dt; // a brisk step across the road
+      while (d > 0 && X.k < pts.length) {
+        const a = pts[X.k - 1], b = pts[X.k], L = Math.hypot(b.x - a.x, b.y - a.y) || 1e-6;
+        const left = (1 - X.u) * L;
+        if (d < left) { X.u += d / L; d = 0; } else { d -= left; X.k++; X.u = 0; }
+      }
+      if (X.k >= pts.length) {
+        // on the far footpath: carry on along it
+        m.p = X.to.p;
+        m.side = X.to.side;
+        m.s = X.to.s;
+        m.dir = this.rand() < 0.5 ? 1 : -1;
+        m.lateral = 0;
+        m.dodge = 0;
+        m.cross = null;
+        m.crossCool = t + 20;
+        return;
+      }
+      const a = pts[X.k - 1], b = pts[X.k];
+      m.x = a.x + (b.x - a.x) * X.u;
+      m.y = a.y + (b.y - a.y) * X.u;
+      const want = Math.atan2(b.x - a.x, b.y - a.y);
+      m.heading = m.heading + Math.atan2(Math.sin(want - m.heading), Math.cos(want - m.heading)) * Math.min(1, dt * 8);
+      m.phase += dt * m.speed * 5.7;
+    }
+    if (!X.go) { m.x = pts[0].x; m.y = pts[0].y; }
+    // on the paving at either end, down on the asphalt in between (only the crossing's own
+    // carriageways are looked at, never a road above or below)
+    let hh = pts[X.k - 1 < 0 ? 0 : Math.min(pts.length - 1, X.k - 1)].h;
+    if (X.go && this.index) {
+      for (const e of [X.c.a, X.c.b]) {
+        const s = this.index.surface(m.x, m.y, hh, 0, 2);
+        if (s && s.seg.ri === e.p.ri && s.d < s.seg.w / 2) { hh = s.h + roadTop(e.p.r, e.p.ri); break; }
+      }
+    }
+    m.h = m.h + (hh - m.h) * Math.min(1, dt * 10);
   }
 
   // How a person walking along the footpath gets round others: step aside (keeping left) for

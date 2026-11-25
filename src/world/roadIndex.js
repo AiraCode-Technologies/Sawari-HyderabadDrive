@@ -39,15 +39,18 @@ export class RoadIndex {
     //   post: pillars and boulders, always solid
     //   water: lake shores, only off the carriageway and near the ground
     this.walls = new Grid(20);
-    const addWall = (ax, ay, bx, by, top, kind) => {
+    // `bottom` (optional): where the obstacle starts, for things standing on a deck (parapet
+    // lamps): a car on the road underneath passes below them
+    const addWall = (ax, ay, bx, by, top, kind, bottom) => {
       const w = { ax, ay, bx, by, top, kind };
+      if (bottom !== undefined) w.bottom = bottom;
       this.walls.add(Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by), w);
     };
     this.addWall = addWall;
-    const ring = (cx, cy, r, top, kind, n = 6) => {
+    const ring = (cx, cy, r, top, kind, n = 6, bottom) => {
       for (let k = 0; k < n; k++) {
         const a0 = (k / n) * Math.PI * 2, a1 = ((k + 1) / n) * Math.PI * 2;
-        addWall(cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, top, kind);
+        addWall(cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, top, kind, bottom);
       }
     };
     this.ring = ring;
@@ -81,7 +84,11 @@ export class RoadIndex {
         addWall(a[0], a[1], c[0], c[1], terrain.at(a[0], a[1]) + wl.ht, 'wall');
       }
     }
-    for (const r of world.rocks || []) if (r[2] > 1.1) ring(r[0], r[1], r[2] * 0.75, terrain.at(r[0], r[1]) + r[2], 'post');
+    // boulders (none on a road: the scenery leaves those out too, see props.js)
+    for (const r of world.rocks || []) {
+      const g = terrain.at(r[0], r[1]);
+      if (r[2] > 1.1 && !this.blocksRoad(r[0], r[1], r[2] * 0.75, g - 2.5, g + 2.5)) ring(r[0], r[1], r[2] * 0.75, g + r[2], 'post');
+    }
 
     // speed breakers
     this.bumps = new Grid(20);
@@ -124,6 +131,22 @@ export class RoadIndex {
       if (dh >= dhMin && dh <= dhMax) return s;
     }
     return null;
+  }
+
+  // True when a circle of radius r round (x, y) reaches onto any carriageway (other than road
+  // `ri`) whose surface lies between heights h0 and h1. Everything solid placed beside the
+  // roads (lamp posts, hoardings, stalls, parked vehicles, pillars) is checked with this
+  // against every road, not just the nearest one, so a ramp or deck overhead never hides
+  // the road beneath it. A negative r means "more than -r inside the carriageway".
+  blocksRoad(x, y, r, h0, h1, ri = -1) {
+    for (const s of this.grid.query(x, y, Math.max(0, r))) {
+      if (s.ri === ri) continue;
+      const q = segDist(x, y, s.ax, s.ay, s.bx, s.by);
+      if (q.d >= s.w / 2 + r) continue;
+      const sh = s.ah + (s.bh - s.ah) * q.t;
+      if (sh >= h0 && sh <= h1) return true;
+    }
+    return false;
   }
 
   // True when (x, y) lies on the carriageway of a road other than `ri` at a

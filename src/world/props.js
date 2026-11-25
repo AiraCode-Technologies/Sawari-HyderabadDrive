@@ -10,11 +10,11 @@ export function buildProps(world, group, quality, T, index) {
   const instanced = (geo, mat, list, place, shadow = true) =>
     instancedTiled(group, geo, mat, list, place, { tile: 200, cast: shadow && quality.shadows });
 
-  // Nothing roadside may stand on a carriageway (flyovers overhead are fine).
-  const onCarriageway = (x, y) => {
+  // Nothing roadside may stand on a carriageway: any road at ground level within r of it,
+  // and (with `top`, the prop's height) any deck low enough for it to poke through.
+  const onCarriageway = (x, y, r = 0.15, top = 2.5, ri = -1) => {
     const g = T.at(x, y);
-    const s = index.surface(x, y, g, 0.15, 6);
-    return !!s && s.d < s.seg.w / 2 + 0.15 && !s.seg.st;
+    return index.blocksRoad(x, y, r, g - 2.5, g + top, ri);
   };
 
   // Props on or beside a footpath stand on the footpath (road level + kerb),
@@ -61,7 +61,14 @@ export function buildProps(world, group, quality, T, index) {
 
   // ---------- street lights: single-arm on footpaths, double-arm on medians ----------
   // a fifth value is the height the lamp stands at: lamps on flyover and bridge parapets
-  const lights = world.lights.filter((l) => l[4] !== undefined || !onCarriageway(l[0], l[1])).map((l) => ({ x: l[0], y: l[1], a: l[2], t: l[3] ?? 0, g: l[4] ?? standAt(l[0], l[1]) }));
+  // a ground lamp keeps clear of every road and of decks it would reach; a parapet lamp may
+  // stand on its deck's edge but not out in a lane (where a ramp joins and the parapet stops)
+  // A footpath lamp also keeps 2.5 m clear of every road but its own, so none stands on the
+  // corner of a junction mouth where turning cars sweep over the kerb (median poles stand
+  // between the two carriageways and keep only the general clearance).
+  const ownRoad = (x, y) => { const s = index.surface(x, y, T.at(x, y), 4, 2.5); return s ? s.seg.ri : -1; };
+  const clearCorner = (l) => l[3] === 1 || !onCarriageway(l[0], l[1], 2.5, 10.5, ownRoad(l[0], l[1]));
+  const lights = world.lights.filter((l) => (l[4] !== undefined ? !index.blocksRoad(l[0], l[1], -0.35, l[4] - 1.5, l[4] + 1.5) : !onCarriageway(l[0], l[1], 0.4, 10.5) && clearCorner(l))).map((l) => ({ x: l[0], y: l[1], a: l[2], t: l[3] ?? 0, g: l[4] ?? standAt(l[0], l[1]), deck: l[4] !== undefined }));
   const single = lights.filter((l) => l.t === 0), double = lights.filter((l) => l.t === 1);
   const lamp = new THREE.MeshLambertMaterial({ color: '#e8e8e2', emissive: '#55524a' });
   // lamp heads in world space, for the night-time glow (see lighting.js)
@@ -115,7 +122,8 @@ export function buildProps(world, group, quality, T, index) {
   instanced(mergeColored(doubleParts), new THREE.MeshLambertMaterial({ vertexColors: true }), double, placeLight);
   for (const s of [1, -1])
     instanced(new THREE.BoxGeometry(0.6, 0.03, 0.26).rotateZ(-s * 0.08).translate(s * 1.95, 9.86, 0), lamp, double, placeLight, false);
-  for (const l of lights) index.ring(l.x, l.y, 0.2, l.g + 8, 'post');
+  // (a parapet lamp only blocks the deck it stands on, not the road beneath the deck)
+  for (const l of lights) index.ring(l.x, l.y, 0.2, l.g + 8, 'post', 6, l.deck ? l.g - 0.3 : undefined);
 
   // ---------- advertising hoardings on steel posts ----------
   {
@@ -123,7 +131,8 @@ export function buildProps(world, group, quality, T, index) {
     const back = new THREE.MeshLambertMaterial({ color: '#4f5357' });
     const steel = new THREE.MeshLambertMaterial({ color: '#6d7277' });
     for (const h of world.hoardings || []) {
-      if (onCarriageway(h.x, h.y)) continue;
+      const hx = Math.cos(h.dir) * 3.5, hy = -Math.sin(h.dir) * 3.5;
+      if (onCarriageway(h.x, h.y, 0.5, 15) || onCarriageway(h.x + hx, h.y + hy, 0.45, 15) || onCarriageway(h.x - hx, h.y - hy, 0.45, 15)) continue;
       const g = standAt(h.x, h.y);
       const face = new THREE.Mesh(board, adMat(h.t));
       face.position.set(h.x, g + 9.5, -h.y);
@@ -193,7 +202,7 @@ export function buildProps(world, group, quality, T, index) {
 
   // ---------- granite boulders (Deccan tors) and scrub ----------
   const rockCols = ['#8d867a', '#9a9285', '#7e786f', '#a39b8d'].map(c3);
-  const rocks = (world.rocks || []).filter((r) => !onCarriageway(r[0], r[1])).map((r) => ({ x: r[0], y: r[1], s: r[2], r: rnd(), q: rnd(), g: T.at(r[0], r[1]) }));
+  const rocks = (world.rocks || []).filter((r) => !onCarriageway(r[0], r[1], r[2] * 0.75)).map((r) => ({ x: r[0], y: r[1], s: r[2], r: rnd(), q: rnd(), g: T.at(r[0], r[1]) }));
   const rockMesh = instanced(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshLambertMaterial({ flatShading: true }), rocks, (r, d) => {
     d.position.set(r.x, r.g + r.s * 0.35, -r.y);
     d.rotation.set(r.q * 3, r.r * 6.28, r.q * 1.7);
@@ -222,7 +231,7 @@ export function buildProps(world, group, quality, T, index) {
   // ---------- bus shelters and petrol pumps ----------
   const parts = [];
   for (const b of world.busStops || []) {
-    if (onCarriageway(b.x, b.y)) continue;
+    if (onCarriageway(b.x, b.y, 1.2, 3)) continue; // the shelter's roof and back panel too
     const g = standAt(b.x, b.y);
     const o = (lx, ly, lz) => {
       // local (x along the kerb, y up, z away from the road) -> world
@@ -242,7 +251,7 @@ export function buildProps(world, group, quality, T, index) {
   }
   const brands = [['#f37021', '#1b3f8b'], ['#1d4f9c', '#d71920'], ['#0b8a3b', '#f5d300']];
   (world.fuel || []).forEach((f, n) => {
-    if (onCarriageway(f.x, f.y)) return;
+    if (onCarriageway(f.x, f.y, 4.6, 6)) return; // the whole forecourt canopy
     const g = T.at(f.x, f.y);
     const [main, trim] = brands[n % brands.length];
     const at = (lx, ly, lz, geo, color) => {

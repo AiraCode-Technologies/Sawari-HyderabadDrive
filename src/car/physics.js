@@ -173,7 +173,10 @@ export class CarPhysics {
 
     // ---- integrate (semi-implicit Euler)
     const before = this.vx;
-    const axNoBrake = (Fx - Fyf * Math.sin(d)) / M + this.r * this.vy;
+    // (the steered front tyres' sideways force holds the car back only once they are really
+    // cornering: pulling away with the wheel turned, a car rolls round its arc, see below)
+    const scrub = clamp((sp - 0.3) / 2.5, 0, 1);
+    const axNoBrake = (Fx - Fyf * Math.sin(d) * scrub) / M + this.r * this.vy;
     this.vx += axNoBrake * dt;
     // brakes oppose motion but never reverse it
     const bDecel = ((Fbrake + FbRear) / M) * dt;
@@ -305,6 +308,7 @@ export class CarPhysics {
       let cx = this.x + fx * off, cy = this.y + fy * off;
       for (const w of this.index.wallsNear(cx, cy, R + 1)) {
         if (this.h > w.top - 0.15) continue; // drives over it, or it is below a deck
+        if (w.bottom !== undefined && this.h + 1.5 < w.bottom) continue; // it stands on a deck overhead
         if ((w.kind === 'water' || w.kind === 'building' || w.kind === 'wall') && onRoad) continue;
         const q = segDist(cx, cy, w.ax, w.ay, w.bx, w.by);
         if (q.d >= R || q.d < 1e-4) continue;

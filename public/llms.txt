@@ -11,7 +11,7 @@ Key facts:
 - Car: automatic gearbox with ABS; chase view or driver's seat; morning, midday, evening and night
 - Rules checked: speeding, keeping left, wrong way on one-way roads, leaving the road, red lights, collisions, speed breakers taken too fast, turns without an indicator
 - Sharing: a score card picture after each drive and a "challenge a friend" link with the score to beat
-- Languages: website in English, Hindi, Urdu and Telugu; blog (65 articles) in English
+- Languages: website in English, Hindi, Urdu and Telugu; blog (66 articles) in English
 - Data: map data © OpenStreetMap contributors (ODbL); terrain from open terrain tiles
 - Not affiliated with the Telangana Transport Department (RTA) or the traffic police
 
@@ -87,6 +87,7 @@ Key facts:
 - [How we built Hyderabad in 3D from OpenStreetMap](https://sawari.airacode.online/blog/how-we-built-hyderabad-in-3d.html): How Sawari builds 3D Hyderabad: OpenStreetMap data via Overpass, flyovers, terrain from open elevation tiles, low-poly Three.js rendering and traffic AI.
 
 ## Release notes
+- [Sawari 1.13.0: busier roads, zebra crossings and cleaner junctions](https://sawari.airacode.online/blog/sawari-1-13-0-release-notes.html): Sawari 1.13.0 adds 50% more traffic at every level, people who cross only on zebra crossings at a red, and junctions with no poles or parked cars in the way.
 - [Sawari 1.10.0: eleven new guides, a Hyderabad driving FAQ and glossary](https://sawari.airacode.online/blog/sawari-1-10-0-release-notes.html): Sawari 1.10.0 adds eleven guides, including a Hyderabad driving FAQ with 49 answers and a 60-term glossary, and credits AiraCode Technologies as its maker.
 - [Sawari 1.11.0: learning what helps you drive better](https://sawari.airacode.online/blog/sawari-1-11-0-release-notes.html): Sawari 1.11.0 adds privacy-respecting analytics, so we can see which routes are too hard, which phones struggle and which guides help, and improve Sawari.
 - [Sawari 1.12.0: send us feedback from inside the game](https://sawari.airacode.online/blog/sawari-1-12-0-release-notes.html): Sawari 1.12.0 adds a Send feedback form to the start page, pause and results screens and the website footer, so you can report bugs or ask for new routes.

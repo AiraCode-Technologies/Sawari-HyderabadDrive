@@ -121,7 +121,14 @@ npm run build
 | Tab | All controls |
 | Esc | Pause |
 
-Traffic can be set from None to Dense (about 80 vehicles around you: cars, SUVs, autos, buses, mini trucks, scooters and motorbikes).
+Traffic can be set from None to Dense: 21, 42, 72 or about 120 vehicles around you (cars, SUVs, autos, buses, mini trucks, scooters and motorbikes).
+
+People walk only on the raised footpaths, exactly where `roads.js` draws them, and cross only on the
+zebra crossings at signals, when that approach has a red long enough to get across (a crossing
+needs a footpath at both ends; one over a divided road may use the median as a refuge, though
+none of the current routes has such a spot). `src/world/footpaths.js` holds the
+footpath stretches and places each zebra: 4 to 7 m back from the signal, or further back where a
+side road's mouth takes the footpath away. The traffic stops before it.
 
 A gamepad also works: left stick steers, RT/LT throttle and brake, LB/RB indicators, Y camera.
 

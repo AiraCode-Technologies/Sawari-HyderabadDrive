@@ -76,11 +76,13 @@ function stallGeo(type) {
 export function buildStreetLife(world, group, quality, T, index) {
   const items = [];
   // stalls and parked two-wheelers never stand on a carriageway (flyovers overhead excepted)
-  const onCarriageway = (x, y, margin) => {
+  // (checked against every road near the ground, so a ramp overhead never hides one)
+  const onCarriageway = (x, y, margin, ri = -1) => {
     const g = T.at(x, y);
-    const s = index.surface(x, y, g, margin, 6);
-    return !!s && s.d < s.seg.w / 2 + margin && !s.seg.st;
+    return index.blocksRoad(x, y, margin, g - 2.5, g + 3, ri);
   };
+  // the road a roadside thing belongs to: the nearest carriageway at about its level
+  const ownRoad = (x, y) => { const s = index.surface(x, y, T.at(x, y), 4, 2.5); return s ? s.seg.ri : -1; };
   const parked = world.parked || [];
   if (parked.length) {
     const cat = buildParkedCatalogue();
@@ -88,7 +90,7 @@ export function buildStreetLife(world, group, quality, T, index) {
       const bike = p.t < 55;
       const ground = index.standAt(p.x, p.y);
       if (bike) {
-        if (onCarriageway(p.x, p.y, 0.3)) continue;
+        if (onCarriageway(p.x, p.y, 0.3) || onCarriageway(p.x, p.y, 1.8, ownRoad(p.x, p.y))) continue; // nor on a junction corner
         // two-wheelers stand at an angle to the kerb
         const geo = cat.bikes[p.t % cat.bikes.length];
         const ang = p.dir + (p.side > 0 ? 1 : -1) * 1.1;
@@ -96,6 +98,12 @@ export function buildStreetLife(world, group, quality, T, index) {
         index.ring(p.x, p.y, 0.45, ground + 1.2, 'post');
       } else {
         const v = cat.cars[p.t % cat.cars.length];
+        // a car parked half on its own road's kerb, but never in a junction mouth or across
+        // another road, and never more than half a car's width out into its own lane
+        const ri = ownRoad(p.x, p.y);
+        const fx0 = Math.sin(p.dir), fy0 = Math.cos(p.dir);
+        if ([-v.length / 2, 0, v.length / 2].some((o) => onCarriageway(p.x + fx0 * o, p.y + fy0 * o, v.width / 2 + 1.8, ri))) continue;
+        if ([-v.length / 3, 0, v.length / 3].some((o) => onCarriageway(p.x + fx0 * o, p.y + fy0 * o, -0.15))) continue;
         // half up on the footpath: tilted slightly towards the road
         // half up on a kerbed footpath: the car sits between the two levels, tilted towards the road
         const s = index.surface(p.x, p.y, T.at(p.x, p.y), 3, 6);
@@ -130,7 +138,7 @@ export function buildStreetLife(world, group, quality, T, index) {
   });
   const boardGeo = new THREE.PlaneGeometry(1.3, 0.5);
   for (const s of world.stalls || []) {
-    if (onCarriageway(s.x, s.y, 0.8)) continue;
+    if (onCarriageway(s.x, s.y, 0.8) || onCarriageway(s.x, s.y, 2.6, ownRoad(s.x, s.y))) continue; // nor on a junction corner
     const g = index.standAt(s.x, s.y);
     // readable from both directions along the street
     for (const flip of [0, Math.PI]) {

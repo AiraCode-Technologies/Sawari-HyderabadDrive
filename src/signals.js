@@ -15,6 +15,16 @@ export function signalState(sig, bearing, t) {
   return phase < 20 ? 'red' : phase < 37 ? 'green' : 'amber';
 }
 
+// Seconds of red still to come for traffic along `bearing` (0 when it is not red): people
+// waiting at the zebra crossing step out only when there is time to get across.
+export function redLeft(sig, bearing, t) {
+  if (signalState(sig, bearing, t) !== 'red') return 0;
+  const gx = sig.g ? sig.g[0] : sig.x, gy = sig.g ? sig.g[1] : sig.y;
+  const phase = (t + hash01(Math.round(gx / 70) * 7919 + Math.round(gy / 70)) * CYCLE) % CYCLE;
+  const b = ((bearing % Math.PI) + Math.PI) % Math.PI;
+  return Math.round(b / (Math.PI / 2)) % 2 === 0 ? CYCLE - phase : 20 - phase;
+}
+
 // Signals ahead of a vehicle at (x, y) travelling along `bearing`: returns the
 // nearest one within `range` metres that sits across its path.
 export function signalAhead(signals, x, y, h, bearing, range = 40) {

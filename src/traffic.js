@@ -2,11 +2,12 @@ import * as THREE from 'three';
 import { mulberry, clamp, angleDiff } from './util.js';
 import { signalAhead, signalState } from './signals.js';
 import { buildCatalogue, TRAFFIC_MIX } from './vehicles.js';
+import { zebraFor } from './world/footpaths.js';
 
 let CATALOGUE = null; // built once, shared by every drive
 
 const RANK = { motorway: 7, trunk: 6, primary: 5, secondary: 4, tertiary: 3, unclassified: 2, residential: 2, living_street: 1, service: 1 };
-export const TRAFFIC_LEVELS = { off: 0, low: 14, medium: 28, high: 48, dense: 80 };
+export const TRAFFIC_LEVELS = { off: 0, low: 21, medium: 42, high: 72, dense: 120 };
 
 // ---- how the drivers behave
 const STEP = 3; // spacing of the points on each vehicle's predicted path (m)
@@ -491,7 +492,7 @@ export class Traffic {
     const sa = signalAhead(this.signals, v.x, v.y, v.h, v.heading, 34);
     if (sa) {
       const st = signalState(sa.sig, v.heading, t);
-      const stopAt = sa.along - 7 - v.length / 2;
+      const stopAt = sa.along - (zebraFor(sa.sig, v.heading)?.back ?? 7) - v.length / 2; // before the zebra
       if (st === 'red' || (st === 'amber' && stopAt > 6)) {
         const vt = stopSpeed(stopAt);
         if (vt < target) { target = vt; v.atSignal = true; }
